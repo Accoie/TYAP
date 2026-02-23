@@ -1,4 +1,4 @@
-﻿# Грамматика языка
+# Грамматика языка
 ## Операторы
 
 Арифметические операторы:
@@ -63,6 +63,11 @@
 	- min(x, y, ...) — возвращает наименьшее из переданных чисел
 	- max(x, y, ...) — возвращает наибольшее из переданных чисел
 
+### Встроенные функции для строк
+    - len(str) - возвращает длину строки в числовом виде
+    - decompose(str, ",")  - разбивает строку по заданному разделителю и возвращает массив строк
+    - getsymbol(str, 5) - возвращает символ под индексом 5 в изначальной строке
+
 ### Операция возведения в степень
 	- ^ (степень)	
 	- power(x, y)
@@ -71,6 +76,18 @@
 	- round(x) - Округляет до ближайшего целого	
 	- ceil(x) - Ближайшее целое, большее или равное
 	- floor(x) - Ближайшее целое, меньшее или равное
+
+## Массивы
+
+- Тип массива: `arr of <базовый_тип>`, где базовый тип — `number`, `string` или `boolean`.
+- Литерал массива: список выражений в квадратных скобках, например `[1, 2, a+b]`, `[]`.
+- Доступ к элементу: выражение с индексацией `myArray[index]` (чтение и запись). Индекс — выражение типа `number`.
+
+## Структуры
+
+- Тип структуры задаётся перечислением полей: `struct { поле1 : тип1, поле2 : тип2, ... }`.
+- Литерал структуры: инициализация всех полей в фигурных скобках: `{ поле1 : выражение1, поле2 : выражение2 }`.
+- Доступ к полю на чтение и запись: `myObject.field` (значение) или `myObject->field` (через указатель).
 
 # Грамматика языка в нотации EBNF
 
@@ -97,9 +114,17 @@
 
 			factor_expression = [ unary_operator ], exponentiation_expression ;
 
-			exponentiation_expression = primary_expression, [ "^", exponentiation_expression ] ;
+			exponentiation_expression = postfix_expression, [ "^", exponentiation_expression ] ;
 
-			primary_expression = literal | variable_access | function_call | "(", expression, ")" ;
+			postfix_expression = primary_expression, { index_access | member_access_dot | member_access_arrow } ;
+
+			index_access = "[", expression, "]" ;
+
+			member_access_dot = ".", identifier ;
+
+			member_access_arrow = "->", identifier ;
+
+			primary_expression = literal | variable_access | function_call | array_literal | struct_literal | "(", expression, ")" ;
 
 		(* ==================== *)
 		(* Доступ к переменным  *)
@@ -122,6 +147,9 @@
 				  | "ceil" 
 				  | "floor" 
 				  | "power" ;
+                  | "len" ;
+                  | "decompose" ;
+                  | "getsymbol"
 
 			argument_list = expression, { ",", expression } ;
 
@@ -156,7 +184,7 @@
         (* Объявления переменных *)
         (* ==================== *)
 
-            variable_declaration = "var", identifier, ":", ( "real" | "integer" ), [ "=", expression ], ";"
+            variable_declaration = "var", identifier, ":", type, [ "=", expression ], ";"
                         | "string", identifier, [ "=", expression ], ";"
                         | "boolean", identifier, [ "=", expression ], ";" ;
 
@@ -172,7 +200,23 @@
 
             parameter = identifier, ":", type ;
 
-            type = "string" | "real" | "integer" | "boolean" ;
+            type = base_type | array_type | struct_type ;
+
+            base_type = "number" | "string" | "boolean" ;
+
+            array_type = "arr", "of", base_type ;
+
+            struct_type = "struct", "{", field_list, "}" ;
+
+            field_list = field_decl, { ",", field_decl } ;
+
+            field_decl = identifier, ":", type ;
+
+            array_literal = "[", [ expression, { ",", expression } ], "]" ;
+
+            struct_literal = "{", field_initializer_list, "}" ;
+
+            field_initializer_list = identifier, ":", expression, { ",", identifier, ":", expression } ;
 
         (* ==================== *)
         (* Операторы управления *)
@@ -206,7 +250,9 @@
         (* Присваивание         *)
         (* ==================== *)
 
-            assignment_statement = identifier, "=", expression, ";" ;
+            assignment_statement = left_hand_side, "=", expression, ";" ;
+
+            left_hand_side = identifier, { index_access | member_access_dot | member_access_arrow } ;
 
         (* ==================== *)
         (* Описание литералов, идентификаторов и др. лексем см в 01_lexemes.md  *)

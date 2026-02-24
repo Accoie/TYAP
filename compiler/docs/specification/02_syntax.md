@@ -1,4 +1,4 @@
-# Грамматика языка
+# Грамматика языка Pascal++
 ## Операторы
 
 Арифметические операторы:
@@ -8,7 +8,7 @@
 | `+`         | Сложение или унарный "+"  |
 | `-`         | Вычитание или унарный "-" |
 | `*`         | Умножение                 |
-| `/`         | Деление                    |
+| `/`         | Деление                   |
 | `%`         | Остаток от деления        |
 | `^`         | Возведение в степень      |
 
@@ -17,8 +17,8 @@
 | Символы     | Операция                  |
 |-------------|---------------------------|
 | `@`         | логическое "и"            |
-| `\|\|`        | логическое "или"         |
-| `!`         | логическое отрицание     |
+| `\|\|`      | логическое "или"          |
+| `!`         | логическое отрицание      |
 
 Операторы сравнения:
 
@@ -87,7 +87,7 @@
 
 - Тип структуры задаётся перечислением полей: `struct { поле1 : тип1, поле2 : тип2, ... }`.
 - Литерал структуры: инициализация всех полей в фигурных скобках: `{ поле1 : выражение1, поле2 : выражение2 }`.
-- Доступ к полю на чтение и запись: `myObject.field` (значение) или `myObject->field` (через указатель).
+- Доступ к полю на чтение и запись: `myObject.field` (значение)
 
 # Грамматика языка в нотации EBNF
 
@@ -116,13 +116,11 @@
 
 			exponentiation_expression = postfix_expression, [ "^", exponentiation_expression ] ;
 
-			postfix_expression = primary_expression, { index_access | member_access_dot | member_access_arrow } ;
+			postfix_expression = primary_expression, { index_access | member_access_dot } ;
 
 			index_access = "[", expression, "]" ;
 
 			member_access_dot = ".", identifier ;
-
-			member_access_arrow = "->", identifier ;
 
 			primary_expression = literal | variable_access | function_call | array_literal | struct_literal | "(", expression, ")" ;
 
@@ -252,7 +250,7 @@
 
             assignment_statement = left_hand_side, "=", expression, ";" ;
 
-            left_hand_side = identifier, { index_access | member_access_dot | member_access_arrow } ;
+            left_hand_side = identifier, { index_access | member_access_dot } ;
 
         (* ==================== *)
         (* Описание литералов, идентификаторов и др. лексем см в 01_lexemes.md  *)

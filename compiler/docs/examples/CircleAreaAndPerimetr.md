@@ -1,27 +1,39 @@
 ```
 begin
-    var n : number = 10;
-    var a : arr of number = [0,0,0,0,0,0,0,0,0,0];
+    var r : number;
+    write("Введите радиус: ");
+    read(r);
 
-    for i from 0 to n-1 do
-        write("Введите элемент ", i, ": ");
-        read(a[i]);
+    var pi : number = 3.1415;
+
+    var l : number = 2 * pi * r;
+    var s : number = pi * power(r, 2);
+
+    string mode;
+    write("Способ округления (none / ceil / floor): ");
+    read(mode);
+
+    if (mode == "ceil") then
+    begin
+        l = ceil(l);
+        s = ceil(s);
     end
-
-    for i from 0 to n-2 do
-        for j from 0 to n-2 do
-            if (a[j] > a[j+1]) then
-            begin
-                var t : number = a[j];
-                a[j] = a[j+1];
-                a[j+1] = t;
-            end
+    else
+    begin
+        if (mode == "floor") then
+        begin
+            l = floor(l);
+            s = floor(s);
+        end
+        else
+        begin
+            l = l;
+            s = s;
         end
     end
 
-    write("Отсортированный массив: ");
-    for k from 0 to n-1 do
-        write(a[k], " ");
-    end
+    write("Длина окружности: ", l, "\n");
+    write("Площадь круга: ", s, "\n");
 end
+
 ```

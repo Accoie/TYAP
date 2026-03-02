@@ -1,7 +1,7 @@
 ```
 begin
     var n : number = 10;
-    var a : arr of number = [0,0,0,0,0,0,0,0,0,0];
+    var a : arr[10] of number = [0,0,0,0,0,0,0,0,0,0];
 
     for i from 0 to n-1 do
         write("Введите элемент ", i, ": ");

@@ -165,8 +165,7 @@ end
 			
 	    literal = number | string_literal | bool_literal | array_literal | struct_literal ;
 
-	    number = integer, ".", digit, { digit } 
-			  | ".", digit, { digit } ;
+	    number = integer, [ ".", digit, { digit } ] ;
 
         integer = digit, { digit } ;
         

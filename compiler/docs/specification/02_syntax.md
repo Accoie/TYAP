@@ -31,7 +31,7 @@
 
 ## Массивы
 
-- Тип массива: `arr of <базовый_тип>`, где базовый тип — `number`, `string` или `boolean`.
+- Тип массива: `arr[n] of <базовый_тип>`, где базовый тип — `number`, `string` или `boolean`.
 - Литерал массива: список выражений в квадратных скобках, например `[1, 2, a+b]`, `[]`.
 - Доступ к элементу: выражение с индексацией `myArray[index]` (чтение и запись). Индекс — выражение типа `number`.
 
@@ -98,9 +98,10 @@
 				  | "round" 
 				  | "ceil" 
 				  | "floor" 
-                  | "len" ;
-                  | "decompose" ;
+                  | "len" 
+                  | "decompose" 
                   | "getsymbol"
+                  | "tostring"
 
 			argument_list = expression, { ",", expression } ;
 

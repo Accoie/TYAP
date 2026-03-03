@@ -16,7 +16,6 @@ begin
     end
 end
 ```
-
 ## 2. Ключевые слова
 
 | Слово    | Предназначение                            |
@@ -39,7 +38,6 @@ end
 | while    | Цикл while                                |
 | write    | Вывод на экран                            |
 | read     | Ввод данных                               |
-| not      | Логическое отрицание                      |
 | break    | Выход из цикла                            |
 | continue | Продолжить цикл                           |
 | return   | Вернуть значение функции                  |
@@ -158,7 +156,7 @@ end
         keyword = "begin" | "end" | "var" | "string" 
                 | "boolean" | "true" | "false" | "if" | "then" 
                 | "else" | "for" | "from" | "to" | "do" | "while" 
-                | "write" | "read" | "not" | "break" | "continue" 
+                | "write" | "read" | "break" | "continue" 
                 | "return" | "function" | "number" | "arr" | "struct" | "new" ;
 
 (* ==================== *)

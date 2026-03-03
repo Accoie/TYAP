@@ -18,13 +18,8 @@ begin
 
     var dx : number = B.x - A.x;
     var dy : number = B.y - A.y;
-<<<<<<< HEAD
     var distance : number = (dx ^ 2 + dy ^ 2) ^ 0.5;
 
-=======
-    var distance : number = power(dx ^ 2 + dy ^ 2, 0.5);
-    
->>>>>>> 4c77b0345bb33d2d1ce0304bde649745ad1c5ea9
     write("Расстояние между точками A и B: ", distance);
 end
 ```

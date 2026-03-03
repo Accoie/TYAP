@@ -1,6 +1,7 @@
+```
 begin
-string text;
 
+    string text;
     write("Введите строку: ");
     read(text);
 
@@ -18,5 +19,5 @@ string text;
     end
 
     write("Количество гласных: ", vowels, "/n");
-
 end
+```

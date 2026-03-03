@@ -10,7 +10,7 @@ begin
 
     var area : number = w * h;
     var per : number = 2 * (w + h);
-    string info = "Площадь: " + tostring(area) + "\nПериметр: " + tostring(per); + "\n";
+    string info = "Площадь: " + tostring(area) + "\nПериметр: " + tostring(per) + "\n";
 
     write(info);
 end

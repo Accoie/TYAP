@@ -7,8 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B4C68BC1-722
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{CE774A12-53F2-4F94-ADFA-96E36863AED4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lexemes.UnitTests", "tests\Lexemes.UnitTests\Lexemes.UnitTests.csproj", "{135AF440-7F2C-4EC2-B7D5-5E1B0C6AA99B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,12 +16,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{135AF440-7F2C-4EC2-B7D5-5E1B0C6AA99B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{135AF440-7F2C-4EC2-B7D5-5E1B0C6AA99B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{135AF440-7F2C-4EC2-B7D5-5E1B0C6AA99B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{135AF440-7F2C-4EC2-B7D5-5E1B0C6AA99B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{135AF440-7F2C-4EC2-B7D5-5E1B0C6AA99B} = {CE774A12-53F2-4F94-ADFA-96E36863AED4}
 	EndGlobalSection
 EndGlobal

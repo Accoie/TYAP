@@ -10,13 +10,6 @@ public class LexerTest
         AssertTokensEqual(expected, actual);
     }
 
-    [Theory]
-    [MemberData(nameof(InvalidIdentifierTestData))]
-    public void Should_throw_exception_for_invalid_identifiers(string code)
-    {
-        Tokenize(code);
-    }
-
     public static TheoryData<string, List<Token>> AllTestData()
     {
         return new TheoryData<string, List<Token>>
@@ -356,6 +349,19 @@ public class LexerTest
             // Многострочные комментарии
             {
                 "/# комментарий на несколько строк #/", []
+            },
+
+            // Негативные тесты
+            {
+                "1fdas", [
+                    new Token(TokenType.Integer, new TokenValue(1)),
+                    new Token(TokenType.Identifier, new TokenValue("fdas"))
+                ]
+            },
+            {
+                "sdкоммент", [
+                    new Token(TokenType.Error, new TokenValue("sdкоммент"))
+                ]
             },
         };
     }

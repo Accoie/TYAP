@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B4C68BC1-722
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{CE774A12-53F2-4F94-ADFA-96E36863AED4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompilerLexer.UnitTests", "tests\CompilerLexer.UnitTests\CompilerLexer.UnitTests.csproj", "{8F8E1DBF-F787-4317-B542-191A904DE152}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompilerLexer", "src\CompilerLexer\CompilerLexer.csproj", "{461A03C0-37C3-442E-90FA-EA5316297BBF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -16,7 +20,17 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8F8E1DBF-F787-4317-B542-191A904DE152}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F8E1DBF-F787-4317-B542-191A904DE152}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F8E1DBF-F787-4317-B542-191A904DE152}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F8E1DBF-F787-4317-B542-191A904DE152}.Release|Any CPU.Build.0 = Release|Any CPU
+		{461A03C0-37C3-442E-90FA-EA5316297BBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{461A03C0-37C3-442E-90FA-EA5316297BBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{461A03C0-37C3-442E-90FA-EA5316297BBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{461A03C0-37C3-442E-90FA-EA5316297BBF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{8F8E1DBF-F787-4317-B542-191A904DE152} = {CE774A12-53F2-4F94-ADFA-96E36863AED4}
+		{461A03C0-37C3-442E-90FA-EA5316297BBF} = {B4C68BC1-722B-4069-9E4D-7E7FB04FA20A}
 	EndGlobalSection
 EndGlobal

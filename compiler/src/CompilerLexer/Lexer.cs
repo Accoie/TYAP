@@ -12,7 +12,7 @@ public class Lexer
         { "var", TokenType.Var },
         { "number", TokenType.NumberType },
         { "string", TokenType.StringType },
-        { "boolean", TokenType.BooleanType },
+        { "boolean", TokenType.Boolean },
         { "true", TokenType.True },
         { "false", TokenType.False },
         { "if", TokenType.If },
@@ -306,7 +306,7 @@ public class Lexer
             'r' => '\r',
             '\'' => '\'',
             '\"' => '\"',
-            _ => '\0'
+            _ => '\0',
         };
 
         if (unescaped != '\0')

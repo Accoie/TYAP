@@ -1,4 +1,6 @@
-﻿public enum TokenType
+﻿namespace CompilerLexer;
+
+public enum TokenType
 {
     /// <summary>
     /// Идентификаторы (имена переменных, функций и т.д.)
@@ -188,7 +190,7 @@
     /// <summary>
     /// Ключевое слово boolean (логический тип)
     /// </summary>
-    BooleanType,
+    Boolean,
 
     /// <summary>
     /// Ключевое слово if (начало условного оператора)
@@ -264,11 +266,6 @@
     /// Ключевое слово return (вернуть значение функции)
     /// </summary>
     Return,
-
-    /// <summary>
-    /// Ключевое слово boolean (новая переменная с логическим типом)
-    /// </summary>
-    Boolean,
 
     /// <summary>
     /// Ключевое слово function (объявление функции)

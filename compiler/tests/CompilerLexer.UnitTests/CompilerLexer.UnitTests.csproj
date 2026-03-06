@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CompilerLexer\CompilerLexer.csproj" />
+    <ProjectReference Include="..\..\src\CompilerLexer\CompilerLexer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

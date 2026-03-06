@@ -1,4 +1,6 @@
-﻿public class Token
+﻿using CompilerLexer;
+
+public class Token
 {
     public Token(TokenType type)
     {

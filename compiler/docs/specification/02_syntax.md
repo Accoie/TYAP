@@ -109,6 +109,7 @@
         (* ==================== *)
 
             statement = variable_declaration
+                      | type_declaration
                       | function_declaration    
                       | assignment_statement
                       | for_statement
@@ -123,6 +124,13 @@
                       | block ;
 
             block = "begin", { statement }, "end" ;
+
+        (* ==================== *)
+        (* Объявления типов *)
+        (* ==================== *)
+
+            type_declaration = "var", type_identifier, "=", type, ";" ;       
+            type_identifier = identifier ;
 
         (* ==================== *)
         (* Объявления переменных *)
@@ -142,7 +150,7 @@
 
             parameter = identifier, ":", type ;
 
-            type = base_type | array_type | struct_type ;
+            type = base_type | array_type | struct_type | type_identifier ;
 
             base_type = "number" | "string" | "boolean" ;
 
@@ -170,7 +178,7 @@
 
             output_statement = "write", "(", argument_list, ")", ";" ;
 
-            input_statement = "read", "(", identifier, ")", ";" ;
+            input_statement = "read", "(", left_hand_side, ")", ";" ;
 
         (* ==================== *)
         (* Контроль потоков     *)

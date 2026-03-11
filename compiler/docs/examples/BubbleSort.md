@@ -1,6 +1,6 @@
 ```
 begin
-    function bubbleSort(a : arr of number)
+    function bubbleSort(a : arr[10] of number)
     begin
         var n : number = 10;
         for i from 0 to n - 2 do
@@ -23,7 +23,7 @@ begin
     for i from 0 to n - 1 do
     begin
         write("Введите элемент ", i, ": ");
-        read(arr[i]);
+        read(a[i]);
     end
 
     bubbleSort(arr);
@@ -31,7 +31,7 @@ begin
     write("Отсортированный массив:");
     for k from 0 to n - 1 do
     begin
-        write(arr[k]);
+        write(a[k]);
     end
 end
 ```

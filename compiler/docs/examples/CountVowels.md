@@ -1,7 +1,7 @@
 ```
 begin
 
-    string text;
+    var text : string;
     write("Введите строку: ");
     read(text);
 

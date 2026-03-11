@@ -28,7 +28,6 @@
 | function | Объявление функции                        |
 | arr      | Объявление массива                        |
 | struct   | Объявление структуры                      |
-| new      | создание экземпляра структуры             |
 
 
 ## 2. Идентификаторы. Синтаксические правила
@@ -143,7 +142,7 @@
                 | "boolean" | "true" | "false" | "if" | "then" 
                 | "else" | "for" | "from" | "to" | "do" | "while" 
                 | "write" | "read" | "break" | "continue" 
-                | "return" | "function" | "number" | "arr" | "struct" | "new" ;
+                | "return" | "function" | "number" | "arr" | "struct" ;
 
 (* ==================== *)
 (* Литералы             *)

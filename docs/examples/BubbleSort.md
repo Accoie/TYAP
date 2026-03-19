@@ -1,15 +1,15 @@
 ```
 begin
-    function bubbleSort(a : arr[10] of number)
+    function bubbleSort(a : arr[10] of float)
     begin
-        var n : number = 10;
+        var n : integer = 10;
         for i from 0 to n - 2 do
         begin
             for j from 0 to n - 2 do
             begin
                 if (a[j] > a[j + 1]) then
                 begin
-                    var t : number = a[j];
+                    var t : float = a[j];
                     a[j] = a[j + 1];
                     a[j + 1] = t;
                 end
@@ -17,8 +17,8 @@ begin
         end
     end
 
-    var n : number = 10;
-    var a : arr[10] of number = [0,0,0,0,0,0,0,0,0,0];
+    var n : integer = 10;
+    var a : arr[10] of float = [0,0,0,0,0,0,0,0,0,0];
 
     for i from 0 to n - 1 do
     begin

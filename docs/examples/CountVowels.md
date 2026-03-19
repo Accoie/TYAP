@@ -5,8 +5,8 @@ begin
     write("Введите строку: ");
     read(text);
 
-    var n : number = len(text);
-    var vowels : number = 0;
+    var n : integer = len(text);
+    var vowels : integer = 0;
 
     for i from 0 to n - 1 do
     begin

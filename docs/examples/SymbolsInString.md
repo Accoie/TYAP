@@ -4,7 +4,7 @@ begin
     write("Введите строку: ");
     read(text);
 
-    var length : number = len(text);
+    var length : integer = len(text);
 
     write("Количество символов: ", length);
 end

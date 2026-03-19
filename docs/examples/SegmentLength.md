@@ -1,6 +1,6 @@
 ```
 begin
-    var Point : struct { x : number, y : number };
+    var Point : struct { x : float, y : float };
     var A : Point = { x : 0, y : 0 };
     var B : Point = { x : 0, y : 0 };
 
@@ -16,9 +16,9 @@ begin
     write("B.y = ");
     read(B.y);
 
-    var dx : number = B.x - A.x;
-    var dy : number = B.y - A.y;
-    var distance : number = (dx ^ 2 + dy ^ 2) ^ 0.5;
+    var dx : float = B.x - A.x;
+    var dy : float = B.y - A.y;
+    var distance : float = (dx ^ 2 + dy ^ 2) ^ 0.5;
 
     write("Расстояние между точками A и B: ", distance);
 end

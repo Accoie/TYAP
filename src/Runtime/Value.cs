@@ -29,7 +29,7 @@ public class Value : IEquatable<Value>
     }
 
     /// <summary>
-    ///     Сравнивает на равенство два значения.
+    /// Сравнивает на равенство два значения.
     /// </summary>
     public bool Equals(Value? other)
     {
@@ -62,7 +62,8 @@ public class Value : IEquatable<Value>
         {
             string => ValueType.String,
             decimal => ValueType.Float,
-            bool => ValueType.Bool,
+
+            // TODO: добавить int
             VoidType => ValueType.Void,
             _ => throw new InvalidOperationException($"Unexpected value {value} of type {value.GetType()}"),
         };
@@ -113,8 +114,8 @@ public class Value : IEquatable<Value>
         {
             string s => s,
             decimal d => d.ToString(CultureInfo.InvariantCulture),
-            bool b => b ? "ИСТИНА" : "ЛОЖЬ",
-            VoidType v => "ПУСТОТА",
+
+            // TODO: добавить int
             _ => throw new InvalidOperationException($"Unexpected value {value} of type {value.GetType()}"),
         };
     }

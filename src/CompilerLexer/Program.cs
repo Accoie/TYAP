@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace CompilerLexer;
 
-namespace CompilerLexer;
-
-class Program
+internal class Program
 {
-    static void Main()
+    private static void Main()
     {
     }
 }

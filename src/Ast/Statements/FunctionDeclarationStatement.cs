@@ -4,8 +4,9 @@ namespace Ast.Statements;
 
 public sealed class FunctionDeclarationStatement : AbstractFunctionDeclaration
 {
-    public FunctionDeclarationStatement( string name, List<ParameterDeclaration> parameters, BlockStatement body, ValueType type )
-        : base( name, parameters )
+    public FunctionDeclarationStatement(string name, List<ParameterDeclaration> parameters, BlockStatement body,
+        ValueType type)
+        : base(name, parameters)
     {
         Body = body;
         ResultType = type;
@@ -13,8 +14,8 @@ public sealed class FunctionDeclarationStatement : AbstractFunctionDeclaration
 
     public BlockStatement Body { get; }
 
-    public override void Accept( IAstVisitor visitor )
+    public override void Accept(IAstVisitor visitor)
     {
-        visitor.Visit( this );
+        visitor.Visit(this);
     }
 }

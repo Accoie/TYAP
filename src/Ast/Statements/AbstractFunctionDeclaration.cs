@@ -1,7 +1,7 @@
 ﻿namespace Ast.Statements;
 
 /// <summary>
-/// Абстрактный класс с информацией о функции — как встроенной, так и пользовательской.
+///     Абстрактный класс с информацией о функции — как встроенной, так и пользовательской.
 /// </summary>
 public abstract class AbstractFunctionDeclaration : DeclarationStatement
 {

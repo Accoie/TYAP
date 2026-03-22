@@ -2,8 +2,8 @@
 
 public class ContinueStatement : Statement
 {
-    public override void Accept( IAstVisitor visitor )
+    public override void Accept(IAstVisitor visitor)
     {
-        visitor.Visit( this );
+        visitor.Visit(this);
     }
 }

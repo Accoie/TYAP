@@ -8,7 +8,7 @@ public class FunctionCallExpression : Expression
     private readonly List<Expression> arguments;
     private AstAttribute<AbstractFunctionDeclaration> function;
 
-    public FunctionCallExpression( string name, List<Expression> arguments )
+    public FunctionCallExpression(string name, List<Expression> arguments)
     {
         Name = name;
         this.arguments = arguments;
@@ -19,13 +19,13 @@ public class FunctionCallExpression : Expression
     public AbstractFunctionDeclaration Function
     {
         get => function.Get();
-        set => function.Set( value );
+        set => function.Set(value);
     }
 
     public IReadOnlyList<Expression> Arguments => arguments;
 
-    public override void Accept( IAstVisitor visitor )
+    public override void Accept(IAstVisitor visitor)
     {
-        visitor.Visit( this );
+        visitor.Visit(this);
     }
 }

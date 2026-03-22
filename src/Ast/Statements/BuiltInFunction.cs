@@ -1,9 +1,11 @@
 ﻿using Runtime;
 
+using ValueType = Runtime.ValueType;
+
 namespace Ast.Statements;
 
 /// <summary>
-/// Определение встроенной функции языка.
+///     Определение встроенной функции языка.
 /// </summary>
 public sealed class BuiltInFunction : AbstractFunctionDeclaration
 {
@@ -12,22 +14,22 @@ public sealed class BuiltInFunction : AbstractFunctionDeclaration
     public BuiltInFunction(
         string name,
         IReadOnlyList<BuiltInFunctionParameter> parameters,
-        Runtime.ValueType resultType,
+        ValueType resultType,
         Func<IReadOnlyList<Value>, Value> implementation
     )
-        : base( name, parameters )
+        : base(name, parameters)
     {
         ResultType = resultType;
         this.implementation = implementation;
     }
 
-    public Value Invoke( IReadOnlyList<Value> arguments )
+    public Value Invoke(IReadOnlyList<Value> arguments)
     {
-        return implementation( arguments );
+        return implementation(arguments);
     }
 
-    public override void Accept( IAstVisitor visitor )
+    public override void Accept(IAstVisitor visitor)
     {
-        throw new InvalidOperationException( $"Visitor cannot be applied to {GetType()}" );
+        throw new InvalidOperationException($"Visitor cannot be applied to {GetType()}");
     }
 }

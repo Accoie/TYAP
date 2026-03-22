@@ -2,9 +2,9 @@
 
 public interface IScanner
 {
-    public void Advance();
+    void Advance();
 
-    public bool IsEnd();
+    bool IsEnd();
 
-    public char Peek(int n = 0);
+    char Peek(int n = 0);
 }

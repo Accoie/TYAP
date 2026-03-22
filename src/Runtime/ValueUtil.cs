@@ -6,42 +6,42 @@ namespace Runtime;
 public static class ValueUtil
 {
     /// <summary>
-    /// Печатает строковое значение в кавычках с базовым экранированием.
+    ///     Печатает строковое значение в кавычках с базовым экранированием.
     /// </summary>
-    public static string EscapeStringValue( string s )
+    public static string EscapeStringValue(string s)
     {
         StringBuilder sb = new();
-        sb.Append( '"' );
+        sb.Append('"');
 
-        foreach ( char c in s )
+        foreach (char c in s)
         {
-            if ( c == '\n' )
+            if (c == '\n')
             {
-                sb.Append( @"\n" );
+                sb.Append(@"\n");
             }
-            else if ( c == '"' )
+            else if (c == '"')
             {
-                sb.Append( @"\""" );
+                sb.Append(@"\""");
             }
-            else if ( c == '\\' )
+            else if (c == '\\')
             {
-                sb.Append( @"\\" );
+                sb.Append(@"\\");
             }
             else
             {
-                if ( char.IsControl( c ) )
+                if (char.IsControl(c))
                 {
-                    sb.Append( '\\' );
-                    sb.AppendFormat( ( ( int )c ).ToString( "000", CultureInfo.InvariantCulture ) );
+                    sb.Append('\\');
+                    sb.AppendFormat(((int)c).ToString("000", CultureInfo.InvariantCulture));
                 }
                 else
                 {
-                    sb.Append( c );
+                    sb.Append(c);
                 }
             }
         }
 
-        sb.Append( '"' );
+        sb.Append('"');
 
         return sb.ToString();
     }

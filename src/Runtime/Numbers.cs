@@ -2,28 +2,28 @@
 {
     public const decimal Tolerance = 0.001m;
 
-    public static bool AreEqual( decimal a, decimal b )
+    public static bool AreEqual(decimal a, decimal b)
     {
-        return Math.Abs( a - b ) < Tolerance;
+        return Math.Abs(a - b) < Tolerance;
     }
 
-    public static bool IsLessThan( decimal a, decimal b )
+    public static bool IsLessThan(decimal a, decimal b)
     {
-        return a < b && !AreEqual( a, b );
+        return a < b && !AreEqual(a, b);
     }
 
-    public static bool IsLessThanOrEqual( decimal a, decimal b )
+    public static bool IsLessThanOrEqual(decimal a, decimal b)
     {
-        return a < b || AreEqual( a, b );
+        return a < b || AreEqual(a, b);
     }
 
-    public static bool IsGreaterThan( decimal a, decimal b )
+    public static bool IsGreaterThan(decimal a, decimal b)
     {
-        return a > b && !AreEqual( a, b );
+        return a > b && !AreEqual(a, b);
     }
 
-    public static bool IsGreaterThanOrEqual( decimal a, decimal b )
+    public static bool IsGreaterThanOrEqual(decimal a, decimal b)
     {
-        return a > b || AreEqual( a, b );
+        return a > b || AreEqual(a, b);
     }
 }

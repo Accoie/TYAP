@@ -1,7 +1,7 @@
 ﻿namespace Runtime;
 
 /// <summary>
-/// Специальный тип, обозначающий отсутствие значения.
+///     Специальный тип, обозначающий отсутствие значения.
 /// </summary>
 public record struct VoidType
 {

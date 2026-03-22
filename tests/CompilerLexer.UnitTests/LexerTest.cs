@@ -25,8 +25,7 @@ public class LexerTest
 
             // Объявление переменных
             {
-                "var pi : float = 3.14; var name : string = \"Vladimir\";", 
-                [
+                "var pi : float = 3.14; var name : string = \"Vladimir\";", [
                     new Token(TokenType.Var),
                     new Token(TokenType.Identifier, new TokenValue("pi")),
                     new Token(TokenType.Colon),
@@ -40,7 +39,7 @@ public class LexerTest
                     new Token(TokenType.StringType),
                     new Token(TokenType.Assign),
                     new Token(TokenType.StringLiteral, new TokenValue("Vladimir")),
-                    new Token(TokenType.Semicolon),
+                    new Token(TokenType.Semicolon)
                 ]
             },
 
@@ -323,44 +322,28 @@ public class LexerTest
             },
 
             // Пропуск пробельных символов
-            {
-                "   \t\r\n\f", []
-            },
+            { "   \t\r\n\f", [] },
 
             // Однострочные комментарии
-            {
-                "## это комментарий", []
-            },
+            { "## это комментарий", [] },
 
             // Многострочные комментарии
-            {
-                "/# комментарий на несколько строк #/", []
-            },
+            { "/# комментарий на несколько строк #/", [] },
 
-            // Негативные тесты
+            // Идентификатор с цифрой в начале
             {
                 "1fdas", [
                     new Token(TokenType.Integer, new TokenValue(1)),
                     new Token(TokenType.Identifier, new TokenValue("fdas"))
                 ]
             },
+
+            // Идентификатор и символы из кириллицы
             {
                 "sdкоммент", [
                     new Token(TokenType.Error, new TokenValue("sdкоммент"))
                 ]
             },
-        };
-    }
-
-    public static TheoryData<string> InvalidIdentifierTestData()
-    {
-        return new TheoryData<string>
-        {
-            // Разбор индентификатора, начинающегося с цифры
-            { "1fdas" },
-
-            // Разбор индентификатора на кириллице
-            { "sdкоммент" },
         };
     }
 

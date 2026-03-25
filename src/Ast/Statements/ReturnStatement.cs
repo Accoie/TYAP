@@ -4,7 +4,7 @@ namespace Ast.Statements;
 
 public class ReturnStatement : Statement
 {
-    public ReturnStatement( Expression? value, Runtime.ValueType type )
+    public ReturnStatement(Expression? value, Runtime.ValueType type)
     {
         Value = value;
         Type = type;
@@ -14,8 +14,8 @@ public class ReturnStatement : Statement
 
     public Runtime.ValueType Type { get; }
 
-    public override void Accept( IAstVisitor visitor )
+    public override void Accept(IAstVisitor visitor)
     {
-        visitor.Visit( this );
+        visitor.Visit(this);
     }
 }

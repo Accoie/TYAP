@@ -1,8 +1,10 @@
 ﻿using Ast.Expressions;
 using Ast.Statements;
+
 using CompilerLexer;
 
 using Runtime;
+
 using ValueType = Runtime.ValueType;
 
 namespace CompilerParser;
@@ -13,9 +15,9 @@ public class Parser
 
     private readonly Stack<ValueType> returnTypes = new();
 
-    public Parser( string code )
+    public Parser(string code)
     {
-        tokens = new TokenStream( code );
+        tokens = new TokenStream(code);
     }
 
     /// <summary>
@@ -24,38 +26,42 @@ public class Parser
     /// </summary>
     public BlockStatement ParseProgram()
     {
-        return ParseBlock( true );
+        return ParseBlock(true);
     }
 
     /// <summary>
     /// Разбирает блок кода.
     /// Правило: block = "begin", { statement }, "end".
     /// </summary>
-    private BlockStatement ParseBlock( bool isNew )
+    private BlockStatement ParseBlock(bool isNew)
     {
-        Match( TokenType.Begin );
+        Match(TokenType.Begin);
 
         List<Statement> statements = [];
-        while ( tokens.Peek().Type != TokenType.End && tokens.Peek().Type != TokenType.EndOfFile )
+        while (tokens.Peek().Type != TokenType.End && tokens.Peek().Type != TokenType.EndOfFile)
         {
             Statement node = ParseStatement();
-            statements.Add( node );
+            statements.Add(node);
         }
 
-        Match( TokenType.End );
+        Match(TokenType.End);
 
-        return new BlockStatement( statements, isNew );
+        return new BlockStatement(statements, isNew);
     }
 
+    /// <summary>
+    /// Разбирает инструкции.
+    /// Правило: statement = output_statement.
+    /// </summary>
     private Statement ParseStatement()
     {
         TokenType token = tokens.Peek().Type;
 
         return token switch
         {
-            TokenType.Begin => ParseBlock( true ),
+            TokenType.Begin => ParseBlock(true),
             TokenType.Output => ParseOutput(),
-            _ => throw new UnexpectedLexemeException( tokens.Peek() )
+            _ => throw new UnexpectedLexemeException(tokens.Peek()),
         };
     }
 
@@ -65,20 +71,20 @@ public class Parser
     /// </summary>
     private OutputStatement ParseOutput()
     {
-        Match( TokenType.Output );
-        Match( TokenType.LParen );
+        Match(TokenType.Output);
+        Match(TokenType.LParen);
 
-        List<Expression> arguments = [ ParseExpression() ];
+        List<Expression> arguments = [ParseExpression()];
 
-        while ( tokens.Peek().Type == TokenType.Comma )
+        while (tokens.Peek().Type == TokenType.Comma)
         {
             tokens.Advance();
-            arguments.Add( ParseExpression() );
+            arguments.Add(ParseExpression());
         }
 
-        Match( TokenType.RParen );
-        Match( TokenType.Semicolon );
-        return new OutputStatement( arguments );
+        Match(TokenType.RParen);
+        Match(TokenType.Semicolon);
+        return new OutputStatement(arguments);
     }
 
     /// <summary>
@@ -91,47 +97,48 @@ public class Parser
     }
 
     /// <summary>
-    /// Разбирает первичные выражения (литералы, идентификаторы, вызовы функций, выражения в скобках).
+    /// Разбирает первичные выражения (литералы).
     /// Правило: primary_expression = literal.
     /// </summary>
     private Expression ParsePrimaryExpression()
     {
         Token token = tokens.Peek();
 
-        switch ( token.Type )
+        switch (token.Type)
         {
             case TokenType.Integer:
                 tokens.Advance();
-                var intExpr = new LiteralExpression( new Value( token.Value!.ToInteger() ) );
+                LiteralExpression intExpr = new LiteralExpression(new Value(token.Value!.ToInteger()));
                 intExpr.ResultType = ValueType.Integer;
                 return intExpr;
 
-            case TokenType.Double:
+            case TokenType.Float
+            :
                 tokens.Advance();
-                var floatExpr = new LiteralExpression( new Value( token.Value!.ToDouble() ) );
+                LiteralExpression floatExpr = new LiteralExpression(new Value(token.Value!.ToFloat()));
                 floatExpr.ResultType = ValueType.Float;
                 return floatExpr;
 
             case TokenType.StringLiteral:
                 tokens.Advance();
-                var stringExpr = new LiteralExpression( new Value( token.Value!.ToString() ) );
-                stringExpr.ResultType = ValueType.String; 
+                LiteralExpression stringExpr = new LiteralExpression(new Value(token.Value!.ToString()));
+                stringExpr.ResultType = ValueType.String;
                 return stringExpr;
 
             default:
-                throw new UnexpectedLexemeException( token );
+                throw new UnexpectedLexemeException(token);
         }
     }
 
     /// <summary>
     /// Проверяет соответствие текущего токена ожидаемому типу и продвигает поток токенов.
     /// </summary>
-    private Token Match( TokenType expected )
+    private Token Match(TokenType expected)
     {
         Token t = tokens.Peek();
-        if ( t.Type != expected )
+        if (t.Type != expected)
         {
-            throw new UnexpectedLexemeException( expected, t );
+            throw new UnexpectedLexemeException(expected, t);
         }
 
         tokens.Advance();

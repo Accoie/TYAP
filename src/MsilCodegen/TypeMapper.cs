@@ -2,38 +2,46 @@
 
 namespace MsilCodegen;
 
-internal class TypeMapper
+/// <summary>
+/// Отображает тип языка Tiger на соответствующий ему тип .NET.
+/// </summary>
+public class TypeMapper
 {
     private readonly Dictionary<ValueType, Type> _typesMap = [];
 
-    public Type MapType( ValueType type )
+    public Type MapType(ValueType type)
     {
-        if ( !_typesMap.TryGetValue( type, out Type? result ) )
+        if (!_typesMap.TryGetValue(type, out Type? result))
         {
-            result = MapTypeImpl( type );
-            _typesMap.Add( type, result );
+            result = MapTypeImpl(type);
+            _typesMap.Add(type, result);
         }
 
         return result;
     }
 
-    private Type MapTypeImpl( ValueType type )
+    private Type MapTypeImpl(ValueType type)
     {
-        if ( type == ValueType.Void )
+        if (type == ValueType.Void)
         {
-            return typeof( void );
+            return typeof(void);
         }
 
-        if ( type == ValueType.Integer )
+        if (type == ValueType.Integer)
         {
-            return typeof( int );
+            return typeof(int);
         }
 
-        if ( type == ValueType.String )
+        if (type == ValueType.Float)
         {
-            return typeof( string );
+            return typeof(double);
         }
 
-        throw new NotSupportedException( $"Type {type} cannot be converted into .NET type" );
+        if (type == ValueType.String)
+        {
+            return typeof(string);
+        }
+
+        throw new NotSupportedException($"Type {type} cannot be converted into .NET type");
     }
 }

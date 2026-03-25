@@ -11,7 +11,7 @@ public class Lexer
         { "end", TokenType.End },
         { "var", TokenType.Var },
         { "integer", TokenType.IntegerType },
-        { "double", TokenType.DoubleType },
+        { "float", TokenType.FloatType },
         { "string", TokenType.StringType },
         { "if", TokenType.If },
         { "then", TokenType.Then },
@@ -36,7 +36,7 @@ public class Lexer
         { "round", TokenType.Round },
         { "len", TokenType.Len },
         { "getsymbol", TokenType.GetSymbol },
-        { "tostring", TokenType.ToString }
+        { "tostring", TokenType.ToString },
     };
 
     public Lexer(IScanner scanner)
@@ -55,7 +55,7 @@ public class Lexer
 
         char currentChar = scanner.Peek();
 
-        if (char.IsAsciiLetter( currentChar) || currentChar == '_')
+        if (char.IsAsciiLetter(currentChar) || currentChar == '_')
         {
             return ParseIdentifierOrKeyword();
         }
@@ -143,7 +143,7 @@ public class Lexer
 
             case '.':
                 scanner.Advance();
-                return new Token( TokenType.Dot );
+                return new Token(TokenType.Dot);
         }
 
         scanner.Advance();
@@ -219,11 +219,11 @@ public class Lexer
         string value = "";
         bool hasInvalidChar = false;
 
-        while ( char.IsLetterOrDigit( scanner.Peek() ) || scanner.Peek() == '_' )
+        while (char.IsLetterOrDigit(scanner.Peek()) || scanner.Peek() == '_')
         {
             char c = scanner.Peek();
 
-            if ( !char.IsAsciiLetterOrDigit( c ) && c != '_' )
+            if (!char.IsAsciiLetterOrDigit(c) && c != '_')
             {
                 hasInvalidChar = true;
             }
@@ -232,22 +232,22 @@ public class Lexer
             scanner.Advance();
         }
 
-        if ( hasInvalidChar )
+        if (hasInvalidChar)
         {
-            return new Token( TokenType.Error, new TokenValue( value ) );
+            return new Token(TokenType.Error, new TokenValue(value));
         }
 
-        if ( Keywords.TryGetValue( value, out TokenType type ) )
+        if (Keywords.TryGetValue(value, out TokenType type))
         {
-            return new Token( type );
+            return new Token(type);
         }
 
-        return new Token( TokenType.Identifier, new TokenValue( value ) );
+        return new Token(TokenType.Identifier, new TokenValue(value));
     }
 
     private Token ParseNumericLiteral()
     {
-        double value = GetDigitValue(scanner.Peek());
+        int value = GetDigitValue(scanner.Peek());
         scanner.Advance();
 
         while (char.IsAsciiDigit(scanner.Peek()))
@@ -277,7 +277,7 @@ public class Lexer
             scanner.Advance();
         }
 
-        return new Token(TokenType.Double, new TokenValue(value));
+        return new Token(TokenType.Float, new TokenValue(value));
     }
 
     private static int GetDigitValue(char c) => c - '0';
@@ -327,7 +327,7 @@ public class Lexer
             'r' => '\r',
             '\'' => '\'',
             '\"' => '\"',
-            _ => '\0'
+            _ => '\0',
         };
 
         if (unescaped != '\0')

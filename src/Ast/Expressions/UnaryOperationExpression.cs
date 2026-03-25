@@ -2,7 +2,7 @@
 
 public sealed class UnaryOperationExpression : Expression
 {
-    public UnaryOperationExpression( UnaryOperation operation, Expression operand )
+    public UnaryOperationExpression(UnaryOperation operation, Expression operand)
     {
         Operation = operation;
         Operand = operand;
@@ -12,8 +12,8 @@ public sealed class UnaryOperationExpression : Expression
 
     public Expression Operand { get; }
 
-    public override void Accept( IAstVisitor visitor )
+    public override void Accept(IAstVisitor visitor)
     {
-        visitor.Visit( this );
+        visitor.Visit(this);
     }
 }

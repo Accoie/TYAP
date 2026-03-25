@@ -7,7 +7,7 @@ public class AssignmentStatement : Statement
 {
     private AstAttribute<AbstractVariableDeclaration> variable;
 
-    public AssignmentStatement( string variableName, Expression value )
+    public AssignmentStatement(string variableName, Expression value)
     {
         Name = variableName;
         Value = value;
@@ -20,11 +20,11 @@ public class AssignmentStatement : Statement
     public AbstractVariableDeclaration Variable
     {
         get => variable.Get();
-        set => variable.Set( value );
+        set => variable.Set(value);
     }
 
-    public override void Accept( IAstVisitor visitor )
+    public override void Accept(IAstVisitor visitor)
     {
-        visitor.Visit( this );
+        visitor.Visit(this);
     }
 }

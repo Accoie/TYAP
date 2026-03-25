@@ -15,7 +15,7 @@ public enum TokenType
     /// <summary>
     /// Вещественные литералы (3.14, 0.5, 2.0)
     /// </summary>
-    Double,
+    Float,
 
     /// <summary>
     /// Строковые литералы в двойных кавычках
@@ -188,9 +188,9 @@ public enum TokenType
     IntegerType,
 
     /// <summary>
-    /// Ключевое слово double (числовой тип)
+    /// Ключевое слово float (числовой тип)
     /// </summary>
-    DoubleType,
+    FloatType,
 
     /// <summary>
     /// Ключевое слово string (строковый тип)
@@ -315,5 +315,5 @@ public enum TokenType
     /// <summary>
     /// Ключевое слово tostring (преобразование числа в строку)
     /// </summary>
-    ToString
+    ToString,
 }

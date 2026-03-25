@@ -1,9 +1,9 @@
-﻿using Ast;
+﻿using System.Reflection;
+using System.Reflection.Emit;
+
+using Ast;
 using Ast.Expressions;
 using Ast.Statements;
-
-using System.Reflection;
-using System.Reflection.Emit;
 
 using ValueType = Runtime.ValueType;
 
@@ -33,7 +33,7 @@ public class MsilCodegenPass : IAstVisitor
     /// <summary>
     /// Создаёт класс Program и метод Main(), возвращает MethodBuilder для метода Main().
     /// </summary>
-    public MethodBuilder GenerateProgramCode( BlockStatement program )
+    public MethodBuilder GenerateProgramCode(BlockStatement program)
     {
         // Создаём класс Program.
         _programTypeBuilder = _moduleBuilder.DefineType(
@@ -41,153 +41,151 @@ public class MsilCodegenPass : IAstVisitor
             TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Class
         );
 
-        MethodBuilder mainMethod = DefineProgramClassMethod( "Main", typeof( void ), Type.EmptyTypes );
+        MethodBuilder mainMethod = DefineProgramClassMethod("Main", typeof(void), Type.EmptyTypes);
         _il = mainMethod.GetILGenerator();
 
-        program.Accept( this );
+        program.Accept(this);
 
-        // Завершаем метод Main инструкцией ret.
-        _il.Emit( OpCodes.Ret );
+        _il.Emit(OpCodes.Ret);
 
-        // Завершаем создание класса Program.
         _programTypeBuilder.CreateType();
 
         return mainMethod;
     }
 
-    public void Visit( BinaryOperationExpression e )
+    public void Visit(BinaryOperationExpression e)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( UnaryOperationExpression e )
+    public void Visit(UnaryOperationExpression e)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( LiteralExpression e )
+    public void Visit(LiteralExpression e)
     {
-        if ( e.ResultType == ValueType.Integer )
+        if (e.ResultType == ValueType.Integer)
         {
-            _il.Emit( OpCodes.Ldc_I4, e.Value.AsInteger() );
+            _il.Emit(OpCodes.Ldc_I4, e.Value.AsInteger());
         }
-        else if ( e.ResultType == ValueType.String )
+        else if (e.ResultType == ValueType.String)
         {
-            _il.Emit( OpCodes.Ldstr, e.Value.AsString() );
+            _il.Emit(OpCodes.Ldstr, e.Value.AsString());
         }
-        else if ( e.ResultType == ValueType.Float )
+        else if (e.ResultType == ValueType.Float)
         {
-            _il.Emit( OpCodes.Ldc_R8, e.Value.AsDouble() );
+            _il.Emit(OpCodes.Ldc_R8, e.Value.AsFloat());
         }
         else
         {
-            throw new NotImplementedException( $"Literal of type {e.ResultType} are not supported yet." );
+            throw new NotImplementedException($"Literal of type {e.ResultType} are not supported yet.");
         }
     }
 
-    public void Visit( FunctionCallExpression s )
+    public void Visit(FunctionCallExpression s)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( AssignmentStatement s )
+    public void Visit(AssignmentStatement s)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( IfElseStatement s )
+    public void Visit(IfElseStatement s)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( ForLoopStatement s )
+    public void Visit(ForLoopStatement s)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( InputStatement s )
+    public void Visit(InputStatement s)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( OutputStatement s )
+    public void Visit(OutputStatement s)
     {
-        foreach ( Expression argument in s.Arguments )
+        foreach (Expression argument in s.Arguments)
         {
-            argument.Accept( this );
+            argument.Accept(this);
 
             Type argType = argument.ResultType switch
             {
-                ValueType.Integer => typeof( int ),
-                ValueType.Float => typeof( double ),
-                ValueType.String => typeof( string ),
-                _ => throw new NotImplementedException( $"Output of type {argument.ResultType}" )
+                ValueType.Integer => typeof(int),
+                ValueType.Float => typeof(double),
+                ValueType.String => typeof(string),
+                _ => throw new NotImplementedException($"Output of type {argument.ResultType}"),
             };
 
-            MethodInfo writeMethod = GetMethod( typeof( Console ), "Write", [ argType ] );
-            _il.Emit( OpCodes.Call, writeMethod );
+            MethodInfo writeMethod = GetMethod(typeof(Console), "Write", [argType]);
+            _il.Emit(OpCodes.Call, writeMethod);
         }
     }
 
-    public void Visit( BlockStatement s )
+    public void Visit(BlockStatement s)
     {
-        foreach ( Statement statement in s.Statements )
+        foreach (Statement statement in s.Statements)
         {
-            statement.Accept( this );
+            statement.Accept(this);
         }
     }
 
-    public void Visit( ReturnStatement s )
+    public void Visit(ReturnStatement s)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( VariableDeclarationStatement s )
+    public void Visit(VariableDeclarationStatement s)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( FunctionDeclarationStatement s )
+    public void Visit(FunctionDeclarationStatement s)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( WhileLoopStatement s )
+    public void Visit(WhileLoopStatement s)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( BreakStatement s )
+    public void Visit(BreakStatement s)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( ContinueStatement s )
+    public void Visit(ContinueStatement s)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( FunctionCallStatement s )
+    public void Visit(FunctionCallStatement s)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( ParameterDeclaration parameterDeclarationStatement )
+    public void Visit(ParameterDeclaration parameterDeclarationStatement)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( VariableExpression variableExpression )
+    public void Visit(VariableExpression variableExpression)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit( IteratorDeclaration iteratorDeclaration )
+    public void Visit(IteratorDeclaration iteratorDeclaration)
     {
         throw new NotImplementedException();
     }
 
-    private MethodBuilder DefineProgramClassMethod( string name, Type returnType, Type[] parameterTypes )
+    private MethodBuilder DefineProgramClassMethod(string name, Type returnType, Type[] parameterTypes)
     {
         return _programTypeBuilder.DefineMethod(
             name,
@@ -198,19 +196,17 @@ public class MsilCodegenPass : IAstVisitor
     }
 
     /// <summary>
-    /// Находит статический метод указанного типа стандартной библиотеки классов .NET,
-    /// чтобы использовать его для реализации встроенной функции.
+    /// Находит статический метод указанного типа стандартной библиотеки классов .NET.
     /// </summary>
-    private static MethodInfo GetMethod( Type type, string methodName, Type[] parameterTypes )
+    private static MethodInfo GetMethod(Type type, string methodName, Type[] parameterTypes)
     {
-        MethodInfo? method = type.GetMethod( methodName, parameterTypes );
-        if ( method == null )
+        MethodInfo? method = type.GetMethod(methodName, parameterTypes);
+        if (method == null)
         {
-            string parameterTypeNames = string.Join( ", ", parameterTypes.Select( t => t.Name ) );
-            throw new InvalidOperationException( $"Cannot find method {type.Name}.{methodName}({parameterTypeNames}." );
+            string parameterTypeNames = string.Join(", ", parameterTypes.Select(t => t.Name));
+            throw new InvalidOperationException($"Cannot find method {type.Name}.{methodName}({parameterTypeNames}.");
         }
 
         return method;
     }
-
 }

@@ -25,13 +25,14 @@ public class LexerTest
 
             // Объявление переменных
             {
-                "var pi : float = 3.14; var name : string = \"Vladimir\";", [
+                "var pi : float = 3.14; var name : string = \"Vladimir\";",
+                [
                     new Token(TokenType.Var),
                     new Token(TokenType.Identifier, new TokenValue("pi")),
                     new Token(TokenType.Colon),
                     new Token(TokenType.FloatType),
                     new Token(TokenType.Assign),
-                    new Token(TokenType.Float, new TokenValue(3.14m)),
+                    new Token(TokenType.Float, new TokenValue(3.14d)),
                     new Token(TokenType.Semicolon),
                     new Token(TokenType.Var),
                     new Token(TokenType.Identifier, new TokenValue("name")),
@@ -39,7 +40,7 @@ public class LexerTest
                     new Token(TokenType.StringType),
                     new Token(TokenType.Assign),
                     new Token(TokenType.StringLiteral, new TokenValue("Vladimir")),
-                    new Token(TokenType.Semicolon)
+                    new Token(TokenType.Semicolon),
                 ]
             },
 
@@ -193,8 +194,8 @@ public class LexerTest
             // Разбор вещественных литералов
             {
                 "3.14 02.0", [
-                    new Token(TokenType.Float, new TokenValue(3.14m)),
-                    new Token(TokenType.Float, new TokenValue(2.0m))
+                    new Token(TokenType.Float, new TokenValue(3.14d)),
+                    new Token(TokenType.Float, new TokenValue(2.0d))
                 ]
             },
 
@@ -322,28 +323,44 @@ public class LexerTest
             },
 
             // Пропуск пробельных символов
-            { "   \t\r\n\f", [] },
+            {
+                "   \t\r\n\f", []
+            },
 
             // Однострочные комментарии
-            { "## это комментарий", [] },
+            {
+                "## это комментарий", []
+            },
 
             // Многострочные комментарии
-            { "/# комментарий на несколько строк #/", [] },
+            {
+                "/# комментарий на несколько строк #/", []
+            },
 
-            // Идентификатор с цифрой в начале
+            // Негативные тесты
             {
                 "1fdas", [
                     new Token(TokenType.Integer, new TokenValue(1)),
                     new Token(TokenType.Identifier, new TokenValue("fdas"))
                 ]
             },
-
-            // Идентификатор и символы из кириллицы
             {
                 "sdкоммент", [
                     new Token(TokenType.Error, new TokenValue("sdкоммент"))
                 ]
             },
+        };
+    }
+
+    public static TheoryData<string> InvalidIdentifierTestData()
+    {
+        return new TheoryData<string>
+        {
+            // Разбор индентификатора, начинающегося с цифры
+            { "1fdas" },
+
+            // Разбор индентификатора на кириллице
+            { "sdкоммент" },
         };
     }
 

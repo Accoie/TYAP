@@ -7,7 +7,7 @@ public sealed class VariableExpression : Expression
 {
     private AstAttribute<AbstractVariableDeclaration> variable;
 
-    public VariableExpression( string name )
+    public VariableExpression(string name)
     {
         Name = name;
     }
@@ -15,13 +15,13 @@ public sealed class VariableExpression : Expression
     public AbstractVariableDeclaration Variable
     {
         get => variable.Get();
-        set => variable.Set( value );
+        set => variable.Set(value);
     }
 
     public string Name { get; }
 
-    public override void Accept( IAstVisitor visitor )
+    public override void Accept(IAstVisitor visitor)
     {
-        visitor.Visit( this );
+        visitor.Visit(this);
     }
 }

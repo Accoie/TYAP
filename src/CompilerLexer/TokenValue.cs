@@ -16,7 +16,7 @@ public class TokenValue
         this.value = value;
     }
 
-    public TokenValue( int value )
+    public TokenValue(int value)
     {
         this.value = value;
     }
@@ -26,20 +26,20 @@ public class TokenValue
         return value switch
         {
             string s => s,
-            double d => d.ToString( CultureInfo.InvariantCulture ),
-            int i => i.ToString( CultureInfo.InvariantCulture ),
-            _ => throw new InvalidOperationException( $"Unexpected type: {value.GetType()}" ),
+            double d => d.ToString(CultureInfo.InvariantCulture),
+            int i => i.ToString(CultureInfo.InvariantCulture),
+            _ => throw new InvalidOperationException($"Unexpected type: {value.GetType()}"),
         };
     }
 
-    public double ToDouble()
+    public double ToFloat()
     {
         return value switch
         {
             string s => double.Parse(s, CultureInfo.InvariantCulture),
             int i => i,
             double d => d,
-            _ => throw new NotImplementedException(),
+            _ => throw new InvalidOperationException($"Cannot convert {value.GetType()} to double"),
         };
     }
 
@@ -47,10 +47,10 @@ public class TokenValue
     {
         return value switch
         {
-            string s => int.Parse( s, CultureInfo.InvariantCulture ),
+            string s => int.Parse(s, CultureInfo.InvariantCulture),
             int i => i,
-            double d => ( int )d,
-            _ => throw new InvalidOperationException( $"Cannot convert {value.GetType()} to integer" ),
+            double d => (int)d,
+            _ => throw new InvalidOperationException($"Cannot convert {value.GetType()} to integer"),
         };
     }
 

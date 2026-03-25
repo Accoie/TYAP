@@ -13,6 +13,6 @@ public abstract class Expression : AstNode
     {
         get => resultType.Get();
 
-        set => resultType.Set( value );
+        set => resultType.Set(value);
     }
 }

@@ -3,7 +3,7 @@
 namespace Compiler;
 
 /// <summary>
-/// Представляет консольное приложение для компилятора языка Tiger.
+/// Представляет консольное приложение для компилятора языка Pascal++.
 /// </summary>
 public static class CompilerApplication
 {
@@ -19,6 +19,6 @@ public static class CompilerApplication
             Output = stdoutWriter,
             Error = stderrWriter,
         };
-        return command.Parse( args ).Invoke( configuration );
+        return command.Parse(args).Invoke(configuration);
     }
 }

@@ -4,26 +4,26 @@ namespace Runtime;
 
 public class Value : IEquatable<Value>
 {
-    public static readonly Value Void = new( VoidType.Value );
+    public static readonly Value Void = new(VoidType.Value);
 
     private readonly object value;
 
-    public Value( string value )
+    public Value(string value)
     {
         this.value = value;
     }
 
-    public Value( double value )
+    public Value(double value)
     {
         this.value = value;
     }
 
-    public Value( int value )
+    public Value(int value)
     {
         this.value = value;
     }
 
-    private Value( VoidType value )
+    private Value(VoidType value)
     {
         this.value = value;
     }
@@ -39,7 +39,7 @@ public class Value : IEquatable<Value>
             double => ValueType.Float,
             int => ValueType.Integer,
             VoidType => ValueType.Void,
-            _ => throw new InvalidOperationException( $"Unexpected value {value} of type {value.GetType()}" ),
+            _ => throw new InvalidOperationException($"Unexpected value {value} of type {value.GetType()}"),
         };
     }
 
@@ -51,19 +51,19 @@ public class Value : IEquatable<Value>
         return value switch
         {
             string s => s,
-            _ => throw new InvalidOperationException( $"Value {value} is not a string" ),
+            _ => throw new InvalidOperationException($"Value {value} is not a string"),
         };
     }
 
     /// <summary>
     /// Возвращает значение как дробное число либо бросает исключение.
     /// </summary>
-    public double AsDouble()
+    public double AsFloat()
     {
         return value switch
         {
             double i => i,
-            _ => throw new InvalidOperationException( $"Value {value} is not an double" ),
+            _ => throw new InvalidOperationException($"Value {value} is not an double"),
         };
     }
 
@@ -75,7 +75,7 @@ public class Value : IEquatable<Value>
         return value switch
         {
             int i => i,
-            _ => throw new InvalidOperationException( $"Value {value} is not an double" ),
+            _ => throw new InvalidOperationException($"Value {value} is not an double"),
         };
     }
 
@@ -87,23 +87,24 @@ public class Value : IEquatable<Value>
         return value switch
         {
             string s => s,
-            double d => d.ToString( CultureInfo.InvariantCulture ),
+            double d => d.ToString(CultureInfo.InvariantCulture),
+            int i => i.ToString(CultureInfo.InvariantCulture),
             VoidType v => "void",
-            _ => throw new InvalidOperationException( $"Unexpected value {value} of type {value.GetType()}" ),
+            _ => throw new InvalidOperationException($"Unexpected value {value} of type {value.GetType()}"),
         };
     }
 
     /// <summary>
     /// Сравнивает на равенство два значения.
     /// </summary>
-    public bool Equals( Value? other )
+    public bool Equals(Value? other)
     {
-        if ( other is null )
+        if (other is null)
         {
             return false;
         }
 
-        if ( GetValueType() != other.GetValueType() )
+        if (GetValueType() != other.GetValueType())
         {
             return false;
         }
@@ -111,16 +112,16 @@ public class Value : IEquatable<Value>
         return value switch
         {
             string s => other.AsString() == s,
-            double d => Numbers.AreEqual( d, other.AsDouble() ),
-            int i => Numbers.AreEqual( i, other.AsInteger() ),
+            double d => Numbers.AreEqual(d, other.AsFloat()),
+            int i => Numbers.AreEqual(i, other.AsInteger()),
             VoidType => true,
             _ => throw new NotImplementedException(),
         };
     }
 
-    public override bool Equals( object? obj )
+    public override bool Equals(object? obj)
     {
-        return Equals( obj as Value );
+        return Equals(obj as Value);
     }
 
     public override int GetHashCode()

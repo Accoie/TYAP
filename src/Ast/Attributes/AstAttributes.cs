@@ -12,21 +12,21 @@ public struct AstAttribute<T>
     private T value;
     private bool initialized;
 
-    public T Get( [CallerMemberName] string? memberName = null )
+    public T Get([CallerMemberName] string? memberName = null)
     {
-        if ( !initialized )
+        if (!initialized)
         {
-            throw new InvalidOperationException( $"Attribute {memberName} with type {typeof( T )} value is not set" );
+            throw new InvalidOperationException($"Attribute {memberName} with type {typeof(T)} value is not set");
         }
 
         return value;
     }
 
-    public void Set( T value, [CallerMemberName] string? memberName = null )
+    public void Set(T value, [CallerMemberName] string? memberName = null)
     {
-        if ( initialized )
+        if (initialized)
         {
-            throw new InvalidOperationException( $"Attribute {memberName} with type {typeof( T )} already has a value" );
+            throw new InvalidOperationException($"Attribute {memberName} with type {typeof(T)} already has a value");
         }
 
         this.value = value;

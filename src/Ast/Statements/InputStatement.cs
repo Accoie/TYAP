@@ -2,15 +2,15 @@
 
 public class InputStatement : Statement
 {
-    public InputStatement( string variableName )
+    public InputStatement(string variableName)
     {
         VariableName = variableName;
     }
 
     public string VariableName { get; }
 
-    public override void Accept( IAstVisitor visitor )
+    public override void Accept(IAstVisitor visitor)
     {
-        visitor.Visit( this );
+        visitor.Visit(this);
     }
 }

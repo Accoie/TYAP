@@ -2,7 +2,7 @@
 
 public sealed class BinaryOperationExpression : Expression
 {
-    public BinaryOperationExpression(Expression left, BinaryOperation operation, Expression right)
+    public BinaryOperationExpression( Expression left, BinaryOperation operation, Expression right )
     {
         Left = left;
         Operation = operation;
@@ -15,8 +15,8 @@ public sealed class BinaryOperationExpression : Expression
 
     public Expression Right { get; }
 
-    public override void Accept(IAstVisitor visitor)
+    public override void Accept( IAstVisitor visitor )
     {
-        visitor.Visit(this);
+        visitor.Visit( this );
     }
 }

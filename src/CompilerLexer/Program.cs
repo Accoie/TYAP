@@ -1,8 +1,12 @@
-﻿namespace CompilerLexer;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-internal class Program
+namespace CompilerLexer;
+
+class Program
 {
-    private static void Main()
+    static void Main()
     {
     }
 }

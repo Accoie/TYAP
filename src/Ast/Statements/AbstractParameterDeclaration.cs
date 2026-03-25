@@ -1,12 +1,12 @@
 ﻿namespace Ast.Statements;
 
 /// <summary>
-///     Абстрактный класс с информацией о формальном параметре функции — как встроенной, так и пользовательской.
+/// Абстрактный класс с информацией о формальном параметре функции — как встроенной, так и пользовательской.
 /// </summary>
 public abstract class AbstractParameterDeclaration : AbstractVariableDeclaration
 {
-    protected AbstractParameterDeclaration(string name)
-        : base(name)
+    protected AbstractParameterDeclaration( string name )
+        : base( name )
     {
     }
 }

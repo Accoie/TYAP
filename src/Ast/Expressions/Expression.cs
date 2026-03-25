@@ -1,20 +1,18 @@
 ﻿using Ast.Attributes;
 
-using ValueType = Runtime.ValueType;
-
 namespace Ast.Expressions;
 
 public abstract class Expression : AstNode
 {
-    private AstAttribute<ValueType> resultType;
+    private AstAttribute<Runtime.ValueType> resultType;
 
     /// <summary>
-    ///     Тип результата выражения.
+    /// Тип результата выражения.
     /// </summary>
-    public ValueType ResultType
+    public Runtime.ValueType ResultType
     {
         get => resultType.Get();
 
-        set => resultType.Set(value);
+        set => resultType.Set( value );
     }
 }

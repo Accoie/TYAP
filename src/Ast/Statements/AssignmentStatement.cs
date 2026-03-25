@@ -1,24 +1,27 @@
 ﻿using Ast.Attributes;
-using Ast.Statements;
+using Ast.Expressions;
 
-namespace Ast.Expressions;
+namespace Ast.Statements;
 
-public sealed class VariableExpression : Expression
+public class AssignmentStatement : Statement
 {
     private AstAttribute<AbstractVariableDeclaration> variable;
 
-    public VariableExpression( string name )
+    public AssignmentStatement( string variableName, Expression value )
     {
-        Name = name;
+        Name = variableName;
+        Value = value;
     }
+
+    public string Name { get; }
+
+    public Expression Value { get; }
 
     public AbstractVariableDeclaration Variable
     {
         get => variable.Get();
         set => variable.Set( value );
     }
-
-    public string Name { get; }
 
     public override void Accept( IAstVisitor visitor )
     {

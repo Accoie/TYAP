@@ -2,7 +2,7 @@
 
 public class BlockStatement : Statement
 {
-    public BlockStatement(List<Statement> statements, bool isBlock)
+    public BlockStatement( List<Statement> statements, bool isBlock )
     {
         Statements = statements;
         IsNewScope = isBlock;
@@ -12,8 +12,8 @@ public class BlockStatement : Statement
 
     public bool IsNewScope { get; set; }
 
-    public override void Accept(IAstVisitor visitor)
+    public override void Accept( IAstVisitor visitor )
     {
-        visitor.Visit(this);
+        visitor.Visit( this );
     }
 }

@@ -1,29 +1,29 @@
 ﻿public static class Numbers
 {
-    public const decimal Tolerance = 0.001m;
+    public const double Tolerance = 0.001d;
 
-    public static bool AreEqual(decimal a, decimal b)
+    public static bool AreEqual( double a, double b )
     {
-        return Math.Abs(a - b) < Tolerance;
+        return Math.Abs( a - b ) < Tolerance;
     }
 
-    public static bool IsLessThan(decimal a, decimal b)
+    public static bool IsLessThan( double a, double b )
     {
-        return a < b && !AreEqual(a, b);
+        return a < b && !AreEqual( a, b );
     }
 
-    public static bool IsLessThanOrEqual(decimal a, decimal b)
+    public static bool IsLessThanOrEqual( double a, double b )
     {
-        return a < b || AreEqual(a, b);
+        return a < b || AreEqual( a, b );
     }
 
-    public static bool IsGreaterThan(decimal a, decimal b)
+    public static bool IsGreaterThan( double a, double b )
     {
-        return a > b && !AreEqual(a, b);
+        return a > b && !AreEqual( a, b );
     }
 
-    public static bool IsGreaterThanOrEqual(decimal a, decimal b)
+    public static bool IsGreaterThanOrEqual( double a, double b )
     {
-        return a > b || AreEqual(a, b);
+        return a > b || AreEqual( a, b );
     }
 }

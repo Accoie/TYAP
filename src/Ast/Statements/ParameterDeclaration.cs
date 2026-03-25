@@ -1,20 +1,18 @@
-﻿using ValueType = Runtime.ValueType;
-
-namespace Ast.Statements;
+﻿namespace Ast.Statements;
 
 /// <summary>
-///     Объявление параметра функции.
+/// Объявление параметра функции.
 /// </summary>
 public class ParameterDeclaration : AbstractParameterDeclaration
 {
-    public ParameterDeclaration(string name, ValueType type)
-        : base(name)
+    public ParameterDeclaration( string name, Runtime.ValueType type )
+        : base( name )
     {
         ResultType = type;
     }
 
-    public override void Accept(IAstVisitor visitor)
+    public override void Accept( IAstVisitor visitor )
     {
-        visitor.Visit(this);
+        visitor.Visit( this );
     }
 }

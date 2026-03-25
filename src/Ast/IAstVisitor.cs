@@ -5,41 +5,43 @@ namespace Ast;
 
 public interface IAstVisitor
 {
-    void Visit(BinaryOperationExpression e);
+    void Visit( BinaryOperationExpression e );
 
-    void Visit(UnaryOperationExpression e);
+    void Visit( UnaryOperationExpression e );
 
-    void Visit(LiteralExpression e);
+    void Visit( LiteralExpression e );
 
-    void Visit(FunctionCallExpression s);
+    void Visit( FunctionCallExpression s );
 
-    void Visit(IfElseStatement s);
+    void Visit( AssignmentStatement s );
 
-    void Visit(ForLoopStatement s);
+    void Visit( IfElseStatement s );
 
-    void Visit(InputStatement s);
+    void Visit( ForLoopStatement s );
 
-    void Visit(OutputStatement s);
+    void Visit( InputStatement s );
 
-    void Visit(BlockStatement s);
+    void Visit( OutputStatement s );
 
-    void Visit(ReturnStatement s);
+    void Visit( BlockStatement s );
 
-    void Visit(VariableDeclarationStatement s);
+    void Visit( ReturnStatement s );
 
-    void Visit(FunctionDeclarationStatement s);
+    void Visit( VariableDeclarationStatement s );
 
-    void Visit(WhileLoopStatement s);
+    void Visit( FunctionDeclarationStatement s );
 
-    void Visit(BreakStatement s);
+    void Visit( WhileLoopStatement s );
 
-    void Visit(ContinueStatement s);
+    void Visit( BreakStatement s );
 
-    void Visit(FunctionCallStatement s);
+    void Visit( ContinueStatement s );
 
-    void Visit(ParameterDeclaration parameterDeclarationStatement);
+    void Visit( FunctionCallStatement s );
 
-    void Visit(VariableExpression variableExpression);
+    void Visit( ParameterDeclaration parameterDeclarationStatement );
 
-    void Visit(IteratorDeclaration iteratorDeclaration);
+    void Visit( VariableExpression variableExpression );
+
+    void Visit( IteratorDeclaration iteratorDeclaration );
 }

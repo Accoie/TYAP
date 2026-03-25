@@ -6,8 +6,8 @@ namespace Ast.Statements;
 
 public sealed class VariableDeclarationStatement : AbstractVariableDeclaration
 {
-    public VariableDeclarationStatement(string name, ValueType type, Expression? value)
-        : base(name)
+    public VariableDeclarationStatement( string name, ValueType type, Expression? value )
+        : base( name )
     {
         Value = value;
         DeclaredType = type;
@@ -17,8 +17,8 @@ public sealed class VariableDeclarationStatement : AbstractVariableDeclaration
 
     public Expression? Value { get; }
 
-    public override void Accept(IAstVisitor visitor)
+    public override void Accept( IAstVisitor visitor )
     {
-        visitor.Visit(this);
+        visitor.Visit( this );
     }
 }

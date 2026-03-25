@@ -11,7 +11,12 @@ public class TokenValue
         this.value = value;
     }
 
-    public TokenValue(decimal value)
+    public TokenValue(double value)
+    {
+        this.value = value;
+    }
+
+    public TokenValue( int value )
     {
         this.value = value;
     }
@@ -21,18 +26,31 @@ public class TokenValue
         return value switch
         {
             string s => s,
-            decimal d => d.ToString(CultureInfo.InvariantCulture),
+            double d => d.ToString( CultureInfo.InvariantCulture ),
+            int i => i.ToString( CultureInfo.InvariantCulture ),
+            _ => throw new InvalidOperationException( $"Unexpected type: {value.GetType()}" ),
+        };
+    }
+
+    public double ToDouble()
+    {
+        return value switch
+        {
+            string s => double.Parse(s, CultureInfo.InvariantCulture),
+            int i => i,
+            double d => d,
             _ => throw new NotImplementedException(),
         };
     }
 
-    public decimal ToDecimal()
+    public int ToInteger()
     {
         return value switch
         {
-            string s => decimal.Parse(s, CultureInfo.InvariantCulture),
-            decimal d => d,
-            _ => throw new NotImplementedException(),
+            string s => int.Parse( s, CultureInfo.InvariantCulture ),
+            int i => i,
+            double d => ( int )d,
+            _ => throw new InvalidOperationException( $"Cannot convert {value.GetType()} to integer" ),
         };
     }
 
@@ -43,7 +61,8 @@ public class TokenValue
             return value switch
             {
                 string s => (string)other.value == s,
-                decimal d => (decimal)other.value == d,
+                double d => (double)other.value == d,
+                int i => (int)other.value == i,
                 _ => throw new NotImplementedException(),
             };
         }

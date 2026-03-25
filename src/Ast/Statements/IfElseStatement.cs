@@ -4,7 +4,7 @@ namespace Ast.Statements;
 
 public sealed class IfElseStatement : Statement
 {
-    public IfElseStatement(Expression condition, BlockStatement thenBranch, BlockStatement? elseBranch)
+    public IfElseStatement( Expression condition, BlockStatement thenBranch, BlockStatement? elseBranch )
     {
         Condition = condition;
         ThenBranch = thenBranch;
@@ -17,8 +17,8 @@ public sealed class IfElseStatement : Statement
 
     public BlockStatement? ElseBranch { get; }
 
-    public override void Accept(IAstVisitor visitor)
+    public override void Accept( IAstVisitor visitor )
     {
-        visitor.Visit(this);
+        visitor.Visit( this );
     }
 }

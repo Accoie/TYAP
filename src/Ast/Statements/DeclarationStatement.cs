@@ -1,20 +1,18 @@
 ﻿using Ast.Attributes;
 
-using ValueType = Runtime.ValueType;
-
 namespace Ast.Statements;
 
 public abstract class DeclarationStatement : Statement
 {
-    private AstAttribute<ValueType> resultType;
+    private AstAttribute<Runtime.ValueType> resultType;
 
     /// <summary>
-    ///     Тип результата объявления.
+    /// Тип результата объявления.
     /// </summary>
-    public ValueType ResultType
+    public Runtime.ValueType ResultType
     {
         get => resultType.Get();
 
-        set => resultType.Set(value);
+        set => resultType.Set( value );
     }
 }

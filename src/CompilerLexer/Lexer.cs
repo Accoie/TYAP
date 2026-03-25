@@ -2,42 +2,42 @@
 
 public class Lexer
 {
-    private static readonly IReadOnlyDictionary<string, TokenType> Keywords =
-        new Dictionary<string, TokenType>
-        {
-            { "begin", TokenType.Begin },
-            { "end", TokenType.End },
-            { "var", TokenType.Var },
-            { "integer", TokenType.IntegerType },
-            { "float", TokenType.FloatType },
-            { "string", TokenType.StringType },
-            { "if", TokenType.If },
-            { "then", TokenType.Then },
-            { "else", TokenType.Else },
-            { "for", TokenType.For },
-            { "from", TokenType.From },
-            { "to", TokenType.To },
-            { "do", TokenType.Do },
-            { "while", TokenType.While },
-            { "write", TokenType.Output },
-            { "read", TokenType.Input },
-            { "break", TokenType.Break },
-            { "continue", TokenType.Continue },
-            { "return", TokenType.Return },
-            { "function", TokenType.Function },
-            { "arr", TokenType.Array },
-            { "of", TokenType.Of },
-            { "struct", TokenType.Structure },
-            { "abs", TokenType.Abs },
-            { "min", TokenType.Min },
-            { "max", TokenType.Max },
-            { "round", TokenType.Round },
-            { "len", TokenType.Len },
-            { "getsymbol", TokenType.GetSymbol },
-            { "tostring", TokenType.ToString },
-        };
-
     private readonly IScanner scanner;
+
+    private static readonly IReadOnlyDictionary<string, TokenType> Keywords =
+        new Dictionary<string, TokenType>()
+    {
+        { "begin", TokenType.Begin },
+        { "end", TokenType.End },
+        { "var", TokenType.Var },
+        { "integer", TokenType.IntegerType },
+        { "double", TokenType.DoubleType },
+        { "string", TokenType.StringType },
+        { "if", TokenType.If },
+        { "then", TokenType.Then },
+        { "else", TokenType.Else },
+        { "for", TokenType.For },
+        { "from", TokenType.From },
+        { "to", TokenType.To },
+        { "do", TokenType.Do },
+        { "while", TokenType.While },
+        { "write", TokenType.Output },
+        { "read", TokenType.Input },
+        { "break", TokenType.Break },
+        { "continue", TokenType.Continue },
+        { "return", TokenType.Return },
+        { "function", TokenType.Function },
+        { "arr", TokenType.Array },
+        { "of", TokenType.Of },
+        { "struct", TokenType.Structure },
+        { "abs", TokenType.Abs },
+        { "min", TokenType.Min },
+        { "max", TokenType.Max },
+        { "round", TokenType.Round },
+        { "len", TokenType.Len },
+        { "getsymbol", TokenType.GetSymbol },
+        { "tostring", TokenType.ToString }
+    };
 
     public Lexer(IScanner scanner)
     {
@@ -55,7 +55,7 @@ public class Lexer
 
         char currentChar = scanner.Peek();
 
-        if (char.IsAsciiLetter(currentChar) || currentChar == '_')
+        if (char.IsAsciiLetter( currentChar) || currentChar == '_')
         {
             return ParseIdentifierOrKeyword();
         }
@@ -143,7 +143,7 @@ public class Lexer
 
             case '.':
                 scanner.Advance();
-                return new Token(TokenType.Dot);
+                return new Token( TokenType.Dot );
         }
 
         scanner.Advance();
@@ -219,11 +219,11 @@ public class Lexer
         string value = "";
         bool hasInvalidChar = false;
 
-        while (char.IsLetterOrDigit(scanner.Peek()) || scanner.Peek() == '_')
+        while ( char.IsLetterOrDigit( scanner.Peek() ) || scanner.Peek() == '_' )
         {
             char c = scanner.Peek();
 
-            if (!char.IsAsciiLetterOrDigit(c) && c != '_')
+            if ( !char.IsAsciiLetterOrDigit( c ) && c != '_' )
             {
                 hasInvalidChar = true;
             }
@@ -232,27 +232,27 @@ public class Lexer
             scanner.Advance();
         }
 
-        if (hasInvalidChar)
+        if ( hasInvalidChar )
         {
-            return new Token(TokenType.Error, new TokenValue(value));
+            return new Token( TokenType.Error, new TokenValue( value ) );
         }
 
-        if (Keywords.TryGetValue(value, out TokenType type))
+        if ( Keywords.TryGetValue( value, out TokenType type ) )
         {
-            return new Token(type);
+            return new Token( type );
         }
 
-        return new Token(TokenType.Identifier, new TokenValue(value));
+        return new Token( TokenType.Identifier, new TokenValue( value ) );
     }
 
     private Token ParseNumericLiteral()
     {
-        decimal value = GetDigitValue(scanner.Peek());
+        double value = GetDigitValue(scanner.Peek());
         scanner.Advance();
 
         while (char.IsAsciiDigit(scanner.Peek()))
         {
-            value = (value * 10) + GetDigitValue(scanner.Peek());
+            value = value * 10 + GetDigitValue(scanner.Peek());
             scanner.Advance();
         }
 
@@ -265,25 +265,22 @@ public class Lexer
         return new Token(TokenType.Integer, new TokenValue(value));
     }
 
-    private Token ParseFloatLiteral(decimal integerPart)
+    private Token ParseFloatLiteral(double integerPart)
     {
-        decimal value = integerPart;
-        decimal factor = 0.1m;
+        double value = integerPart;
+        double factor = 0.1d;
 
         while (char.IsAsciiDigit(scanner.Peek()))
         {
             value += factor * GetDigitValue(scanner.Peek());
-            factor *= 0.1m;
+            factor *= 0.1d;
             scanner.Advance();
         }
 
-        return new Token(TokenType.Float, new TokenValue(value));
+        return new Token(TokenType.Double, new TokenValue(value));
     }
 
-    private static int GetDigitValue(char c)
-    {
-        return c - '0';
-    }
+    private static int GetDigitValue(char c) => c - '0';
 
     private Token ParseStringLiteral()
     {
@@ -330,7 +327,7 @@ public class Lexer
             'r' => '\r',
             '\'' => '\'',
             '\"' => '\"',
-            _ => '\0',
+            _ => '\0'
         };
 
         if (unescaped != '\0')
@@ -349,7 +346,8 @@ public class Lexer
         {
             SkipWhiteSpaces();
             skipped = TryParseMultilineComment() || TryParseSingleLineComment();
-        } while (skipped);
+        }
+        while (skipped);
     }
 
     private void SkipWhiteSpaces()

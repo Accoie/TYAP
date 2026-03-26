@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Ast\Ast.csproj" />
     <ProjectReference Include="..\CompilerLexer\CompilerLexer.csproj" />
+    <ProjectReference Include="..\Runtime\Runtime.csproj" />
   </ItemGroup>
 
 </Project>

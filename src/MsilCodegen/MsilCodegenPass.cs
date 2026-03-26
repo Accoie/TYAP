@@ -35,7 +35,6 @@ public class MsilCodegenPass : IAstVisitor
     /// </summary>
     public MethodBuilder GenerateProgramCode(BlockStatement program)
     {
-        // Создаём класс Program.
         _programTypeBuilder = _moduleBuilder.DefineType(
             "Program",
             TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Class
@@ -122,7 +121,7 @@ public class MsilCodegenPass : IAstVisitor
                 _ => throw new NotImplementedException($"Output of type {argument.ResultType}"),
             };
 
-            MethodInfo writeMethod = GetMethod(typeof(Console), "Write", [argType]);
+            MethodInfo writeMethod = GetMethod(typeof(Console), "WriteLine", [argType]);
             _il.Emit(OpCodes.Call, writeMethod);
         }
     }

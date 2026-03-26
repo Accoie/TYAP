@@ -15,6 +15,7 @@ public class UnexpectedLexemeException : Exception
     }
 
     public UnexpectedLexemeException()
+        : base()
     {
     }
 

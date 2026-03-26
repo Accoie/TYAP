@@ -3,7 +3,7 @@
 namespace MsilCodegen;
 
 /// <summary>
-/// Отображает тип языка Tiger на соответствующий ему тип .NET.
+/// Отображает тип языка Pascal++ на соответствующий в .NET.
 /// </summary>
 public class TypeMapper
 {

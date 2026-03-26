@@ -122,7 +122,7 @@ public class MsilCodegenPass : IAstVisitor
                 _ => throw new NotImplementedException($"Output of type {argument.ResultType}"),
             };
 
-            MethodInfo writeMethod = GetMethod(typeof(Console), "WriteLine", [argType]);
+            MethodInfo writeMethod = GetMethod(typeof(Console), "Write", [argType]);
             _il.Emit(OpCodes.Call, writeMethod);
         }
     }

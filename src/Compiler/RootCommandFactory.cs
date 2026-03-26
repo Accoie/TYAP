@@ -16,14 +16,14 @@ public static class RootCommandFactory
 
         Argument<string> inputPathArgument = new("input")
         {
-            Description = "Path to Pascal++ program source file",
+            Description = "Path to Tiger program source file",
             Arity = ArgumentArity.ExactlyOne,
         };
         command.Add(inputPathArgument);
 
         Argument<string> outputPathArgument = new("output")
         {
-            Description = "Output path for generated executable file .NET",
+            Description = "Output path for generated .NET executable",
             Arity = ArgumentArity.ExactlyOne,
         };
         command.Add(outputPathArgument);

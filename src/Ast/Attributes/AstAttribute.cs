@@ -9,27 +9,27 @@ namespace Ast.Attributes;
 /// <typeparam name="T">Тип значения атрибута</typeparam>
 public struct AstAttribute<T>
 {
-    private T value;
-    private bool initialized;
+    private T _value;
+    private bool _initialized;
 
     public T Get([CallerMemberName] string? memberName = null)
     {
-        if (!initialized)
+        if (!_initialized)
         {
             throw new InvalidOperationException($"Attribute {memberName} with type {typeof(T)} value is not set");
         }
 
-        return value;
+        return _value;
     }
 
     public void Set(T value, [CallerMemberName] string? memberName = null)
     {
-        if (initialized)
+        if (_initialized)
         {
             throw new InvalidOperationException($"Attribute {memberName} with type {typeof(T)} already has a value");
         }
 
-        this.value = value;
-        initialized = true;
+        this._value = value;
+        _initialized = true;
     }
 }

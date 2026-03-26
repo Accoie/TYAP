@@ -5,24 +5,24 @@ namespace Ast.Expressions;
 
 public class FunctionCallExpression : Expression
 {
-    private readonly List<Expression> arguments;
-    private AstAttribute<AbstractFunctionDeclaration> function;
+    private readonly List<Expression> _arguments;
+    private AstAttribute<AbstractFunctionDeclaration> _function;
 
     public FunctionCallExpression(string name, List<Expression> arguments)
     {
         Name = name;
-        this.arguments = arguments;
+        this._arguments = arguments;
     }
 
     public string Name { get; }
 
     public AbstractFunctionDeclaration Function
     {
-        get => function.Get();
-        set => function.Set(value);
+        get => _function.Get();
+        set => _function.Set(value);
     }
 
-    public IReadOnlyList<Expression> Arguments => arguments;
+    public IReadOnlyList<Expression> Arguments => _arguments;
 
     public override void Accept(IAstVisitor visitor)
     {

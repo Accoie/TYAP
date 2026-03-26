@@ -4,23 +4,23 @@ namespace CompilerParser;
 
 public class TokenStream
 {
-    private readonly Lexer lexer;
-    private Token nextToken;
+    private readonly Lexer _lexer;
+    private Token _nextToken;
 
     public TokenStream(string text)
     {
         TextScanner scanner = new TextScanner(text);
-        lexer = new Lexer(scanner);
-        nextToken = lexer.ParseToken();
+        _lexer = new Lexer(scanner);
+        _nextToken = _lexer.ParseToken();
     }
 
     public Token Peek()
     {
-        return nextToken;
+        return _nextToken;
     }
 
     public void Advance()
     {
-        nextToken = lexer.ParseToken();
+        _nextToken = _lexer.ParseToken();
     }
 }

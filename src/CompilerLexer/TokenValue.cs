@@ -4,53 +4,53 @@ namespace CompilerLexer;
 
 public class TokenValue
 {
-    private readonly object value;
+    private readonly object _value;
 
     public TokenValue(string value)
     {
-        this.value = value;
+        this._value = value;
     }
 
     public TokenValue(double value)
     {
-        this.value = value;
+        this._value = value;
     }
 
     public TokenValue(int value)
     {
-        this.value = value;
+        this._value = value;
     }
 
     public override string ToString()
     {
-        return value switch
+        return _value switch
         {
             string s => s,
             double d => d.ToString(CultureInfo.InvariantCulture),
             int i => i.ToString(CultureInfo.InvariantCulture),
-            _ => throw new InvalidOperationException($"Unexpected type: {value.GetType()}"),
+            _ => throw new InvalidOperationException($"Unexpected type: {_value.GetType()}"),
         };
     }
 
     public double ToFloat()
     {
-        return value switch
+        return _value switch
         {
             string s => double.Parse(s, CultureInfo.InvariantCulture),
             int i => i,
             double d => d,
-            _ => throw new InvalidOperationException($"Cannot convert {value.GetType()} to double"),
+            _ => throw new InvalidOperationException($"Cannot convert {_value.GetType()} to double"),
         };
     }
 
     public int ToInteger()
     {
-        return value switch
+        return _value switch
         {
             string s => int.Parse(s, CultureInfo.InvariantCulture),
             int i => i,
             double d => (int)d,
-            _ => throw new InvalidOperationException($"Cannot convert {value.GetType()} to integer"),
+            _ => throw new InvalidOperationException($"Cannot convert {_value.GetType()} to integer"),
         };
     }
 
@@ -58,11 +58,11 @@ public class TokenValue
     {
         if (obj is TokenValue other)
         {
-            return value switch
+            return _value switch
             {
-                string s => (string)other.value == s,
-                double d => (double)other.value == d,
-                int i => (int)other.value == i,
+                string s => (string)other._value == s,
+                double d => (double)other._value == d,
+                int i => (int)other._value == i,
                 _ => throw new NotImplementedException(),
             };
         }
@@ -72,6 +72,6 @@ public class TokenValue
 
     public override int GetHashCode()
     {
-        return value.GetHashCode();
+        return _value.GetHashCode();
     }
 }

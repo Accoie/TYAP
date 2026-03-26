@@ -7,7 +7,7 @@ namespace Ast.Statements;
 /// </summary>
 public sealed class BuiltInFunction : AbstractFunctionDeclaration
 {
-    private readonly Func<IReadOnlyList<Value>, Value> implementation;
+    private readonly Func<IReadOnlyList<Value>, Value> _implementation;
 
     public BuiltInFunction(
         string name,
@@ -18,12 +18,12 @@ public sealed class BuiltInFunction : AbstractFunctionDeclaration
         : base(name, parameters)
     {
         ResultType = resultType;
-        this.implementation = implementation;
+        this._implementation = implementation;
     }
 
     public Value Invoke(IReadOnlyList<Value> arguments)
     {
-        return implementation(arguments);
+        return _implementation(arguments);
     }
 
     public override void Accept(IAstVisitor visitor)

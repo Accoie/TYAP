@@ -4,15 +4,15 @@ namespace Ast.Statements;
 
 public abstract class DeclarationStatement : Statement
 {
-    private AstAttribute<Runtime.ValueType> resultType;
+    private AstAttribute<Runtime.ValueType> _resultType;
 
     /// <summary>
     /// Тип результата объявления.
     /// </summary>
     public Runtime.ValueType ResultType
     {
-        get => resultType.Get();
+        get => _resultType.Get();
 
-        set => resultType.Set(value);
+        set => _resultType.Set(value);
     }
 }

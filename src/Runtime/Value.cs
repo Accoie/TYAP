@@ -6,26 +6,26 @@ public class Value : IEquatable<Value>
 {
     public static readonly Value Void = new(VoidType.Value);
 
-    private readonly object value;
+    private readonly object _value;
 
     public Value(string value)
     {
-        this.value = value;
+        this._value = value;
     }
 
     public Value(double value)
     {
-        this.value = value;
+        this._value = value;
     }
 
     public Value(int value)
     {
-        this.value = value;
+        this._value = value;
     }
 
     private Value(VoidType value)
     {
-        this.value = value;
+        this._value = value;
     }
 
     /// <summary>
@@ -33,13 +33,13 @@ public class Value : IEquatable<Value>
     /// </summary>
     public ValueType GetValueType()
     {
-        return value switch
+        return _value switch
         {
             string => ValueType.String,
             double => ValueType.Float,
             int => ValueType.Integer,
             VoidType => ValueType.Void,
-            _ => throw new InvalidOperationException($"Unexpected value {value} of type {value.GetType()}"),
+            _ => throw new InvalidOperationException($"Unexpected value {_value} of type {_value.GetType()}"),
         };
     }
 
@@ -48,10 +48,10 @@ public class Value : IEquatable<Value>
     /// </summary>
     public string AsString()
     {
-        return value switch
+        return _value switch
         {
             string s => s,
-            _ => throw new InvalidOperationException($"Value {value} is not a string"),
+            _ => throw new InvalidOperationException($"Value {_value} is not a string"),
         };
     }
 
@@ -60,10 +60,10 @@ public class Value : IEquatable<Value>
     /// </summary>
     public double AsFloat()
     {
-        return value switch
+        return _value switch
         {
             double i => i,
-            _ => throw new InvalidOperationException($"Value {value} is not an double"),
+            _ => throw new InvalidOperationException($"Value {_value} is not an double"),
         };
     }
 
@@ -72,10 +72,10 @@ public class Value : IEquatable<Value>
     /// </summary>
     public int AsInteger()
     {
-        return value switch
+        return _value switch
         {
             int i => i,
-            _ => throw new InvalidOperationException($"Value {value} is not an double"),
+            _ => throw new InvalidOperationException($"Value {_value} is not an double"),
         };
     }
 
@@ -84,13 +84,13 @@ public class Value : IEquatable<Value>
     /// </summary>
     public override string ToString()
     {
-        return value switch
+        return _value switch
         {
             string s => s,
             double d => d.ToString(CultureInfo.InvariantCulture),
             int i => i.ToString(CultureInfo.InvariantCulture),
             VoidType v => "void",
-            _ => throw new InvalidOperationException($"Unexpected value {value} of type {value.GetType()}"),
+            _ => throw new InvalidOperationException($"Unexpected value {_value} of type {_value.GetType()}"),
         };
     }
 
@@ -109,7 +109,7 @@ public class Value : IEquatable<Value>
             return false;
         }
 
-        return value switch
+        return _value switch
         {
             string s => other.AsString() == s,
             double d => Numbers.AreEqual(d, other.AsFloat()),
@@ -126,6 +126,6 @@ public class Value : IEquatable<Value>
 
     public override int GetHashCode()
     {
-        return value.GetHashCode();
+        return _value.GetHashCode();
     }
 }

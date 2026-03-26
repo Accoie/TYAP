@@ -2,7 +2,7 @@
 
 public class Lexer
 {
-    private readonly IScanner scanner;
+    private readonly IScanner _scanner;
 
     private static readonly IReadOnlyDictionary<string, TokenType> Keywords =
         new Dictionary<string, TokenType>()
@@ -41,19 +41,19 @@ public class Lexer
 
     public Lexer(IScanner scanner)
     {
-        this.scanner = scanner;
+        this._scanner = scanner;
     }
 
     public Token ParseToken()
     {
         SkipWhiteSpacesAndComments();
 
-        if (scanner.IsEnd())
+        if (_scanner.IsEnd())
         {
             return new Token(TokenType.EndOfFile);
         }
 
-        char currentChar = scanner.Peek();
+        char currentChar = _scanner.Peek();
 
         if (char.IsAsciiLetter(currentChar) || currentChar == '_')
         {
@@ -75,56 +75,56 @@ public class Lexer
 
     private Token ParseOperatorOrDelimiter()
     {
-        char currentChar = scanner.Peek();
+        char currentChar = _scanner.Peek();
 
         switch (currentChar)
         {
             case '{':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.LBrace);
             case '}':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.RBrace);
             case '(':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.LParen);
             case ')':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.RParen);
             case '[':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.LBracket);
             case ']':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.RBracket);
 
             case ';':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.Semicolon);
             case ',':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.Comma);
             case ':':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.Colon);
 
             case '+':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.PlusSign);
             case '-':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.MinusSign);
             case '*':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.MultiplySign);
             case '/':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.DivideSign);
             case '%':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.ModuloSign);
             case '^':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.ExponentiationSign);
             case '=':
                 return ParseAssignOrEqualsOperator();
@@ -136,27 +136,27 @@ public class Lexer
                 return ParseGreaterThanOperator();
 
             case '@':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.LogicalAnd);
             case '|':
                 return ParseOrOperator();
 
             case '.':
-                scanner.Advance();
+                _scanner.Advance();
                 return new Token(TokenType.Dot);
         }
 
-        scanner.Advance();
+        _scanner.Advance();
         return new Token(TokenType.Error, new TokenValue(currentChar.ToString()));
     }
 
     private Token ParseAssignOrEqualsOperator()
     {
-        scanner.Advance();
+        _scanner.Advance();
 
-        if (scanner.Peek() == '=')
+        if (_scanner.Peek() == '=')
         {
-            scanner.Advance();
+            _scanner.Advance();
             return new Token(TokenType.Equal);
         }
 
@@ -165,11 +165,11 @@ public class Lexer
 
     private Token ParseNotEqualOrLogicalNotOperator()
     {
-        scanner.Advance();
+        _scanner.Advance();
 
-        if (scanner.Peek() == '=')
+        if (_scanner.Peek() == '=')
         {
-            scanner.Advance();
+            _scanner.Advance();
             return new Token(TokenType.NotEqual);
         }
 
@@ -178,11 +178,11 @@ public class Lexer
 
     private Token ParseLessThanOperator()
     {
-        scanner.Advance();
+        _scanner.Advance();
 
-        if (scanner.Peek() == '=')
+        if (_scanner.Peek() == '=')
         {
-            scanner.Advance();
+            _scanner.Advance();
             return new Token(TokenType.LessThanOrEqual);
         }
 
@@ -191,11 +191,11 @@ public class Lexer
 
     private Token ParseGreaterThanOperator()
     {
-        scanner.Advance();
+        _scanner.Advance();
 
-        if (scanner.Peek() == '=')
+        if (_scanner.Peek() == '=')
         {
-            scanner.Advance();
+            _scanner.Advance();
             return new Token(TokenType.GreaterThanOrEqual);
         }
 
@@ -204,10 +204,10 @@ public class Lexer
 
     private Token ParseOrOperator()
     {
-        scanner.Advance();
-        if (scanner.Peek() == '|')
+        _scanner.Advance();
+        if (_scanner.Peek() == '|')
         {
-            scanner.Advance();
+            _scanner.Advance();
             return new Token(TokenType.LogicalOr);
         }
 
@@ -219,9 +219,9 @@ public class Lexer
         string value = "";
         bool hasInvalidChar = false;
 
-        while (char.IsLetterOrDigit(scanner.Peek()) || scanner.Peek() == '_')
+        while (char.IsLetterOrDigit(_scanner.Peek()) || _scanner.Peek() == '_')
         {
-            char c = scanner.Peek();
+            char c = _scanner.Peek();
 
             if (!char.IsAsciiLetterOrDigit(c) && c != '_')
             {
@@ -229,7 +229,7 @@ public class Lexer
             }
 
             value += c;
-            scanner.Advance();
+            _scanner.Advance();
         }
 
         if (hasInvalidChar)
@@ -247,18 +247,18 @@ public class Lexer
 
     private Token ParseNumericLiteral()
     {
-        int value = GetDigitValue(scanner.Peek());
-        scanner.Advance();
+        int value = GetDigitValue(_scanner.Peek());
+        _scanner.Advance();
 
-        while (char.IsAsciiDigit(scanner.Peek()))
+        while (char.IsAsciiDigit(_scanner.Peek()))
         {
-            value = value * 10 + GetDigitValue(scanner.Peek());
-            scanner.Advance();
+            value = value * 10 + GetDigitValue(_scanner.Peek());
+            _scanner.Advance();
         }
 
-        if (scanner.Peek() == '.')
+        if (_scanner.Peek() == '.')
         {
-            scanner.Advance();
+            _scanner.Advance();
             return ParseFloatLiteral(value);
         }
 
@@ -270,11 +270,11 @@ public class Lexer
         double value = integerPart;
         double factor = 0.1d;
 
-        while (char.IsAsciiDigit(scanner.Peek()))
+        while (char.IsAsciiDigit(_scanner.Peek()))
         {
-            value += factor * GetDigitValue(scanner.Peek());
+            value += factor * GetDigitValue(_scanner.Peek());
             factor *= 0.1d;
-            scanner.Advance();
+            _scanner.Advance();
         }
 
         return new Token(TokenType.Float, new TokenValue(value));
@@ -284,10 +284,10 @@ public class Lexer
 
     private Token ParseStringLiteral()
     {
-        scanner.Advance();
+        _scanner.Advance();
 
         string contents = "";
-        while (scanner.Peek() != '"' && !scanner.IsEnd())
+        while (_scanner.Peek() != '"' && !_scanner.IsEnd())
         {
             if (TryParseEscapeSequence(out char unescaped))
             {
@@ -295,14 +295,14 @@ public class Lexer
             }
             else
             {
-                contents += scanner.Peek();
-                scanner.Advance();
+                contents += _scanner.Peek();
+                _scanner.Advance();
             }
         }
 
-        if (scanner.Peek() == '"')
+        if (_scanner.Peek() == '"')
         {
-            scanner.Advance();
+            _scanner.Advance();
             return new Token(TokenType.StringLiteral, new TokenValue(contents));
         }
 
@@ -311,15 +311,15 @@ public class Lexer
 
     private bool TryParseEscapeSequence(out char unescaped)
     {
-        if (scanner.Peek() != '\\')
+        if (_scanner.Peek() != '\\')
         {
             unescaped = '\0';
             return false;
         }
 
-        scanner.Advance();
+        _scanner.Advance();
 
-        unescaped = scanner.Peek() switch
+        unescaped = _scanner.Peek() switch
         {
             '\\' => '\\',
             'n' => '\n',
@@ -332,7 +332,7 @@ public class Lexer
 
         if (unescaped != '\0')
         {
-            scanner.Advance();
+            _scanner.Advance();
             return true;
         }
 
@@ -352,28 +352,28 @@ public class Lexer
 
     private void SkipWhiteSpaces()
     {
-        while (char.IsWhiteSpace(scanner.Peek()))
+        while (char.IsWhiteSpace(_scanner.Peek()))
         {
-            scanner.Advance();
+            _scanner.Advance();
         }
     }
 
     private bool TryParseMultilineComment()
     {
-        if (scanner.Peek() != '/' || scanner.Peek(1) != '#')
+        if (_scanner.Peek() != '/' || _scanner.Peek(1) != '#')
         {
             return false;
         }
 
-        while (!scanner.IsEnd() && !(scanner.Peek() == '#' && scanner.Peek(1) == '/'))
+        while (!_scanner.IsEnd() && !(_scanner.Peek() == '#' && _scanner.Peek(1) == '/'))
         {
-            scanner.Advance();
+            _scanner.Advance();
         }
 
-        if (scanner.Peek() == '#' && scanner.Peek(1) == '/')
+        if (_scanner.Peek() == '#' && _scanner.Peek(1) == '/')
         {
-            scanner.Advance();
-            scanner.Advance();
+            _scanner.Advance();
+            _scanner.Advance();
         }
 
         return true;
@@ -381,14 +381,14 @@ public class Lexer
 
     private bool TryParseSingleLineComment()
     {
-        if (scanner.Peek() != '#' || scanner.Peek(1) != '#')
+        if (_scanner.Peek() != '#' || _scanner.Peek(1) != '#')
         {
             return false;
         }
 
-        while (!scanner.IsEnd() && scanner.Peek() != '\n' && scanner.Peek() != '\r')
+        while (!_scanner.IsEnd() && _scanner.Peek() != '\n' && _scanner.Peek() != '\r')
         {
-            scanner.Advance();
+            _scanner.Advance();
         }
 
         return true;

@@ -14,15 +14,17 @@ public class UnexpectedLexemeException : Exception
     {
     }
 
-    public UnexpectedLexemeException() : base()
+    public UnexpectedLexemeException()
     {
     }
 
-    public UnexpectedLexemeException(string? message) : base(message)
+    public UnexpectedLexemeException(string? message)
+        : base(message)
     {
     }
 
-    public UnexpectedLexemeException(string? message, Exception? innerException) : base(message, innerException)
+    public UnexpectedLexemeException(string? message, Exception? innerException)
+        : base(message, innerException)
     {
     }
 }

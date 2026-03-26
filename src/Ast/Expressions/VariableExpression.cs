@@ -5,7 +5,7 @@ namespace Ast.Expressions;
 
 public sealed class VariableExpression : Expression
 {
-    private AstAttribute<AbstractVariableDeclaration> variable;
+    private AstAttribute<AbstractVariableDeclaration> _variable;
 
     public VariableExpression(string name)
     {
@@ -14,8 +14,8 @@ public sealed class VariableExpression : Expression
 
     public AbstractVariableDeclaration Variable
     {
-        get => variable.Get();
-        set => variable.Set(value);
+        get => _variable.Get();
+        set => _variable.Set(value);
     }
 
     public string Name { get; }

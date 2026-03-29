@@ -4,15 +4,15 @@
 
 | Приоритет (по убыванию) | Операторы              | Ассоциативность |
 |-------------------------|------------------------|-----------------|
-| 9                       | \|\| (логическое ИЛИ)  | Левая           |
-| 8                       | @ (логическое И)       | Левая           |
-| 7                       | ==, !=, <, >, <=, >=   | Левая           |
-| 6                       | бинарные + -           | Левая           |
-| 5                       | *, /, %                | Левая           |
-| 4                       | ^ (степень)            | Правая          |	
-| 3                       | Унарные +, -, !        | Правая          |
-| 2                       | Вызов функции          | Левая           |
-| 1                       | ( ) (группировка)      | -               |
+| 10                      | ( ) (группировка)      | -               |
+| 9                       | Вызов функции, . , [ ]  | Левая           |
+| 8                       | Унарные +, -, !         | Правая          |
+| 7                       | ^ (степень)             | Правая          |
+| 6                       | *, /, %                 | Левая           |
+| 5                       | бинарные + -            | Левая           |
+| 4                       | ==, !=, <, >, <=, >=    | Левая           |
+| 3                       | @ (логическое И)        | Левая           |
+| 2                       | \|\| (логическое ИЛИ)   | Левая           |
 
 ## Встроенные функции
 
@@ -69,11 +69,11 @@
 
 			additive_expression = term_expression, { additive_operator, term_expression } ;
 
-			term_expression = factor_expression, { multiplicative_operator, factor_expression } ;
+			term_expression = exponentiation_expression, { multiplicative_operator, exponentiation_expression } ;
 
-			factor_expression = [ unary_operator ], exponentiation_expression ;
+			exponentiation_expression = unary_expression, [ "^", exponentiation_expression ] ;
 
-			exponentiation_expression = postfix_expression, [ "^", exponentiation_expression ] ;
+			unary_expression = [ unary_operator ], postfix_expression ;
 
 			postfix_expression = primary_expression, { index_access | member_access_dot } ;
 
@@ -139,7 +139,7 @@
         (* Объявления типов *)
         (* ==================== *)
 
-            type_declaration = "var", type_identifier, "=", type, ";" ;       
+            type_declaration = "type", type_identifier, "=", type, ";" ;       
             type_identifier = identifier ;
 
         (* ==================== *)

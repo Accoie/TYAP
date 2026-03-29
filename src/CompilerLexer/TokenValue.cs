@@ -8,17 +8,17 @@ public class TokenValue
 
     public TokenValue(string value)
     {
-        this._value = value;
+        _value = value;
     }
 
     public TokenValue(double value)
     {
-        this._value = value;
+        _value = value;
     }
 
     public TokenValue(int value)
     {
-        this._value = value;
+        _value = value;
     }
 
     public override string ToString()

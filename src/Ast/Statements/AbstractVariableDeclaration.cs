@@ -7,7 +7,7 @@ public abstract class AbstractVariableDeclaration : DeclarationStatement
 {
     protected AbstractVariableDeclaration(string name)
     {
-        this.Name = name;
+        Name = name;
     }
 
     public string Name { get; }

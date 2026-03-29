@@ -10,22 +10,22 @@ public class Value : IEquatable<Value>
 
     public Value(string value)
     {
-        this._value = value;
+        _value = value;
     }
 
     public Value(double value)
     {
-        this._value = value;
+        _value = value;
     }
 
     public Value(int value)
     {
-        this._value = value;
+        _value = value;
     }
 
     private Value(VoidType value)
     {
-        this._value = value;
+        _value = value;
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ public class Value : IEquatable<Value>
             double => ValueType.Float,
             int => ValueType.Integer,
             VoidType => ValueType.Void,
-            _ => throw new InvalidOperationException($"Unexpected value {_value} of type {_value.GetType()}"),
+            _ => throw new InvalidOperationException($"Unexpected _value {_value} of type {_value.GetType()}"),
         };
     }
 
@@ -90,7 +90,7 @@ public class Value : IEquatable<Value>
             double d => d.ToString(CultureInfo.InvariantCulture),
             int i => i.ToString(CultureInfo.InvariantCulture),
             VoidType v => "void",
-            _ => throw new InvalidOperationException($"Unexpected value {_value} of type {_value.GetType()}"),
+            _ => throw new InvalidOperationException($"Unexpected _value {_value} of type {_value.GetType()}"),
         };
     }
 

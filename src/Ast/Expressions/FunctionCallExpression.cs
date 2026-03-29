@@ -11,7 +11,7 @@ public class FunctionCallExpression : Expression
     public FunctionCallExpression(string name, List<Expression> arguments)
     {
         Name = name;
-        this._arguments = arguments;
+        _arguments = arguments;
     }
 
     public string Name { get; }

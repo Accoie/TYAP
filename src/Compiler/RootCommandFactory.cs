@@ -4,7 +4,6 @@ namespace Compiler;
 
 /// <summary>
 /// Фабрика для создания интерфейса командной строки компилятора.
-/// Построена на базе библиотеки "System.CommandLine" от Microsoft.
 /// </summary>
 public static class RootCommandFactory
 {

@@ -23,14 +23,14 @@ public enum BinaryOperation
     Divide,
 
     /// <summary>
-    /// Логическое "ИЛИ".
+    /// Оператор остатка от деления.
     /// </summary>
-    Or,
+    Modulo,
 
     /// <summary>
-    /// Логическое "И".
+    /// Оператор экспоненты.
     /// </summary>
-    And,
+    Exponentiate,
 
     /// <summary>
     /// Оператор сравнения "равно".
@@ -63,12 +63,12 @@ public enum BinaryOperation
     GreaterThanOrEqual,
 
     /// <summary>
-    /// Оператор экспоненты.
+    /// Логическое "ИЛИ".
     /// </summary>
-    Exponentiate,
+    Or,
 
     /// <summary>
-    /// Оператор остатка от деления.
+    /// Логическое "И".
     /// </summary>
-    Modulo,
+    And,
 }

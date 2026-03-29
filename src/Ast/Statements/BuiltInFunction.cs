@@ -18,7 +18,7 @@ public sealed class BuiltInFunction : AbstractFunctionDeclaration
         : base(name, parameters)
     {
         ResultType = resultType;
-        this._implementation = implementation;
+        _implementation = implementation;
     }
 
     public Value Invoke(IReadOnlyList<Value> arguments)

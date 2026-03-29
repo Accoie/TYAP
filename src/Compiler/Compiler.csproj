@@ -16,6 +16,7 @@
     <ProjectReference Include="..\CompilerParser\CompilerParser.csproj" />
     <ProjectReference Include="..\MsilBackend\MsilBackend.csproj" />
     <ProjectReference Include="..\MsilCodegen\MsilCodegen.csproj" />
+    <ProjectReference Include="..\Semantics\Semantics.csproj" />
   </ItemGroup>
 
 </Project>

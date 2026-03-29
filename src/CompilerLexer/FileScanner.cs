@@ -15,22 +15,12 @@ public class FileScanner : IScanner
     {
         int peekPosition = _position + n;
 
-        if (peekPosition < 0 || peekPosition >= _fileContent.Length)
-        {
-            return '\0';
-        }
-
-        return _fileContent[peekPosition];
+        return peekPosition < 0 || peekPosition >= _fileContent.Length ? '\0' : _fileContent[peekPosition];
     }
 
     public char Read()
     {
-        if (_position >= _fileContent.Length)
-        {
-            return '\0';
-        }
-
-        return _fileContent[_position++];
+        return _position >= _fileContent.Length ? '\0' : _fileContent[_position++];
     }
 
     public void Advance()
@@ -38,7 +28,13 @@ public class FileScanner : IScanner
         _position = Math.Min(_position + 1, _fileContent.Length);
     }
 
-    public int GetPosition() => _position;
+    public int GetPosition()
+    {
+        return _position;
+    }
 
-    public bool IsEnd() => _position >= _fileContent.Length;
+    public bool IsEnd()
+    {
+        return _position >= _fileContent.Length;
+    }
 }

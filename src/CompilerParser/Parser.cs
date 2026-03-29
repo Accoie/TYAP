@@ -51,7 +51,7 @@ public class Parser
 
     /// <summary>
     /// Разбирает инструкции.
-    /// Правило: statement = output_statement.
+    /// Правило: statement = variable_declaration | assignment_statement | input_statement | output_statement.
     /// </summary>
     private Statement ParseStatement()
     {
@@ -59,10 +59,78 @@ public class Parser
 
         return token switch
         {
+            TokenType.Identifier => ParseAssignment(),
+            TokenType.Var => ParseVariableDeclaration(),
             TokenType.Begin => ParseBlock(true),
+            TokenType.Input => ParseInput(),
             TokenType.Output => ParseOutput(),
+
             _ => throw new UnexpectedLexemeException(_tokens.Peek()),
         };
+    }
+
+    /// <summary>
+    /// Разбирает оператор присваивания.
+    /// Правило: assignment_statement = identifier, "=", expression, ";".
+    /// </summary>
+    private Statement ParseAssignment()
+    {
+        string name = Match(TokenType.Identifier).Value!.ToString();
+        Statement result;
+        Match(TokenType.Assign);
+        Expression value = ParseExpression();
+        result = new AssignmentStatement(name, value);
+
+        Match(TokenType.Semicolon);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Разбирает оператор присваивания.
+    /// Правило: variable_declaration = "var", identifier, ":", type, [ "=", expression ], ";" ;
+    /// </summary>
+    private VariableDeclarationStatement ParseVariableDeclaration()
+    {
+        Match(TokenType.Var);
+        string name = Match(TokenType.Identifier).Value!.ToString();
+        Match(TokenType.Colon);
+
+        ValueType type = _tokens.Peek().Type switch
+        {
+            TokenType.IntegerType => ValueType.Integer,
+            TokenType.FloatType => ValueType.Float,
+            TokenType.StringType => ValueType.String,
+            _ => throw new UnexpectedLexemeException(_tokens.Peek()),
+        };
+        _tokens.Advance();
+
+        Expression? initialValue = null;
+        if (_tokens.Peek().Type == TokenType.Assign)
+        {
+            _tokens.Advance();
+            initialValue = ParseExpression();
+        }
+
+        Match(TokenType.Semicolon);
+
+        return new VariableDeclarationStatement(name, type, initialValue);
+    }
+
+    /// <summary>
+    /// Разбирает оператор ввода.
+    /// Правило: input_statement = "read", "(", identifier, ")", ";".
+    /// </summary>
+    private InputStatement ParseInput()
+    {
+        Match(TokenType.Input);
+        Match(TokenType.LParen);
+
+        string variableName = Match(TokenType.Identifier).Value!.ToString();
+
+        Match(TokenType.RParen);
+        Match(TokenType.Semicolon);
+        return new InputStatement(variableName);
     }
 
     /// <summary>
@@ -89,16 +157,186 @@ public class Parser
 
     /// <summary>
     /// Разбирает выражение.
-    /// Правило: expression = primary_expression.
+    /// Правило: expression = logical_or_expression.
     /// </summary>
     private Expression ParseExpression()
     {
-        return ParsePrimaryExpression();
+        return ParseLogicalOrExpression();
     }
 
     /// <summary>
-    /// Разбирает первичные выражения (литералы).
-    /// Правило: primary_expression = literal.
+    /// Разбирает логическое ИЛИ выражение.
+    /// Правило: logical_or_expression = logical_and_expression, { logical_or_operator, logical_and_expression }.
+    /// </summary>
+    private Expression ParseLogicalOrExpression()
+    {
+        Expression left = ParseLogicalAndExpression();
+
+        while (_tokens.Peek().Type == TokenType.LogicalOr)
+        {
+            _tokens.Advance();
+            Expression right = ParseLogicalAndExpression();
+            left = new BinaryOperationExpression(left, BinaryOperation.Or, right);
+        }
+
+        return left;
+    }
+
+    /// <summary>
+    /// Разбирает логическое И выражение.
+    /// Правило: logical_and_expression = comparison_expression, { logical_and_operator, comparison_expression }.
+    /// </summary>
+    private Expression ParseLogicalAndExpression()
+    {
+        Expression left = ParseComparisonExpression();
+
+        while (_tokens.Peek().Type == TokenType.LogicalAnd)
+        {
+            _tokens.Advance();
+            Expression right = ParseComparisonExpression();
+            left = new BinaryOperationExpression(left, BinaryOperation.And, right);
+        }
+
+        return left;
+    }
+
+    /// <summary>
+    /// Разбирает выражение сравнения.
+    /// Правило: comparison_expression = additive_expression, [ comparison_operator, additive_expression ].
+    /// </summary>
+    private Expression ParseComparisonExpression()
+    {
+        Expression left = ParseAdditiveExpression();
+
+        if (IsComparisonOperator(_tokens.Peek().Type))
+        {
+            BinaryOperation operation = _tokens.Peek().Type switch
+            {
+                TokenType.Equal => BinaryOperation.Equal,
+                TokenType.NotEqual => BinaryOperation.NotEqual,
+                TokenType.LessThan => BinaryOperation.LessThan,
+                TokenType.GreaterThan => BinaryOperation.GreaterThan,
+                TokenType.LessThanOrEqual => BinaryOperation.LessThanOrEqual,
+                TokenType.GreaterThanOrEqual => BinaryOperation.GreaterThanOrEqual,
+                _ => throw new UnexpectedLexemeException(_tokens.Peek()),
+            };
+
+            _tokens.Advance();
+            Expression right = ParseAdditiveExpression();
+
+            return new BinaryOperationExpression(left, operation, right);
+        }
+
+        return left;
+    }
+
+    /// <summary>
+    /// Разбирает сложение/вычитание.
+    /// Правило: additive_expression = term_expression, { additive_operator, term_expression }.
+    /// </summary>
+    private Expression ParseAdditiveExpression()
+    {
+        Expression left = ParseTermExpression();
+
+        while (true)
+        {
+            switch (_tokens.Peek().Type)
+            {
+                case TokenType.PlusSign:
+                    _tokens.Advance();
+                    Expression plusRight = ParseTermExpression();
+                    left = new BinaryOperationExpression(left, BinaryOperation.Add, plusRight);
+                    break;
+                case TokenType.MinusSign:
+                    _tokens.Advance();
+                    Expression minusRight = ParseTermExpression();
+                    left = new BinaryOperationExpression(left, BinaryOperation.Subtract, minusRight);
+                    break;
+                default:
+                    return left;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Разбирает умножение/деление/остаток.
+    /// Правило: term_expression = factor_expression, { multiplicative_operator, factor_expression }.
+    /// </summary>
+    private Expression ParseTermExpression()
+    {
+        Expression left = ParseFactorExpression();
+
+        while (true)
+        {
+            switch (_tokens.Peek().Type)
+            {
+                case TokenType.MultiplySign:
+                    _tokens.Advance();
+                    Expression multiplyRight = ParseFactorExpression();
+                    left = new BinaryOperationExpression(left, BinaryOperation.Multiply, multiplyRight);
+                    break;
+                case TokenType.DivideSign:
+                    _tokens.Advance();
+                    Expression divideRight = ParseFactorExpression();
+                    left = new BinaryOperationExpression(left, BinaryOperation.Divide, divideRight);
+                    break;
+                case TokenType.ModuloSign:
+                    _tokens.Advance();
+                    Expression moduloRight = ParseFactorExpression();
+                    left = new BinaryOperationExpression(left, BinaryOperation.Modulo, moduloRight);
+                    break;
+                default:
+                    return left;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Разбирает унарные операции и факторные выражения.
+    /// Правило: factor_expression = [ unary_operator ], exponentiation_expression.
+    /// </summary>
+    private Expression ParseFactorExpression()
+    {
+        if (IsUnaryOperator(_tokens.Peek().Type))
+        {
+            UnaryOperation operation = _tokens.Peek().Type switch
+            {
+                TokenType.PlusSign => UnaryOperation.Plus,
+                TokenType.MinusSign => UnaryOperation.Minus,
+                TokenType.LogicalNot => UnaryOperation.Not,
+                _ => throw new UnexpectedLexemeException(_tokens.Peek()),
+            };
+
+            _tokens.Advance();
+            Expression operand = ParseExponentiationExpression();
+
+            return new UnaryOperationExpression(operation, operand);
+        }
+
+        return ParseExponentiationExpression();
+    }
+
+    /// <summary>
+    /// Разбирает выражение возведения в степень.
+    /// Правило: exponentiation_expression = primary_expression, [ "^", exponentiation_expression ].
+    /// </summary>
+    private Expression ParseExponentiationExpression()
+    {
+        Expression left = ParsePrimaryExpression();
+
+        if (_tokens.Peek().Type == TokenType.ExponentiationSign)
+        {
+            _tokens.Advance();
+            Expression right = ParseExponentiationExpression();
+            return new BinaryOperationExpression(left, BinaryOperation.Exponentiate, right);
+        }
+
+        return left;
+    }
+
+    /// <summary>
+    /// Разбирает первичные выражения (литералы, идентификаторы, выражения в скобках).
+    /// Правило: primary_expression = literal | variable_access | "(", expression, ")".
     /// </summary>
     private Expression ParsePrimaryExpression()
     {
@@ -108,25 +346,62 @@ public class Parser
         {
             case TokenType.Integer:
                 _tokens.Advance();
-                LiteralExpression intExpr = new LiteralExpression(new Value(token.Value.ToInteger()));
-                intExpr.ResultType = ValueType.Integer;
-                return intExpr;
+                return new LiteralExpression(new Value(token.Value.ToInteger()));
 
             case TokenType.Float:
                 _tokens.Advance();
-                LiteralExpression floatExpr = new LiteralExpression(new Value(token.Value.ToFloat()));
-                floatExpr.ResultType = ValueType.Float;
-                return floatExpr;
+                return new LiteralExpression(new Value(token.Value.ToFloat()));
 
             case TokenType.StringLiteral:
                 _tokens.Advance();
-                LiteralExpression stringExpr = new LiteralExpression(new Value(token.Value.ToString()));
-                stringExpr.ResultType = ValueType.String;
-                return stringExpr;
+                return new LiteralExpression(new Value(token.Value.ToString()));
+
+            case TokenType.LParen:
+                _tokens.Advance();
+                Expression expression = ParseExpression();
+                Match(TokenType.RParen);
+                return expression;
+
+            case TokenType.Identifier:
+                string name = Match(TokenType.Identifier).Value.ToString();
+                return new VariableExpression(name);
 
             default:
                 throw new UnexpectedLexemeException(token);
         }
+    }
+
+    /// <summary>
+    /// Проверяет, является ли токен оператором сравнения.
+    /// Правило: comparison_operator = "==" | "!=" | "<" | ">" | "<=" | ">=".
+    /// </summary>
+    private bool IsComparisonOperator(TokenType type)
+    {
+        return type switch
+        {
+            TokenType.Equal or
+            TokenType.NotEqual or
+            TokenType.LessThan or
+            TokenType.GreaterThan or
+            TokenType.LessThanOrEqual or
+            TokenType.GreaterThanOrEqual => true,
+            _ => false,
+        };
+    }
+
+    /// <summary>
+    /// Проверяет, является ли токен унарным оператором.
+    /// Правило: unary_operator = "+" | "-" | "!".
+    /// </summary>
+    private bool IsUnaryOperator(TokenType type)
+    {
+        return type switch
+        {
+            TokenType.PlusSign or
+            TokenType.MinusSign or
+            TokenType.LogicalNot => true,
+            _ => false,
+        };
     }
 
     /// <summary>

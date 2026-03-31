@@ -21,7 +21,7 @@ public class Parser
     }
 
     /// <summary>
-    /// Выполняет разбор выражения RusMatushka
+    /// Выполняет разбор выражения Pascal++
     /// Правило: program = "begin", { statement }, "end".
     /// </summary>
     public BlockStatement ParseProgram()

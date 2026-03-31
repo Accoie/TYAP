@@ -53,39 +53,40 @@ public class MsilCodegenPass : IAstVisitor
         return mainMethod;
     }
 
-    public void Visit(BinaryOperationExpression e)
+    public void Visit(OutputStatement s)
     {
-        throw new NotImplementedException();
+        foreach (Expression argument in s.Arguments)
+        {
+            argument.Accept(this);
+
+            if (argument.ResultType == ValueType.Float)
+            {
+                WriteFloat();
+            }
+            else
+            {
+                Type argType = argument.ResultType switch
+                {
+                    ValueType.Integer => typeof(int),
+                    ValueType.String => typeof(string),
+                    _ => throw new NotImplementedException($"Output of type {argument.ResultType}"),
+                };
+
+                MethodInfo writeMethod = GetMethod(typeof(Console), "Write", [argType]);
+                _il.Emit(OpCodes.Call, writeMethod);
+            }
+        }
+
+        MethodInfo writelnMethod = GetMethod(typeof(Console), "WriteLine", Type.EmptyTypes);
+        _il.Emit(OpCodes.Call, writelnMethod);
     }
 
-    public void Visit(UnaryOperationExpression e)
+    public void Visit(BlockStatement s)
     {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(LiteralExpression e)
-    {
-        if (e.ResultType == ValueType.Integer)
+        foreach (Statement statement in s.Statements)
         {
-            _il.Emit(OpCodes.Ldc_I4, e.Value.AsInteger());
+            statement.Accept(this);
         }
-        else if (e.ResultType == ValueType.String)
-        {
-            _il.Emit(OpCodes.Ldstr, e.Value.AsString());
-        }
-        else if (e.ResultType == ValueType.Float)
-        {
-            _il.Emit(OpCodes.Ldc_R8, e.Value.AsFloat());
-        }
-        else
-        {
-            throw new NotImplementedException($"Literal of type {e.ResultType} are not supported yet.");
-        }
-    }
-
-    public void Visit(FunctionCallExpression s)
-    {
-        throw new NotImplementedException();
     }
 
     public void Visit(AssignmentStatement s)
@@ -106,43 +107,6 @@ public class MsilCodegenPass : IAstVisitor
     public void Visit(InputStatement s)
     {
         throw new NotImplementedException();
-    }
-
-    public void Visit(OutputStatement s)
-    {
-        foreach (Expression argument in s.Arguments)
-        {
-            argument.Accept(this);
-
-            if (argument.ResultType == ValueType.Float)
-            {
-                WriteFloat();
-            }
-            else
-            {
-                Type argType = argument.ResultType switch
-                {
-                    ValueType.Integer => typeof(int),
-                    ValueType.Float => typeof(double),
-                    ValueType.String => typeof(string),
-                    _ => throw new NotImplementedException($"Output of type {argument.ResultType}"),
-                };
-
-                MethodInfo writeMethod = GetMethod(typeof(Console), "Write", [argType]);
-                _il.Emit(OpCodes.Call, writeMethod);
-            }
-        }
-
-        MethodInfo writelnMethod = GetMethod(typeof(Console), "WriteLine", Type.EmptyTypes);
-        _il.Emit(OpCodes.Call, writelnMethod);
-    }
-
-    public void Visit(BlockStatement s)
-    {
-        foreach (Statement statement in s.Statements)
-        {
-            statement.Accept(this);
-        }
     }
 
     public void Visit(ReturnStatement s)
@@ -180,7 +144,37 @@ public class MsilCodegenPass : IAstVisitor
         throw new NotImplementedException();
     }
 
-    public void Visit(ParameterDeclaration parameterDeclarationStatement)
+    public void Visit(BinaryOperationExpression e)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Visit(UnaryOperationExpression e)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Visit(LiteralExpression e)
+    {
+        if (e.ResultType == ValueType.Integer)
+        {
+            _il.Emit(OpCodes.Ldc_I4, e.Value.AsInteger());
+        }
+        else if (e.ResultType == ValueType.String)
+        {
+            _il.Emit(OpCodes.Ldstr, e.Value.AsString());
+        }
+        else if (e.ResultType == ValueType.Float)
+        {
+            _il.Emit(OpCodes.Ldc_R8, e.Value.AsFloat());
+        }
+        else
+        {
+            throw new NotImplementedException($"Literal of type {e.ResultType} are not supported yet.");
+        }
+    }
+
+    public void Visit(FunctionCallExpression s)
     {
         throw new NotImplementedException();
     }
@@ -190,19 +184,14 @@ public class MsilCodegenPass : IAstVisitor
         throw new NotImplementedException();
     }
 
-    public void Visit(IteratorDeclaration iteratorDeclaration)
+    public void Visit(ParameterDeclaration parameterDeclarationStatement)
     {
         throw new NotImplementedException();
     }
 
-    private MethodBuilder DefineProgramClassMethod(string name, Type returnType, Type[] parameterTypes)
+    public void Visit(IteratorDeclaration iteratorDeclaration)
     {
-        return _programTypeBuilder.DefineMethod(
-            name,
-            MethodAttributes.Public | MethodAttributes.Static,
-            returnType,
-            parameterTypes
-        );
+        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -248,5 +237,15 @@ public class MsilCodegenPass : IAstVisitor
 
         MethodInfo writeMethod = GetMethod(typeof(Console), "Write", [typeof(string)]);
         _il.Emit(OpCodes.Call, writeMethod);
+    }
+
+    private MethodBuilder DefineProgramClassMethod(string name, Type returnType, Type[] parameterTypes)
+    {
+        return _programTypeBuilder.DefineMethod(
+            name,
+            MethodAttributes.Public | MethodAttributes.Static,
+            returnType,
+            parameterTypes
+        );
     }
 }

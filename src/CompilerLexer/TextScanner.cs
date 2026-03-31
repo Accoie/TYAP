@@ -2,13 +2,12 @@
 
 public class TextScanner(string str) : IScanner
 {
-    private readonly string _text = str;
     private int _position;
 
     public char Peek(int n = 0)
     {
         int position = this._position + n;
-        return position >= _text.Length ? '\0' : _text[position];
+        return position >= str.Length ? '\0' : str[position];
     }
 
     public void Advance()
@@ -18,6 +17,6 @@ public class TextScanner(string str) : IScanner
 
     public bool IsEnd()
     {
-        return _position >= _text.Length;
+        return _position >= str.Length;
     }
 }

@@ -108,19 +108,19 @@ public class Parser
         {
             case TokenType.Integer:
                 _tokens.Advance();
-                LiteralExpression intExpr = new LiteralExpression(new Value(token.Value.ToInteger()));
+                LiteralExpression intExpr = new(new Value(token.Value.ToInteger()));
                 intExpr.ResultType = ValueType.Integer;
                 return intExpr;
 
             case TokenType.Float:
                 _tokens.Advance();
-                LiteralExpression floatExpr = new LiteralExpression(new Value(token.Value.ToFloat()));
+                LiteralExpression floatExpr = new(new Value(token.Value.ToFloat()));
                 floatExpr.ResultType = ValueType.Float;
                 return floatExpr;
 
             case TokenType.StringLiteral:
                 _tokens.Advance();
-                LiteralExpression stringExpr = new LiteralExpression(new Value(token.Value.ToString()));
+                LiteralExpression stringExpr = new(new Value(token.Value.ToString()));
                 stringExpr.ResultType = ValueType.String;
                 return stringExpr;
 

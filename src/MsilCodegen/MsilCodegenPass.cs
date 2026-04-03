@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Security.AccessControl;
 
@@ -123,11 +124,6 @@ public class MsilCodegenPass : IAstVisitor
         }
     }
 
-    public void Visit(FunctionCallExpression s)
-    {
-        throw new NotImplementedException();
-    }
-
     public void Visit(AssignmentStatement s)
     {
         s.Value.Accept(this);
@@ -140,16 +136,6 @@ public class MsilCodegenPass : IAstVisitor
         }
 
         _il.Emit(OpCodes.Stloc, local);
-    }
-
-    public void Visit(IfElseStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(ForLoopStatement s)
-    {
-        throw new NotImplementedException();
     }
 
     public void Visit(InputStatement s)
@@ -193,16 +179,22 @@ public class MsilCodegenPass : IAstVisitor
         {
             argument.Accept(this);
 
-            Type argType = argument.ResultType switch
+            if (argument.ResultType == ValueType.Float)
             {
-                ValueType.Integer => typeof(int),
-                ValueType.Float => typeof(double),
-                ValueType.String => typeof(string),
-                _ => throw new NotImplementedException($"Output of type {argument.ResultType}"),
-            };
+                WriteFloat();
+            }
+            else
+            {
+                Type argType = argument.ResultType switch
+                {
+                    ValueType.Integer => typeof(int),
+                    ValueType.String => typeof(string),
+                    _ => throw new NotImplementedException($"Output of type {argument.ResultType}"),
+                };
 
-            MethodInfo writeMethod = GetMethod(typeof(Console), "Write", [argType]);
-            _il.Emit(OpCodes.Call, writeMethod);
+                MethodInfo writeMethod = GetMethod(typeof(Console), "Write", [argType]);
+                _il.Emit(OpCodes.Call, writeMethod);
+            }
         }
 
         MethodInfo writelnMethod = GetMethod(typeof(Console), "WriteLine", Type.EmptyTypes);
@@ -215,11 +207,6 @@ public class MsilCodegenPass : IAstVisitor
         {
             statement.Accept(this);
         }
-    }
-
-    public void Visit(ReturnStatement s)
-    {
-        throw new NotImplementedException();
     }
 
     public void Visit(VariableDeclarationStatement s)
@@ -241,6 +228,38 @@ public class MsilCodegenPass : IAstVisitor
             s.Value.Accept(this);
             _il.Emit(OpCodes.Stloc, local);
         }
+    }
+
+    public void Visit(VariableExpression e)
+    {
+        if (!CurrentScope.TryGetValue(e.Name, out LocalBuilder? local))
+        {
+            throw new InvalidOperationException(
+                $"Переменная '{e.Name}' не найдена в текущей области видимости"
+            );
+        }
+
+        _il.Emit(OpCodes.Ldloc, local);
+    }
+
+    public void Visit(FunctionCallExpression s)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Visit(IfElseStatement s)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Visit(ForLoopStatement s)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Visit(ReturnStatement s)
+    {
+        throw new NotImplementedException();
     }
 
     public void Visit(FunctionDeclarationStatement s)
@@ -271,18 +290,6 @@ public class MsilCodegenPass : IAstVisitor
     public void Visit(ParameterDeclaration parameterDeclarationStatement)
     {
         throw new NotImplementedException();
-    }
-
-    public void Visit(VariableExpression e)
-    {
-        if (!CurrentScope.TryGetValue(e.Name, out LocalBuilder? local))
-        {
-            throw new InvalidOperationException(
-                $"Переменная '{e.Name}' не найдена в текущей области видимости"
-            );
-        }
-
-        _il.Emit(OpCodes.Ldloc, local);
     }
 
     public void Visit(IteratorDeclaration iteratorDeclaration)
@@ -433,11 +440,6 @@ public class MsilCodegenPass : IAstVisitor
 
                 MethodInfo compareOrdinal = GetMethod(typeof(string), "CompareOrdinal", [typeof(string), typeof(string)]);
 
-                if (compareOrdinal == null)
-                {
-                    throw new InvalidOperationException("string.CompareOrdinal(string, string) not found");
-                }
-
                 _il.Emit(OpCodes.Call, compareOrdinal);
 
                 switch (e.Operation)
@@ -490,6 +492,36 @@ public class MsilCodegenPass : IAstVisitor
     {
         _il.Emit(OpCodes.Ldc_I4_0);
         _il.Emit(OpCodes.Ceq);
+    }
+
+    /// <summary>
+    /// Пишет вещественное число в консоль с правильным форматированием.
+    /// </summary>
+    private void WriteFloat()
+    {
+        LocalBuilder tempDouble = _il.DeclareLocal(typeof(double));
+
+        // Берем значение double из стека и объявляем переменную.
+        _il.Emit(OpCodes.Stloc, tempDouble);
+
+        _il.Emit(OpCodes.Ldloca, tempDouble);
+
+        _il.Emit(OpCodes.Ldstr, "G15");
+
+        // Получаем culture info и загружаем в стек для форматирования
+        MethodInfo invariantCultureGetter = typeof(CultureInfo)
+            .GetProperty("InvariantCulture")!.GetMethod!;
+
+        _il.Emit(OpCodes.Call, invariantCultureGetter);
+
+        MethodInfo toStringMethod = typeof(double).GetMethod(
+            "ToString",
+            [typeof(string), typeof(IFormatProvider)])!;
+
+        _il.Emit(OpCodes.Call, toStringMethod);
+
+        MethodInfo writeMethod = GetMethod(typeof(Console), "Write", [typeof(string)]);
+        _il.Emit(OpCodes.Call, writeMethod);
     }
 
     /// <summary>

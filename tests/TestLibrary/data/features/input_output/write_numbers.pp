@@ -1,5 +1,6 @@
-﻿begin
-    write(1337);
+﻿
+begin
+    write(0.0012459);
     write(3.1415);
-    write(3.0);
+    write(3);
 end

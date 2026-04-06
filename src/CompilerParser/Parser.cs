@@ -13,8 +13,6 @@ public class Parser
 {
     private readonly TokenStream _tokens;
 
-    private readonly Stack<ValueType> _returnTypes = new();
-
     public Parser(string code)
     {
         _tokens = new TokenStream(code);

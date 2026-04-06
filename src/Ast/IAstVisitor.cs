@@ -5,7 +5,6 @@ namespace Ast;
 
 public interface IAstVisitor
 {
-
     void Visit(LiteralExpression e);
 
     void Visit(OutputStatement s);

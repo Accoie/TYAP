@@ -106,7 +106,7 @@ public class MsilCodegenPass : IAstVisitor
             throw new NotImplementedException($"Literal of type {e.ResultType} are not supported yet.");
         }
     }
-    
+
     /// <summary>
     /// Находит статический метод указанного типа стандартной библиотеки классов .NET.
     /// </summary>

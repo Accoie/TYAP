@@ -130,7 +130,7 @@ public class Parser
     /// <summary>
     /// Проверяет соответствие текущего токена ожидаемому типу и продвигает поток токенов.
     /// </summary>
-    private Token Match(TokenType expected)
+    private void Match(TokenType expected)
     {
         Token t = _tokens.Peek();
         if (t.Type != expected)
@@ -139,6 +139,5 @@ public class Parser
         }
 
         _tokens.Advance();
-        return t;
     }
 }

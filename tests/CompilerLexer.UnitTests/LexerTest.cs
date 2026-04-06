@@ -1,3 +1,5 @@
+using Xunit;
+
 namespace CompilerLexer.UnitTests;
 
 public class LexerTest

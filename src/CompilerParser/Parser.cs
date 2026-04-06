@@ -65,7 +65,7 @@ public class Parser
             TokenType.Input => ParseInput(),
             TokenType.Output => ParseOutput(),
 
-            _ => throw new UnexpectedLexemeException(_tokens.Peek()),
+            _ => throw new UnexpectedLexemeException(TokenType.Output, _tokens.Peek()),
         };
     }
 
@@ -101,7 +101,7 @@ public class Parser
             TokenType.IntegerType => ValueType.Integer,
             TokenType.FloatType => ValueType.Float,
             TokenType.StringType => ValueType.String,
-            _ => throw new UnexpectedLexemeException(_tokens.Peek()),
+            _ => throw new UnexpectedLexemeException(TokenType.StringType, _tokens.Peek()),
         };
         _tokens.Advance();
 
@@ -218,7 +218,7 @@ public class Parser
                 TokenType.GreaterThan => BinaryOperation.GreaterThan,
                 TokenType.LessThanOrEqual => BinaryOperation.LessThanOrEqual,
                 TokenType.GreaterThanOrEqual => BinaryOperation.GreaterThanOrEqual,
-                _ => throw new UnexpectedLexemeException(_tokens.Peek()),
+                _ => throw new UnexpectedLexemeException(TokenType.GreaterThanOrEqual, _tokens.Peek()),
             };
 
             _tokens.Advance();
@@ -304,7 +304,7 @@ public class Parser
                 TokenType.PlusSign => UnaryOperation.Plus,
                 TokenType.MinusSign => UnaryOperation.Minus,
                 TokenType.LogicalNot => UnaryOperation.Not,
-                _ => throw new UnexpectedLexemeException(_tokens.Peek()),
+                _ => throw new UnexpectedLexemeException(TokenType.LogicalNot, _tokens.Peek()),
             };
 
             _tokens.Advance();
@@ -367,7 +367,7 @@ public class Parser
                 return new VariableExpression(name);
 
             default:
-                throw new UnexpectedLexemeException(token);
+                throw new UnexpectedLexemeException(TokenType.Identifier, token);
         }
     }
 

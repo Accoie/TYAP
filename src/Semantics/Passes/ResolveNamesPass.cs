@@ -25,9 +25,7 @@ public sealed class ResolveNamesPass : AbstractPass
 
             if (!(symbol is AbstractVariableDeclaration))
             {
-                throw new InvalidSymbolException(
-                    $"Имя '{e.Name}' не ссылается на переменную"
-                );
+                throw new InvalidSymbolException(e.Name, "variable");
             }
 
             e.Variable = (AbstractVariableDeclaration)symbol;
@@ -71,7 +69,7 @@ public sealed class ResolveNamesPass : AbstractPass
 
         if (IsBuiltInFunction(d.Name))
         {
-            throw new DuplicateSymbolException(d.Name);
+            throw DuplicateSymbolException.DuplicateVariableOrFunction(d.Name);
         }
 
         _symbols.DefineSymbol(d.Name, d);
@@ -84,9 +82,7 @@ public sealed class ResolveNamesPass : AbstractPass
 
         if (symbol is not AbstractVariableDeclaration)
         {
-            throw new InvalidSymbolException(
-                $"Имя '{s.Name}' не ссылается на переменную"
-            );
+            throw new InvalidSymbolException(s.Name, "variable");
         }
 
         s.Variable = (AbstractVariableDeclaration)symbol;
@@ -104,9 +100,7 @@ public sealed class ResolveNamesPass : AbstractPass
                 }
                 catch (DuplicateSymbolException)
                 {
-                    throw new DuplicateSymbolException(
-                        $"Функция '{function.Name}' уже объявлена в этой области видимости"
-                    );
+                    throw DuplicateSymbolException.DuplicateVariableOrFunction(function.Name);
                 }
             }
         }

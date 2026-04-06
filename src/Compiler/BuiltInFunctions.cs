@@ -6,7 +6,7 @@ using Runtime;
 
 using ValueType = Runtime.ValueType;
 
-namespace RusMatushkaParser;
+namespace Compiler;
 
 /// <summary>
 /// Объект, предоставляющий доступ к встроенным символам языка.

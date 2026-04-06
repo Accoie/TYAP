@@ -8,9 +8,12 @@
 /// </summary>
 public class InvalidSymbolException : Exception
 {
-    public InvalidSymbolException(string message)
-        : base(message)
+    public InvalidSymbolException(string name, string expectedCategory)
+        : base($"Name {name} doesn't refer on {expectedCategory}")
     {
+        Name = name;
     }
+
+    public string Name { get; }
 }
 #pragma warning restore RCS1194

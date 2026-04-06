@@ -13,7 +13,6 @@ namespace MsilCodegen;
 public class MsilCodegenPass : IAstVisitor
 {
     private readonly ModuleBuilder _moduleBuilder;
-    private readonly TypeMapper _typeMapper;
 
     /// <summary>
     /// Тип Program будущей программы.
@@ -28,7 +27,6 @@ public class MsilCodegenPass : IAstVisitor
     public MsilCodegenPass(ModuleBuilder moduleBuilder)
     {
         _moduleBuilder = moduleBuilder;
-        _typeMapper = new TypeMapper();
     }
 
     /// <summary>
@@ -89,71 +87,6 @@ public class MsilCodegenPass : IAstVisitor
         }
     }
 
-    public void Visit(AssignmentStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(IfElseStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(ForLoopStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(InputStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(ReturnStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(VariableDeclarationStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(FunctionDeclarationStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(WhileLoopStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(BreakStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(ContinueStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(FunctionCallStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(BinaryOperationExpression e)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(UnaryOperationExpression e)
-    {
-        throw new NotImplementedException();
-    }
-
     public void Visit(LiteralExpression e)
     {
         if (e.ResultType == ValueType.Integer)
@@ -173,27 +106,7 @@ public class MsilCodegenPass : IAstVisitor
             throw new NotImplementedException($"Literal of type {e.ResultType} are not supported yet.");
         }
     }
-
-    public void Visit(FunctionCallExpression s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(VariableExpression variableExpression)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(ParameterDeclaration parameterDeclarationStatement)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(IteratorDeclaration iteratorDeclaration)
-    {
-        throw new NotImplementedException();
-    }
-
+    
     /// <summary>
     /// Находит статический метод указанного типа стандартной библиотеки классов .NET.
     /// </summary>

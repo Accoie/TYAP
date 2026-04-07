@@ -242,61 +242,6 @@ public class MsilCodegenPass : IAstVisitor
         _il.Emit(OpCodes.Ldloc, local);
     }
 
-    public void Visit(FunctionCallExpression s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(IfElseStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(ForLoopStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(ReturnStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(FunctionDeclarationStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(WhileLoopStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(BreakStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(ContinueStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(FunctionCallStatement s)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(ParameterDeclaration parameterDeclarationStatement)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(IteratorDeclaration iteratorDeclaration)
-    {
-        throw new NotImplementedException();
-    }
-
     /// <summary>
     /// Генерирует код вычисления бинарной операции над целыми и вещественными числами.
     /// </summary>
@@ -304,6 +249,9 @@ public class MsilCodegenPass : IAstVisitor
     {
         switch (e.Operation)
         {
+            case BinaryOperation.Exponentiate:
+                EmitPowerOperation(e);
+                break;
             case BinaryOperation.And:
                 EmitLogicalAnd(e);
                 break;
@@ -357,6 +305,38 @@ public class MsilCodegenPass : IAstVisitor
                 }
 
                 break;
+        }
+    }
+
+    /// <summary>
+    /// Генерирует код возведения в степень.
+    /// </summary>
+    private void EmitPowerOperation(BinaryOperationExpression e)
+    {
+        MethodInfo mathPow = typeof(Math).GetMethod(
+            "Pow",
+            [typeof(double), typeof(double)]
+        )!;
+
+        e.Left.Accept(this);
+
+        if (e.Left.ResultType == ValueType.Integer)
+        {
+            _il.Emit(OpCodes.Conv_R8);
+        }
+
+        e.Right.Accept(this);
+
+        if (e.Right.ResultType == ValueType.Integer)
+        {
+            _il.Emit(OpCodes.Conv_R8);
+        }
+
+        _il.Emit(OpCodes.Call, mathPow);
+
+        if (e.ResultType == ValueType.Integer)
+        {
+            _il.Emit(OpCodes.Conv_I4);
         }
     }
 

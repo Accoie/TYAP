@@ -51,7 +51,6 @@ public sealed class ResolveNamesPass : AbstractPass
 
         try
         {
-            PredeclareFunctions(s.Statements);
             ProcessDeclarationsAndStatements(s.Statements);
         }
         finally
@@ -88,24 +87,6 @@ public sealed class ResolveNamesPass : AbstractPass
         s.Variable = (AbstractVariableDeclaration)symbol;
     }
 
-    private void PredeclareFunctions(IEnumerable<Statement> statements)
-    {
-        foreach (Statement statement in statements)
-        {
-            if (statement is FunctionDeclarationStatement function)
-            {
-                try
-                {
-                    _symbols.DefineSymbol(function.Name, function);
-                }
-                catch (DuplicateSymbolException)
-                {
-                    throw DuplicateSymbolException.DuplicateVariableOrFunction(function.Name);
-                }
-            }
-        }
-    }
-
     private void ProcessDeclarationsAndStatements(IEnumerable<Statement> statements)
     {
         foreach (Statement statement in statements)
@@ -120,10 +101,6 @@ public sealed class ResolveNamesPass : AbstractPass
         {
             if (statement is VariableDeclarationStatement variable)
             {
-            }
-            else if (statement is FunctionDeclarationStatement function)
-            {
-                function.Accept(this);
             }
             else
             {

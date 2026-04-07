@@ -28,37 +28,9 @@ public abstract class AbstractPass : IAstVisitor
     {
     }
 
-    public virtual void Visit(FunctionCallExpression e)
-    {
-        foreach (Expression argument in e.Arguments)
-        {
-            argument.Accept(this);
-        }
-    }
-
     public virtual void Visit(AssignmentStatement s)
     {
         s.Value.Accept(this);
-    }
-
-    public virtual void Visit(IfElseStatement s)
-    {
-        s.Condition.Accept(this);
-        s.ThenBranch.Accept(this);
-        s.ElseBranch?.Accept(this);
-    }
-
-    public virtual void Visit(ForLoopStatement s)
-    {
-        s.Iterator.Accept(this);
-        s.EndValue.Accept(this);
-        s.Body.Accept(this);
-    }
-
-    public virtual void Visit(WhileLoopStatement s)
-    {
-        s.Condition.Accept(this);
-        s.Body.Accept(this);
     }
 
     public virtual void Visit(InputStatement s)
@@ -81,48 +53,8 @@ public abstract class AbstractPass : IAstVisitor
         }
     }
 
-    public virtual void Visit(ReturnStatement s)
-    {
-        s.Value?.Accept(this);
-    }
-
     public virtual void Visit(VariableDeclarationStatement s)
     {
         s.Value?.Accept(this);
-    }
-
-    public virtual void Visit(FunctionDeclarationStatement s)
-    {
-        foreach (ParameterDeclaration parameter in s.Parameters)
-        {
-            parameter.Accept(this);
-        }
-
-        s.Body.Accept(this);
-    }
-
-    public virtual void Visit(BreakStatement s)
-    {
-    }
-
-    public virtual void Visit(ContinueStatement s)
-    {
-    }
-
-    public virtual void Visit(FunctionCallStatement s)
-    {
-        foreach (Expression argument in s.Arguments)
-        {
-            argument.Accept(this);
-        }
-    }
-
-    public virtual void Visit(ParameterDeclaration d)
-    {
-    }
-
-    public virtual void Visit(IteratorDeclaration iteratorDeclaration)
-    {
-        iteratorDeclaration.StartValue.Accept(this);
     }
 }

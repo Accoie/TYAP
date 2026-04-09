@@ -32,7 +32,7 @@ public sealed class ResolveNamesPass : AbstractPass
         }
         catch (UnknownSymbolException)
         {
-            throw new UnknownSymbolException($"Неизвестная переменная '{e.Name}'");
+            throw new UnknownSymbolException(e.Name);
         }
     }
 

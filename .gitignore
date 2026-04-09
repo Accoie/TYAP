@@ -224,3 +224,7 @@ AppPackages/
 #####
 # End of core ignore list, below put you custom 'per project' settings (patterns or path)
 #####
+
+# Data of code coverage
+tests/coverage/
+tests/coverage-report/

@@ -29,7 +29,7 @@ public struct AstAttribute<T>
             throw new InvalidOperationException($"Attribute {memberName} with type {typeof(T)} already has a value");
         }
 
-        this._value = value;
+        _value = value;
         _initialized = true;
     }
 }

@@ -8,6 +8,8 @@ using MsilBackend;
 
 using MsilCodegen;
 
+using Semantics;
+
 namespace Compiler;
 
 public class CompilerDriver
@@ -16,15 +18,16 @@ public class CompilerDriver
     {
         string code = File.ReadAllText(inputPath);
 
-        // Фронтенд компилятора:
-        //  1. Лексический анализ
-        //  2. Синтаксический анализ
+        // 1. Лексический анализ
+        // 2. Синтаксический анализ
+        // 3. Семантический анализ
         Parser parser = new(code);
         BlockStatement program = parser.ParseProgram();
+        SemanticsChecker checker = new();
+        checker.Check(program);
 
-        // Бэкенд компилятора:
-        //  1. Генерация MSIL-кода.
-        //  2. Сохранение исполняемого файла.
+        // 1. Генерация MSIL-кода.
+        // 2. Сохранение исполняемого файла.
         ExecutableBuilder executableBuilder = new(outputPath);
         MsilCodegenPass codegenPass = new(executableBuilder.ModuleBuilder);
         MethodBuilder mainMethod = codegenPass.GenerateProgramCode(program);

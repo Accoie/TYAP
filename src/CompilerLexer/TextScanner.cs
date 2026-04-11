@@ -6,7 +6,7 @@ public class TextScanner(string str) : IScanner
 
     public char Peek(int n = 0)
     {
-        int position = this._position + n;
+        int position = _position + n;
         return position >= str.Length ? '\0' : str[position];
     }
 

@@ -73,7 +73,7 @@ public class Parser
     /// </summary>
     private Statement ParseAssignment()
     {
-        string name = Match(TokenType.Identifier).Value!.ToString();
+        string name = Match(TokenType.Identifier).Value.ToString();
         Statement result;
         Match(TokenType.Assign);
         Expression value = ParseExpression();
@@ -91,7 +91,7 @@ public class Parser
     private VariableDeclarationStatement ParseVariableDeclaration()
     {
         Match(TokenType.Var);
-        string name = Match(TokenType.Identifier).Value!.ToString();
+        string name = Match(TokenType.Identifier).Value.ToString();
         Match(TokenType.Colon);
 
         ValueType type = _tokens.Peek().Type switch
@@ -124,7 +124,7 @@ public class Parser
         Match(TokenType.Input);
         Match(TokenType.LParen);
 
-        string variableName = Match(TokenType.Identifier).Value!.ToString();
+        string variableName = Match(TokenType.Identifier).Value.ToString();
 
         Match(TokenType.RParen);
         Match(TokenType.Semicolon);

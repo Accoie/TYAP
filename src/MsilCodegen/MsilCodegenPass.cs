@@ -481,14 +481,12 @@ public class MsilCodegenPass : IAstVisitor
     {
         LocalBuilder tempDouble = _il.DeclareLocal(typeof(double));
 
-        // Берем значение double из стека и объявляем переменную.
         _il.Emit(OpCodes.Stloc, tempDouble);
 
         _il.Emit(OpCodes.Ldloca, tempDouble);
 
         _il.Emit(OpCodes.Ldstr, "G15");
 
-        // Получаем culture info и загружаем в стек для форматирования
         MethodInfo invariantCultureGetter = typeof(CultureInfo)
             .GetProperty("InvariantCulture")!.GetMethod!;
 

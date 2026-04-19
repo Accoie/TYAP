@@ -30,13 +30,6 @@ public class Lexer
         { "arr", TokenType.Array },
         { "of", TokenType.Of },
         { "struct", TokenType.Structure },
-        { "abs", TokenType.Abs },
-        { "min", TokenType.Min },
-        { "max", TokenType.Max },
-        { "round", TokenType.Round },
-        { "len", TokenType.Len },
-        { "getsymbol", TokenType.GetSymbol },
-        { "tostring", TokenType.ToString },
     };
 
     public Lexer(IScanner scanner)

@@ -15,11 +15,17 @@ public class SemanticsChecker
 {
     private readonly AbstractPass[] _passes;
 
-    public SemanticsChecker()
+    public SemanticsChecker(IReadOnlyDictionary<string, BuiltInFunction> builtinFunctions)
     {
+        SymbolsTable globalSymbols = new(parent: null);
+        foreach ((string name, BuiltInFunction function) in builtinFunctions)
+        {
+            globalSymbols.DefineSymbol(name, function);
+        }
+
         _passes =
         [
-            new ResolveNamesPass(new SymbolsTable(null)),
+            new ResolveNamesPass(globalSymbols),
             new ResolveTypesPass(),
         ];
     }

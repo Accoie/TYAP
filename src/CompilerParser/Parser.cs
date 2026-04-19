@@ -13,6 +13,8 @@ public class Parser
 {
     private readonly TokenStream _tokens;
 
+    private readonly Stack<ValueType> _returnTypes = new();
+
     public Parser(string code)
     {
         _tokens = new TokenStream(code);
@@ -49,7 +51,14 @@ public class Parser
 
     /// <summary>
     /// Разбирает инструкции.
-    /// Правило: statement = variable_declaration | assignment_statement | input_statement | output_statement.
+    /// Правило: statement = variable_declaration
+    ///                     | function_declaration
+    ///                     | assignment_statement
+    ///                     | input_statement
+    ///                     | output_statement
+    ///                     | return_statement
+    ///                     | if_statement
+    ///                     | expression_statement.
     /// </summary>
     private Statement ParseStatement()
     {
@@ -57,13 +66,16 @@ public class Parser
 
         return token switch
         {
-            TokenType.Identifier => ParseAssignment(),
+            TokenType.Identifier => ParseAssignmentOrFunctionCall(),
             TokenType.Var => ParseVariableDeclaration(),
             TokenType.Begin => ParseBlock(true),
             TokenType.Input => ParseInput(),
             TokenType.Output => ParseOutput(),
+            TokenType.Function => ParseFunctionDeclaration(),
+            TokenType.If => ParseIfStatement(),
+            TokenType.Return => ParseReturnStatement(),
 
-            _ => throw new UnexpectedLexemeException(TokenType.Output, _tokens.Peek()),
+            _ => throw new UnexpectedLexemeException(_tokens.Peek()),
         };
     }
 
@@ -71,13 +83,20 @@ public class Parser
     /// Разбирает оператор присваивания.
     /// Правило: assignment_statement = identifier, "=", expression, ";".
     /// </summary>
-    private Statement ParseAssignment()
+    private Statement ParseAssignmentOrFunctionCall()
     {
-        string name = Match(TokenType.Identifier).Value.ToString();
+        string name = Match(TokenType.Identifier).Value!.ToString();
         Statement result;
-        Match(TokenType.Assign);
-        Expression value = ParseExpression();
-        result = new AssignmentStatement(name, value);
+        if (_tokens.Peek().Type == TokenType.Assign)
+        {
+            Match(TokenType.Assign);
+            Expression value = ParseExpression();
+            result = new AssignmentStatement(name, value);
+        }
+        else
+        {
+            result = ParseFunctionCallStatement(name);
+        }
 
         Match(TokenType.Semicolon);
 
@@ -85,13 +104,13 @@ public class Parser
     }
 
     /// <summary>
-    /// Разбирает объявление переменной с возможным присваиванием.
+    /// Разбирает оператор присваивания.
     /// Правило: variable_declaration = "var", identifier, ":", type, [ "=", expression ], ";" ;
     /// </summary>
     private VariableDeclarationStatement ParseVariableDeclaration()
     {
         Match(TokenType.Var);
-        string name = Match(TokenType.Identifier).Value.ToString();
+        string name = Match(TokenType.Identifier).Value!.ToString();
         Match(TokenType.Colon);
 
         ValueType type = _tokens.Peek().Type switch
@@ -99,7 +118,7 @@ public class Parser
             TokenType.IntegerType => ValueType.Integer,
             TokenType.FloatType => ValueType.Float,
             TokenType.StringType => ValueType.String,
-            _ => throw new UnexpectedLexemeException(TokenType.StringType, _tokens.Peek()),
+            _ => throw new UnexpectedLexemeException(_tokens.Peek()),
         };
         _tokens.Advance();
 
@@ -124,7 +143,7 @@ public class Parser
         Match(TokenType.Input);
         Match(TokenType.LParen);
 
-        string variableName = Match(TokenType.Identifier).Value.ToString();
+        string variableName = Match(TokenType.Identifier).Value!.ToString();
 
         Match(TokenType.RParen);
         Match(TokenType.Semicolon);
@@ -154,6 +173,180 @@ public class Parser
     }
 
     /// <summary>
+    /// Разбирает объявление функции.
+    /// Правило: function_declaration = "function", function_name, "(", [ parameter_list ], ")", [ ":", type ], block.
+    /// </summary>
+    private FunctionDeclarationStatement ParseFunctionDeclaration()
+    {
+        Match(TokenType.Function);
+        string name = Match(TokenType.Identifier).Value!.ToString();
+
+        Match(TokenType.LParen);
+        List<ParameterDeclaration> parameters = ParseParameterList();
+
+        Match(TokenType.RParen);
+
+        TokenType returnTypetokens = _tokens.Peek().Type;
+        ValueType resultType;
+        if (returnTypetokens == TokenType.Colon)
+        {
+            Match(TokenType.Colon);
+            resultType = ParseType();
+        }
+        else
+        {
+            resultType = ValueType.Void;
+        }
+
+        _returnTypes.Push(resultType);
+
+        BlockStatement body = ParseBlock(false);
+
+        _returnTypes.Pop();
+
+        return new FunctionDeclarationStatement(name, parameters, body, resultType);
+    }
+
+    /// <summary>
+    /// Разбирает вызов функции.
+    /// Правило: function_call = function_name, "(", [ argument_list ], ")".
+    /// </summary>
+    private Expression ParseFunctionCall(string name)
+    {
+        Match(TokenType.LParen);
+
+        List<Expression> arguments = new List<Expression>();
+        if (_tokens.Peek().Type != TokenType.RParen)
+        {
+            arguments.Add(ParseExpression());
+            while (_tokens.Peek().Type == TokenType.Comma)
+            {
+                _tokens.Advance();
+                arguments.Add(ParseExpression());
+            }
+        }
+
+        Match(TokenType.RParen);
+
+        return new FunctionCallExpression(name, arguments);
+    }
+
+    /// <summary>
+    /// Разбирает вызов функции.
+    /// Правило: function_call = function_name, "(", [ argument_list ], ")".
+    /// </summary>
+    private Statement ParseFunctionCallStatement(string name)
+    {
+        Match(TokenType.LParen);
+
+        List<Expression> arguments = new List<Expression>();
+        if (_tokens.Peek().Type != TokenType.RParen)
+        {
+            arguments.Add(ParseExpression());
+            while (_tokens.Peek().Type == TokenType.Comma)
+            {
+                _tokens.Advance();
+                arguments.Add(ParseExpression());
+            }
+        }
+
+        Match(TokenType.RParen);
+
+        return new FunctionCallStatement(name, arguments);
+    }
+
+    /// <summary>
+    /// Разбирает условный оператор if.
+    /// Правило: if_statement = "if", "(", expression, ")", "then", statement, [ "else", statement ].
+    /// </summary>
+    private Statement ParseIfStatement()
+    {
+        Match(TokenType.If);
+        Match(TokenType.LParen);
+        Expression condition = ParseExpression();
+        Match(TokenType.RParen);
+        Match(TokenType.Then);
+        BlockStatement thenBranch = ParseBlock(true);
+        BlockStatement? elseBranch = null;
+
+        if (_tokens.Peek().Type == TokenType.Else)
+        {
+            _tokens.Advance();
+            elseBranch = ParseBlock(true);
+        }
+
+        return new IfElseStatement(condition, thenBranch, elseBranch);
+    }
+
+    /// <summary>
+    /// Разбирает список параметров функции.
+    /// Правило: parameter_list = parameter, { ",", parameter }.
+    /// </summary>
+    private List<ParameterDeclaration> ParseParameterList()
+    {
+        List<ParameterDeclaration> parameters = new List<ParameterDeclaration>();
+
+        if (_tokens.Peek().Type == TokenType.RParen)
+        {
+            return parameters;
+        }
+
+        string paramName = Match(TokenType.Identifier).Value!.ToString();
+        Match(TokenType.Colon);
+        parameters.Add(new ParameterDeclaration(paramName, ParseType()));
+
+        while (_tokens.Peek().Type == TokenType.Comma)
+        {
+            _tokens.Advance();
+            paramName = Match(TokenType.Identifier).Value!.ToString();
+            Match(TokenType.Colon);
+            parameters.Add(new ParameterDeclaration(paramName, ParseType()));
+        }
+
+        return parameters;
+    }
+
+    /// <summary>
+    /// Разбирает оператор возврата.
+    /// Правило: return_statement = "return", [ expression ], ";".
+    /// </summary>
+    private Statement ParseReturnStatement()
+    {
+        Match(TokenType.Return);
+        if (_tokens.Peek().Type == TokenType.Semicolon)
+        {
+            Match(TokenType.Semicolon);
+            return new ReturnStatement(null, _returnTypes.Peek());
+        }
+
+        Expression returnValue;
+
+        returnValue = ParseExpression();
+
+        Match(TokenType.Semicolon);
+
+        return new ReturnStatement(returnValue, _returnTypes.Peek());
+    }
+
+    /// <summary>
+    /// Разбирает тип данных.
+    /// Правило: type = "integer" | "float" | "string".
+    /// </summary>
+    private ValueType ParseType()
+    {
+        ValueType type = _tokens.Peek().Type switch
+        {
+            TokenType.IntegerType => ValueType.Integer,
+            TokenType.FloatType => ValueType.Float,
+            TokenType.StringType => ValueType.String,
+            _ => throw new UnexpectedLexemeException(_tokens.Peek()),
+        };
+
+        _tokens.Advance();
+        return type;
+    }
+
+    /// <summary>
     /// Разбирает выражение.
     /// Правило: expression = logical_or_expression.
     /// </summary>
@@ -163,7 +356,7 @@ public class Parser
     }
 
     /// <summary>
-    /// Разбирает выражение логического ИЛИ.
+    /// Разбирает логическое ИЛИ выражение.
     /// Правило: logical_or_expression = logical_and_expression, { logical_or_operator, logical_and_expression }.
     /// </summary>
     private Expression ParseLogicalOrExpression()
@@ -181,7 +374,7 @@ public class Parser
     }
 
     /// <summary>
-    /// Разбирает выражение логического И.
+    /// Разбирает логическое И выражение.
     /// Правило: logical_and_expression = comparison_expression, { logical_and_operator, comparison_expression }.
     /// </summary>
     private Expression ParseLogicalAndExpression()
@@ -216,7 +409,7 @@ public class Parser
                 TokenType.GreaterThan => BinaryOperation.GreaterThan,
                 TokenType.LessThanOrEqual => BinaryOperation.LessThanOrEqual,
                 TokenType.GreaterThanOrEqual => BinaryOperation.GreaterThanOrEqual,
-                _ => throw new UnexpectedLexemeException(TokenType.GreaterThanOrEqual, _tokens.Peek()),
+                _ => throw new UnexpectedLexemeException(_tokens.Peek()),
             };
 
             _tokens.Advance();
@@ -290,7 +483,7 @@ public class Parser
     }
 
     /// <summary>
-    /// Разбирает унарные операции и выражения возведения в степень.
+    /// Разбирает унарные операции и факторные выражения.
     /// Правило: factor_expression = [ unary_operator ], exponentiation_expression.
     /// </summary>
     private Expression ParseFactorExpression()
@@ -302,7 +495,7 @@ public class Parser
                 TokenType.PlusSign => UnaryOperation.Plus,
                 TokenType.MinusSign => UnaryOperation.Minus,
                 TokenType.LogicalNot => UnaryOperation.Not,
-                _ => throw new UnexpectedLexemeException(TokenType.LogicalNot, _tokens.Peek()),
+                _ => throw new UnexpectedLexemeException(_tokens.Peek()),
             };
 
             _tokens.Advance();
@@ -362,10 +555,17 @@ public class Parser
 
             case TokenType.Identifier:
                 string name = Match(TokenType.Identifier).Value.ToString();
-                return new VariableExpression(name);
+                if (_tokens.Peek().Type == TokenType.LParen)
+                {
+                    return ParseFunctionCall(name);
+                }
+                else
+                {
+                    return new VariableExpression(name);
+                }
 
             default:
-                throw new UnexpectedLexemeException(TokenType.Identifier, token);
+                throw new UnexpectedLexemeException(token);
         }
     }
 

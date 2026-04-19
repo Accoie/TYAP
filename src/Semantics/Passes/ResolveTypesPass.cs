@@ -90,6 +90,61 @@ public sealed class ResolveTypesPass : AbstractPass
         }
     }
 
+    public override void Visit(VariableExpression e)
+    {
+        base.Visit(e);
+
+        e.ResultType = e.Variable.ResultType;
+    }
+
+    /// <summary>
+    /// Проверяет соответствие типов параметров функции и аргументов при вызове этой функции.
+    /// </summary>
+    public override void Visit(FunctionCallExpression e)
+    {
+        base.Visit(e);
+
+        if (IsBuiltInFunction(e.Name))
+        {
+            CheckBuiltInFunctionTypes(e.Name, e.Arguments);
+        }
+        else
+        {
+            for (int i = 0; i < e.Arguments.Count; i++)
+            {
+                if (e.Function.Parameters[i].ResultType != e.Arguments[i].ResultType)
+                {
+                    throw new TypeMismatchException($"Функция '{e.Name}' ожидает аргумент '{e.Function.Parameters[i].Name} с типом '{e.Arguments[i].ResultType}");
+                }
+            }
+        }
+
+        e.ResultType = e.Function.ResultType;
+    }
+
+    /// <summary>
+    /// Проверяет соответствие типов параметров функции и аргументов при вызове функции как оператора.
+    /// </summary>
+    public override void Visit(FunctionCallStatement s)
+    {
+        base.Visit(s);
+
+        if (IsBuiltInFunction(s.Name))
+        {
+            CheckBuiltInFunctionTypes(s.Name, s.Arguments);
+        }
+        else
+        {
+            for (int i = 0; i < s.Arguments.Count; i++)
+            {
+                if (s.Function.Parameters[i].ResultType != s.Arguments[i].ResultType)
+                {
+                    throw new InvalidFunctionCallException($"Функция '{s.Name}' ожидает аргумент '{s.Function.Parameters[i].Name} с типом '{s.Arguments[i].ResultType}");
+                }
+            }
+        }
+    }
+
     /// <summary>
     /// Проверяет тип переменной и тип выражения, которым она инициализируется.
     /// </summary>
@@ -137,6 +192,50 @@ public sealed class ResolveTypesPass : AbstractPass
     }
 
     /// <summary>
+    /// Проверяет оператор return.
+    /// </summary>
+    public override void Visit(ReturnStatement s)
+    {
+        base.Visit(s);
+
+        bool isTypeMismatch = s.Value == null
+            ? s.Type != ValueType.Void
+            : s.Type != s.Value.ResultType;
+
+        if (isTypeMismatch)
+        {
+            throw new TypeMismatchException($"Значение в 'return' не соответствует ожидаемому");
+        }
+    }
+
+    /// <summary>
+    /// Проверяет объявление функции.
+    /// </summary>
+    public override void Visit(FunctionDeclarationStatement s)
+    {
+        base.Visit(s);
+
+        if (s.ResultType != ValueType.Void)
+        {
+            if (!ContainsReturnStatement(s.Body))
+            {
+                throw new TypeMismatchException(
+                    $"Функция '{s.Name}' объявлена с типом возвращаемого значения {s.ResultType}, " +
+                    $"но не содержит оператора 'return'"
+                );
+            }
+        }
+    }
+
+    /// <summary>
+    /// Проверяет объявление параметра.
+    /// </summary>
+    public override void Visit(ParameterDeclaration d)
+    {
+        base.Visit(d);
+    }
+
+    /// <summary>
     /// Проверяет оператор ввода.
     /// </summary>
     public override void Visit(InputStatement s)
@@ -158,13 +257,6 @@ public sealed class ResolveTypesPass : AbstractPass
                 throw new TypeMismatchException("В выводе не может быть пустой тип");
             }
         }
-    }
-
-    public override void Visit(VariableExpression e)
-    {
-        base.Visit(e);
-
-        e.ResultType = e.Variable.ResultType;
     }
 
     /// <summary>
@@ -255,5 +347,93 @@ public sealed class ResolveTypesPass : AbstractPass
             default:
                 throw new ArgumentException($"Неизвестная бинарная операция {operation}");
         }
+    }
+
+    /// <summary>
+    /// Проверяет типы аргументов для встроенной функции, вызываемой как оператор.
+    /// </summary>
+    private void CheckBuiltInFunctionTypes(string name, IReadOnlyList<Expression> arguments)
+    {
+        switch (name)
+        {
+            case "abs":
+            case "round":
+                if (arguments[0].ResultType != ValueType.Float && arguments[0].ResultType != ValueType.Integer)
+                {
+                    throw new TypeMismatchException($"Функция '{name}' ожидает числовой аргумент");
+                }
+
+                break;
+            case "min":
+            case "max":
+                foreach (Expression arg in arguments)
+                {
+                    if (arg.ResultType != ValueType.Float && arg.ResultType != ValueType.Integer)
+                    {
+                        throw new TypeMismatchException($"Функция '{name}' ожидает числовые аргументы");
+                    }
+                }
+
+                break;
+
+            case "tostring":
+                if (arguments[0].ResultType != ValueType.Float && arguments[0].ResultType != ValueType.Integer)
+                {
+                    throw new TypeMismatchException($"Функция '{name}' ожидает числовой аргумент");
+                }
+
+                break;
+
+            default:
+                throw new ArgumentException($"Неизвестная встроенная функция: {name}");
+        }
+    }
+
+    /// <summary>
+    /// Проверяет, содержит ли блок хотя бы один ReturnStatement.
+    /// Рекурсивно проверяет вложенные блоки.
+    /// </summary>
+    private bool ContainsReturnStatement(BlockStatement block)
+    {
+        foreach (Statement statement in block.Statements)
+        {
+            if (statement is ReturnStatement)
+            {
+                return true;
+            }
+
+            if (statement is IfElseStatement ifElse)
+            {
+                if (ContainsReturnStatement(ifElse.ThenBranch) ||
+                    (ifElse.ElseBranch != null && ContainsReturnStatement(ifElse.ElseBranch)))
+                {
+                    return true;
+                }
+            }
+            else if (statement is BlockStatement nestedBlock)
+            {
+                if (ContainsReturnStatement(nestedBlock))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Проверяет, является ли функция встроенной.
+    /// </summary>
+    private bool IsBuiltInFunction(string name)
+    {
+        string[] builtInFunctions =
+        {
+            "abs", "min", "max", "round",
+            "len", "getsymbol", "tostring",
+        };
+
+        return builtInFunctions.Any(f =>
+            string.Equals(f, name, StringComparison.OrdinalIgnoreCase));
     }
 }

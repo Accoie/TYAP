@@ -11,9 +11,6 @@ public class UnknownSymbolException : Exception
     public UnknownSymbolException(string name)
         : base($"Имя {name} не объявлено в текущем контексте")
     {
-        Name = name;
     }
-
-    public string Name { get; }
 }
 #pragma warning restore RCS1194

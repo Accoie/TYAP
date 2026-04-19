@@ -40,7 +40,7 @@ public sealed class SymbolsTable
     {
         if (!_symbols.TryAdd(name, symbol))
         {
-            throw DuplicateSymbolException.DuplicateVariableOrFunction(name);
+            throw new DuplicateSymbolException(name);
         }
     }
 }

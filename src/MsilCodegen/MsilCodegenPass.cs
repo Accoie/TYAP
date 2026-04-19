@@ -1,11 +1,12 @@
 ﻿using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Security.AccessControl;
 
 using Ast;
 using Ast.Expressions;
 using Ast.Statements;
+
+using RusMatushkaParser;
 
 using ValueType = Runtime.ValueType;
 
@@ -14,6 +15,8 @@ namespace MsilCodegen;
 public class MsilCodegenPass : IAstVisitor
 {
     private readonly ModuleBuilder _moduleBuilder;
+    private readonly TypeMapper _typeMapper;
+    private readonly BuiltinFunctionEmitter _builtinFunctionEmitter;
 
     /// <summary>
     /// Тип Program будущей программы.
@@ -30,10 +33,18 @@ public class MsilCodegenPass : IAstVisitor
     /// </summary>
     private readonly Stack<Dictionary<string, LocalBuilder>> _scopesStack;
 
+    /// <summary>
+    /// Словарь методов, соответствующих пользовательским функциям исходной программы.
+    /// </summary>
+    private readonly Dictionary<string, MethodBuilder> _userFunctionMethodsMap;
+
     public MsilCodegenPass(ModuleBuilder moduleBuilder)
     {
         _moduleBuilder = moduleBuilder;
+        _typeMapper = new TypeMapper();
+        _builtinFunctionEmitter = new BuiltinFunctionEmitter();
         _scopesStack = new Stack<Dictionary<string, LocalBuilder>>();
+        _userFunctionMethodsMap = new Dictionary<string, MethodBuilder>();
     }
 
     /// <summary>
@@ -242,6 +253,113 @@ public class MsilCodegenPass : IAstVisitor
         _il.Emit(OpCodes.Ldloc, local);
     }
 
+    public void Visit(FunctionCallExpression s)
+    {
+        foreach (Expression argument in s.Arguments)
+        {
+            argument.Accept(this);
+        }
+
+        if (s.Function is BuiltInFunction)
+        {
+            _builtinFunctionEmitter.EmitCallBuiltinFunction(s.Name, _il);
+        }
+        else
+        {
+            if (!_userFunctionMethodsMap.TryGetValue(s.Name, out MethodBuilder? method))
+            {
+                throw new InvalidOperationException($"Cannot find .NET method for function with name {s.Name}");
+            }
+
+            _il.Emit(OpCodes.Call, method);
+        }
+    }
+
+    public void Visit(IfElseStatement s)
+    {
+        Label endLabel = _il.DefineLabel();
+        if (s.ElseBranch != null)
+        {
+            Label elseLabel = _il.DefineLabel();
+            s.Condition.Accept(this);
+            _il.Emit(OpCodes.Brfalse, elseLabel);
+
+            s.ThenBranch.Accept(this);
+            _il.Emit(OpCodes.Br, endLabel);
+
+            _il.MarkLabel(elseLabel);
+            s.ElseBranch.Accept(this);
+        }
+        else
+        {
+            s.Condition.Accept(this);
+            _il.Emit(OpCodes.Brfalse, endLabel);
+            s.ThenBranch.Accept(this);
+        }
+
+        _il.MarkLabel(endLabel);
+    }
+
+    public void Visit(ReturnStatement s)
+    {
+        s.Value?.Accept(this);
+
+        _il.Emit(OpCodes.Ret);
+    }
+
+    public void Visit(FunctionDeclarationStatement s)
+    {
+        MethodBuilder method = DefineProgramClassMethod(
+            GetUserFunctionMethodName(s.Name),
+            _typeMapper.MapType(s.ResultType),
+            s.Parameters.Select(p => _typeMapper.MapType(p.ResultType)).ToArray()
+        );
+        _userFunctionMethodsMap[s.Name] = method;
+
+        ILGenerator previousIl = _il;
+
+        try
+        {
+            _il = method.GetILGenerator();
+            BeginScope();
+
+            for (int i = 0, iEnd = s.Parameters.Count; i < iEnd; ++i)
+            {
+                AbstractParameterDeclaration param = s.Parameters[i];
+                EmitDefineParameter(param.Name, param.ResultType, i);
+            }
+
+            s.Body.Accept(this);
+
+            _il.Emit(OpCodes.Ret);
+        }
+        finally
+        {
+            EndScope();
+            _il = previousIl;
+        }
+    }
+
+    public void Visit(FunctionCallStatement s)
+    {
+        FunctionCallExpression callExpr = new FunctionCallExpression(s.Name, s.Arguments.ToList())
+        {
+            Function = s.Function,
+            ResultType = s.Function.ResultType,
+        };
+
+        callExpr.Accept(this);
+
+        if (callExpr.ResultType != ValueType.Void)
+        {
+            _il.Emit(OpCodes.Pop);
+        }
+    }
+
+    public void Visit(ParameterDeclaration parameterDeclarationStatement)
+    {
+    }
+
     /// <summary>
     /// Генерирует код вычисления бинарной операции над целыми и вещественными числами.
     /// </summary>
@@ -249,9 +367,6 @@ public class MsilCodegenPass : IAstVisitor
     {
         switch (e.Operation)
         {
-            case BinaryOperation.Exponentiate:
-                EmitPowerOperation(e);
-                break;
             case BinaryOperation.And:
                 EmitLogicalAnd(e);
                 break;
@@ -305,38 +420,6 @@ public class MsilCodegenPass : IAstVisitor
                 }
 
                 break;
-        }
-    }
-
-    /// <summary>
-    /// Генерирует код возведения в степень.
-    /// </summary>
-    private void EmitPowerOperation(BinaryOperationExpression e)
-    {
-        MethodInfo mathPow = typeof(Math).GetMethod(
-            "Pow",
-            [typeof(double), typeof(double)]
-        )!;
-
-        e.Left.Accept(this);
-
-        if (e.Left.ResultType == ValueType.Integer)
-        {
-            _il.Emit(OpCodes.Conv_R8);
-        }
-
-        e.Right.Accept(this);
-
-        if (e.Right.ResultType == ValueType.Integer)
-        {
-            _il.Emit(OpCodes.Conv_R8);
-        }
-
-        _il.Emit(OpCodes.Call, mathPow);
-
-        if (e.ResultType == ValueType.Integer)
-        {
-            _il.Emit(OpCodes.Conv_I4);
         }
     }
 
@@ -481,12 +564,14 @@ public class MsilCodegenPass : IAstVisitor
     {
         LocalBuilder tempDouble = _il.DeclareLocal(typeof(double));
 
+        // Берем значение double из стека и объявляем переменную.
         _il.Emit(OpCodes.Stloc, tempDouble);
 
         _il.Emit(OpCodes.Ldloca, tempDouble);
 
         _il.Emit(OpCodes.Ldstr, "G15");
 
+        // Получаем culture info и загружаем в стек для форматирования
         MethodInfo invariantCultureGetter = typeof(CultureInfo)
             .GetProperty("InvariantCulture")!.GetMethod!;
 
@@ -533,6 +618,31 @@ public class MsilCodegenPass : IAstVisitor
     {
         _il.EndScope();
         _scopesStack.Pop();
+    }
+
+    /// <summary>
+    /// Создает локальную переменную для i-го параметра функции (нумерация начинается с нуля).
+    /// </summary>
+    private void EmitDefineParameter(string name, ValueType type, int argumentNo)
+    {
+        // Создаём локальную переменную для параметра функции.
+        LocalBuilder local = _il.DeclareLocal(_typeMapper.MapType(type));
+
+        // Загружаем значение новой переменной из i-го аргумента (нумерация начинается с нуля).
+        _il.Emit(OpCodes.Ldarg, argumentNo);
+        _il.Emit(OpCodes.Stloc, local);
+
+        // Добавляем в текущую область видимости.
+        CurrentScope.Add(name, local);
+    }
+
+    /// <summary>
+    /// Декорирует имя функции, чтобы гарантировать отсутствие пересечений с системными именами методов
+    ///  (такими как "Main").
+    /// </summary>
+    private string GetUserFunctionMethodName(string name)
+    {
+        return "Paspp" + name;
     }
 
     private MethodBuilder DefineProgramClassMethod(string name, Type returnType, Type[] parameterTypes)

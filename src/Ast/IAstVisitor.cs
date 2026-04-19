@@ -11,7 +11,11 @@ public interface IAstVisitor
 
     void Visit(LiteralExpression e);
 
+    void Visit(FunctionCallExpression s);
+
     void Visit(AssignmentStatement s);
+
+    void Visit(IfElseStatement s);
 
     void Visit(InputStatement s);
 
@@ -19,7 +23,15 @@ public interface IAstVisitor
 
     void Visit(BlockStatement s);
 
+    void Visit(ReturnStatement s);
+
     void Visit(VariableDeclarationStatement s);
+
+    void Visit(FunctionDeclarationStatement s);
+
+    void Visit(FunctionCallStatement s);
+
+    void Visit(ParameterDeclaration parameterDeclarationStatement);
 
     void Visit(VariableExpression variableExpression);
 }

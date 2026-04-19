@@ -1,4 +1,4 @@
-﻿using Ast.Expressions;
+using Ast.Expressions;
 using Ast.Statements;
 
 using Semantics.Exceptions;
@@ -40,7 +40,7 @@ public sealed class ResolveTypesPass : AbstractPass
         if (resultType == null)
         {
             throw new TypeMismatchException(
-                $"Бинарная операция '{e.Operation}' не допустима для типов {e.Left.ResultType} и {e.Right.ResultType}"
+                $"Binary operation '{e.Operation}' is not valid for types {e.Left.ResultType} and {e.Right.ResultType}"
             );
         }
 
@@ -69,7 +69,7 @@ public sealed class ResolveTypesPass : AbstractPass
                         e.ResultType = ValueType.Float;
                         break;
                     default:
-                        throw new TypeMismatchException($"Унарный минус/плюс не допустим для типа {operandType}");
+                        throw new TypeMismatchException($"Unary minus/plus is not valid for type {operandType}");
                 }
 
                 break;
@@ -78,7 +78,7 @@ public sealed class ResolveTypesPass : AbstractPass
                 if (operandType != ValueType.Integer )
                 {
                     throw new TypeMismatchException(
-                        $"Логическое НЕ не допустимо для типа {operandType}"
+                        $"Logical NOT is not valid for type {operandType}"
                     );
                 }
 
@@ -86,7 +86,7 @@ public sealed class ResolveTypesPass : AbstractPass
                 break;
 
             default:
-                throw new NotImplementedException($"Неизвестная унарная операция {e.Operation}");
+                throw new NotImplementedException($"Unknown unary operation {e.Operation}");
         }
     }
 
@@ -114,7 +114,7 @@ public sealed class ResolveTypesPass : AbstractPass
             {
                 if (e.Function.Parameters[i].ResultType != e.Arguments[i].ResultType)
                 {
-                    throw new TypeMismatchException($"Функция '{e.Name}' ожидает аргумент '{e.Function.Parameters[i].Name} с типом '{e.Arguments[i].ResultType}");
+                    throw new TypeMismatchException($"Function '{e.Name}' expects argument '{e.Function.Parameters[i].Name}' with type '{e.Arguments[i].ResultType}'");
                 }
             }
         }
@@ -139,7 +139,7 @@ public sealed class ResolveTypesPass : AbstractPass
             {
                 if (s.Function.Parameters[i].ResultType != s.Arguments[i].ResultType)
                 {
-                    throw new InvalidFunctionCallException($"Функция '{s.Name}' ожидает аргумент '{s.Function.Parameters[i].Name} с типом '{s.Arguments[i].ResultType}");
+                    throw new InvalidFunctionCallException($"Function '{s.Name}' expects argument '{s.Function.Parameters[i].Name}' with type '{s.Arguments[i].ResultType}'");
                 }
             }
         }
@@ -158,7 +158,7 @@ public sealed class ResolveTypesPass : AbstractPass
             if (d.DeclaredType != valueType)
             {
                 throw new TypeMismatchException(
-                    $"Нельзя инициализировать переменную типа {d.DeclaredType} значением типа {valueType}"
+                    $"Cannot initialize variable of type {d.DeclaredType} with value of type {valueType}"
                 );
             }
         }
@@ -178,7 +178,7 @@ public sealed class ResolveTypesPass : AbstractPass
         if (s.Value.ResultType != s.Variable.ResultType)
         {
             throw new TypeMismatchException(
-                $"Тип переменной, которой присваивается значение, не совпадает с объявленным"
+                $"Type of variable being assigned does not match the declared type"
             );
         }
     }
@@ -204,7 +204,7 @@ public sealed class ResolveTypesPass : AbstractPass
 
         if (isTypeMismatch)
         {
-            throw new TypeMismatchException($"Значение в 'return' не соответствует ожидаемому");
+            throw new TypeMismatchException($"Return value does not match the expected type");
         }
     }
 
@@ -220,8 +220,8 @@ public sealed class ResolveTypesPass : AbstractPass
             if (!ContainsReturnStatement(s.Body))
             {
                 throw new TypeMismatchException(
-                    $"Функция '{s.Name}' объявлена с типом возвращаемого значения {s.ResultType}, " +
-                    $"но не содержит оператора 'return'"
+                    $"Function '{s.Name}' is declared with return type {s.ResultType}, " +
+                    $"but does not contain a 'return' statement"
                 );
             }
         }
@@ -254,7 +254,7 @@ public sealed class ResolveTypesPass : AbstractPass
         {
             if (arg.ResultType == ValueType.Void)
             {
-                throw new TypeMismatchException("В выводе не может быть пустой тип");
+                throw new TypeMismatchException("Output cannot contain void type");
             }
         }
     }
@@ -345,7 +345,7 @@ public sealed class ResolveTypesPass : AbstractPass
                 return null;
 
             default:
-                throw new ArgumentException($"Неизвестная бинарная операция {operation}");
+                throw new ArgumentException($"Unknown binary operation {operation}");
         }
     }
 
@@ -360,7 +360,7 @@ public sealed class ResolveTypesPass : AbstractPass
             case "round":
                 if (arguments[0].ResultType != ValueType.Float && arguments[0].ResultType != ValueType.Integer)
                 {
-                    throw new TypeMismatchException($"Функция '{name}' ожидает числовой аргумент");
+                    throw new TypeMismatchException($"Function '{name}' expects a numeric argument");
                 }
 
                 break;
@@ -370,7 +370,7 @@ public sealed class ResolveTypesPass : AbstractPass
                 {
                     if (arg.ResultType != ValueType.Float && arg.ResultType != ValueType.Integer)
                     {
-                        throw new TypeMismatchException($"Функция '{name}' ожидает числовые аргументы");
+                        throw new TypeMismatchException($"Function '{name}' expects numeric arguments");
                     }
                 }
 
@@ -379,13 +379,13 @@ public sealed class ResolveTypesPass : AbstractPass
             case "tostring":
                 if (arguments[0].ResultType != ValueType.Float && arguments[0].ResultType != ValueType.Integer)
                 {
-                    throw new TypeMismatchException($"Функция '{name}' ожидает числовой аргумент");
+                    throw new TypeMismatchException($"Function '{name}' expects a numeric argument");
                 }
 
                 break;
 
             default:
-                throw new ArgumentException($"Неизвестная встроенная функция: {name}");
+                throw new ArgumentException($"Unknown built-in function: {name}");
         }
     }
 

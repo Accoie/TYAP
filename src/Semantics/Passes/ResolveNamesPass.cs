@@ -1,4 +1,4 @@
-﻿using Ast.Expressions;
+using Ast.Expressions;
 using Ast.Statements;
 
 using Semantics.Exceptions;
@@ -27,16 +27,14 @@ public sealed class ResolveNamesPass : AbstractPass
 
             if (!(symbol is AbstractVariableDeclaration))
             {
-                throw new InvalidSymbolException(
-                    $"Имя '{e.Name}' не ссылается на переменную"
-                );
+                throw new InvalidSymbolException(e.Name, "variable");
             }
 
             e.Variable = (AbstractVariableDeclaration)symbol;
         }
         catch (UnknownSymbolException)
         {
-            throw new UnknownSymbolException($"Неизвестная переменная '{e.Name}'");
+            throw new UnknownSymbolException($"Unknown variable '{e.Name}'");
         }
     }
 
@@ -62,14 +60,12 @@ public sealed class ResolveNamesPass : AbstractPass
                 }
                 else
                 {
-                    throw new InvalidSymbolException(
-                        $"Имя '{e.Name}' не ссылается на функцию"
-                    );
+                    throw new InvalidSymbolException(e.Name, "variable");
                 }
             }
             catch (UnknownSymbolException)
             {
-                throw new UnknownSymbolException($"Неизвестная функция '{e.Name}'");
+                throw new UnknownSymbolException($"Unknown function '{e.Name}'");
             }
         }
         else
@@ -91,8 +87,8 @@ public sealed class ResolveNamesPass : AbstractPass
                 if (s.Arguments.Count != function.Parameters.Count)
                 {
                     throw new InvalidFunctionCallException(
-                        $"Функция '{s.Name}' ожидает {function.Parameters.Count} аргументов, " +
-                        $"но получено {s.Arguments.Count}"
+                        $"Function '{s.Name}' expects {function.Parameters.Count} arguments, " +
+                        $"but got {s.Arguments.Count}"
                     );
                 }
 
@@ -101,7 +97,8 @@ public sealed class ResolveNamesPass : AbstractPass
             else
             {
                 throw new InvalidSymbolException(
-                    $"Имя '{s.Name}' не ссылается на функцию"
+                    $"Name '{s.Name}' does not refer to a function",
+                    s.Name
                 );
             }
         }
@@ -134,7 +131,7 @@ public sealed class ResolveNamesPass : AbstractPass
 
         if (IsBuiltInFunction(d.Name))
         {
-            throw new DuplicateSymbolException(d.Name);
+            throw DuplicateSymbolException.DuplicateVariableOrFunction(d.Name);
         }
 
         _symbols.DefineSymbol(d.Name, d);
@@ -170,9 +167,7 @@ public sealed class ResolveNamesPass : AbstractPass
         }
         catch (DuplicateSymbolException)
         {
-            throw new DuplicateSymbolException(
-                $"Параметр '{d.Name}' уже объявлен в этой функции"
-            );
+            throw DuplicateSymbolException.DuplicateVariableOrFunction(d.Name);
         }
     }
 
@@ -211,9 +206,7 @@ public sealed class ResolveNamesPass : AbstractPass
 
         if (symbol is not AbstractVariableDeclaration)
         {
-            throw new InvalidSymbolException(
-                $"Имя '{s.Name}' не ссылается на переменную"
-            );
+            throw new InvalidAssignmentException($"Invalid assignment to '{s.Name}'");
         }
 
         s.Variable = (AbstractVariableDeclaration)symbol;
@@ -225,7 +218,7 @@ public sealed class ResolveNamesPass : AbstractPass
 
         if (_functionStack.Count == 0)
         {
-            throw new InvalidOperationException("Оператор 'ДАРОВАТЬ' не может находиться вне функции");
+            throw new InvalidOperationException("Return statement cannot be outside of function");
         }
     }
 
@@ -241,9 +234,7 @@ public sealed class ResolveNamesPass : AbstractPass
                 }
                 catch (DuplicateSymbolException)
                 {
-                    throw new DuplicateSymbolException(
-                        $"Функция '{function.Name}' уже объявлена в этой области видимости"
-                    );
+                    throw DuplicateSymbolException.DuplicateVariableOrFunction(function.Name);
                 }
             }
         }

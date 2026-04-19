@@ -1,4 +1,4 @@
-﻿namespace Semantics.Exceptions;
+namespace Semantics.Exceptions;
 
 #pragma warning disable RCS1194
 // Конструкторы исключения не нужны, т.к. это не класс общего назначения.
@@ -9,8 +9,11 @@
 public class UnknownSymbolException : Exception
 {
     public UnknownSymbolException(string name)
-        : base($"Имя {name} не объявлено в текущем контексте")
+        : base($"Name {name} is not declared in the current scope")
     {
+        Name = name;
     }
+
+    public string Name { get; }
 }
 #pragma warning restore RCS1194

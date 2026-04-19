@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 
 using Ast.Statements;
 
@@ -6,7 +6,7 @@ using Runtime;
 
 using ValueType = Runtime.ValueType;
 
-namespace RusMatushkaParser;
+namespace Ast;
 
 /// <summary>
 /// Объект, предоставляющий доступ к встроенным символам языка.
@@ -48,7 +48,7 @@ public class BuiltInFunctions
                 {
                     if (arguments.Count == 0)
                     {
-                        throw new ArgumentException("Использование: min(<number1>, <number2>, ...)");
+                        throw new ArgumentException("Usage: min(<number1>, <number2>, ...)");
                     }
 
                     double min = arguments[0].AsFloat();
@@ -74,7 +74,7 @@ public class BuiltInFunctions
                 {
                     if (arguments.Count == 0)
                     {
-                        throw new ArgumentException("Использование: max(<number1>, <number2>, ...)");
+                        throw new ArgumentException("Usage: max(<number1>, <number2>, ...)");
                     }
 
                     double max = arguments[0].AsFloat();

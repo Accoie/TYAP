@@ -15,6 +15,7 @@ public class SemanticsChecker
 {
     private readonly AbstractPass[] _passes;
 
+    // TODO: убрать из конструктора builtinFunctions, сделать статическими
     public SemanticsChecker(IReadOnlyDictionary<string, BuiltInFunction> builtinFunctions)
     {
         SymbolsTable globalSymbols = new(parent: null);

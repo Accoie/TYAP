@@ -1,0 +1,3 @@
+﻿begin
+    length("test");
+end

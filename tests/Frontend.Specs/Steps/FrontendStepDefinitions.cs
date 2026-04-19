@@ -15,6 +15,8 @@ using TestLibrary;
 
 using Xunit;
 
+using InvalidExpressionException = Semantics.Exceptions.InvalidExpressionException;
+
 namespace Frontend.Specs.Steps;
 
 [Binding]

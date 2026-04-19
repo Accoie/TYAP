@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -178,7 +178,7 @@ public class MsilCodegenPass : IAstVisitor
         }
         else
         {
-            throw new NotImplementedException($"Ввод для типа {variableType} не поддерживается");
+            throw new NotImplementedException($"Input for type {variableType} is not supported");
         }
 
         _il.Emit(OpCodes.Stloc, local);
@@ -227,7 +227,7 @@ public class MsilCodegenPass : IAstVisitor
             ValueType.Integer => typeof(int),
             ValueType.Float => typeof(double),
             ValueType.String => typeof(string),
-            _ => throw new NotImplementedException($"Тип {s.DeclaredType} не поддерживается"),
+            _ => throw new NotImplementedException($"Type {s.DeclaredType} is not supported"),
         };
 
         LocalBuilder local = _il.DeclareLocal(ilType);
@@ -246,7 +246,7 @@ public class MsilCodegenPass : IAstVisitor
         if (!CurrentScope.TryGetValue(e.Name, out LocalBuilder? local))
         {
             throw new InvalidOperationException(
-                $"Переменная '{e.Name}' не найдена в текущей области видимости"
+                $"Variable '{e.Name}' not found in the current scope"
             );
         }
 

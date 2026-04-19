@@ -8,9 +8,20 @@
 /// </summary>
 public class DuplicateSymbolException : Exception
 {
-    public DuplicateSymbolException(string name)
-        : base($"Имя {name} уже объявлено в текущей области")
+    private DuplicateSymbolException(string name, string message)
+        : base(message)
     {
+        Name = name;
+    }
+
+    public string Name { get; }
+
+    public static DuplicateSymbolException DuplicateVariableOrFunction(string name)
+    {
+        return new DuplicateSymbolException(
+            name,
+            $"The variable or function name {name} is already used in the current scope"
+        );
     }
 }
 #pragma warning restore RCS1194

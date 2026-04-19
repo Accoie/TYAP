@@ -1,4 +1,4 @@
-﻿namespace Semantics.Exceptions;
+namespace Semantics.Exceptions;
 
 #pragma warning disable RCS1194
 // Конструкторы исключения не нужны, т.к. это не класс общего назначения.
@@ -14,7 +14,7 @@ public class TypeMismatchException : Exception
     }
 
     public TypeMismatchException(string category, ValueType expected, ValueType actual)
-        : base($"Несовместимость типов: {category} должно быть типа {expected}, а получено {actual}")
+        : base($"Type mismatch: {category} expected {expected}, but got {actual}")
     {
     }
 }

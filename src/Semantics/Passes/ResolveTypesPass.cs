@@ -1,4 +1,5 @@
-﻿using Ast.Expressions;
+using Ast;
+using Ast.Expressions;
 using Ast.Statements;
 
 using Semantics.Exceptions;
@@ -40,7 +41,7 @@ public sealed class ResolveTypesPass : AbstractPass
         if (resultType == null)
         {
             throw new TypeMismatchException(
-                $"Бинарная операция '{e.Operation}' не допустима для типов {e.Left.ResultType} и {e.Right.ResultType}"
+                $"Binary operation '{e.Operation}' is not valid for types {e.Left.ResultType} and {e.Right.ResultType}"
             );
         }
 
@@ -69,7 +70,7 @@ public sealed class ResolveTypesPass : AbstractPass
                         e.ResultType = ValueType.Float;
                         break;
                     default:
-                        throw new TypeMismatchException($"Унарный минус/плюс не допустим для типа {operandType}");
+                        throw new TypeMismatchException($"Unary minus/plus is not valid for type {operandType}");
                 }
 
                 break;
@@ -78,7 +79,7 @@ public sealed class ResolveTypesPass : AbstractPass
                 if (operandType != ValueType.Integer )
                 {
                     throw new TypeMismatchException(
-                        $"Логическое НЕ не допустимо для типа {operandType}"
+                        $"Logical NOT is not valid for type {operandType}"
                     );
                 }
 
@@ -86,7 +87,62 @@ public sealed class ResolveTypesPass : AbstractPass
                 break;
 
             default:
-                throw new NotImplementedException($"Неизвестная унарная операция {e.Operation}");
+                throw new NotImplementedException($"Unknown unary operation {e.Operation}");
+        }
+    }
+
+    public override void Visit(VariableExpression e)
+    {
+        base.Visit(e);
+
+        e.ResultType = e.Variable.ResultType;
+    }
+
+    /// <summary>
+    /// Проверяет соответствие типов параметров функции и аргументов при вызове этой функции.
+    /// </summary>
+    public override void Visit(FunctionCallExpression e)
+    {
+        base.Visit(e);
+
+        if (IsBuiltInFunction(e.Name))
+        {
+            CheckBuiltInFunctionTypes(e.Name, e.Arguments);
+        }
+        else
+        {
+            for (int i = 0; i < e.Arguments.Count; i++)
+            {
+                if (e.Function.Parameters[i].ResultType != e.Arguments[i].ResultType)
+                {
+                    throw new TypeMismatchException($"Function '{e.Name}' expects argument '{e.Function.Parameters[i].Name}' with type '{e.Arguments[i].ResultType}'");
+                }
+            }
+        }
+
+        e.ResultType = e.Function.ResultType;
+    }
+
+    /// <summary>
+    /// Проверяет соответствие типов параметров функции и аргументов при вызове функции как оператора.
+    /// </summary>
+    public override void Visit(FunctionCallStatement s)
+    {
+        base.Visit(s);
+
+        if (IsBuiltInFunction(s.Name))
+        {
+            CheckBuiltInFunctionTypes(s.Name, s.Arguments);
+        }
+        else
+        {
+            for (int i = 0; i < s.Arguments.Count; i++)
+            {
+                if (s.Function.Parameters[i].ResultType != s.Arguments[i].ResultType)
+                {
+                    throw new InvalidFunctionCallException($"Function '{s.Name}' expects argument '{s.Function.Parameters[i].Name}' with type '{s.Arguments[i].ResultType}'");
+                }
+            }
         }
     }
 
@@ -103,7 +159,7 @@ public sealed class ResolveTypesPass : AbstractPass
             if (d.DeclaredType != valueType)
             {
                 throw new TypeMismatchException(
-                    $"Нельзя инициализировать переменную типа {d.DeclaredType} значением типа {valueType}"
+                    $"Cannot initialize variable of type {d.DeclaredType} with value of type {valueType}"
                 );
             }
         }
@@ -123,7 +179,7 @@ public sealed class ResolveTypesPass : AbstractPass
         if (s.Value.ResultType != s.Variable.ResultType)
         {
             throw new TypeMismatchException(
-                $"Тип переменной, которой присваивается значение, не совпадает с объявленным"
+                $"Type of variable being assigned does not match the declared type"
             );
         }
     }
@@ -134,6 +190,65 @@ public sealed class ResolveTypesPass : AbstractPass
     public override void Visit(BlockStatement s)
     {
         base.Visit(s);
+    }
+
+    /// <summary>
+    /// Проверяет оператор ветвления.
+    /// </summary>
+    public override void Visit(IfElseStatement s)
+    {
+        base.Visit(s);
+
+        if (s.Condition.ResultType != ValueType.Integer)
+        {
+            throw new TypeMismatchException(
+                $"If condition must be of type Integer, but got {s.Condition.ResultType}"
+            );
+        }
+    }
+
+    /// <summary>
+    /// Проверяет оператор return.
+    /// </summary>
+    public override void Visit(ReturnStatement s)
+    {
+        base.Visit(s);
+
+        bool isTypeMismatch = s.Value == null
+            ? s.Type != ValueType.Void
+            : s.Type != s.Value.ResultType;
+
+        if (isTypeMismatch)
+        {
+            throw new TypeMismatchException($"Return value does not match the expected type");
+        }
+    }
+
+    /// <summary>
+    /// Проверяет объявление функции.
+    /// </summary>
+    public override void Visit(FunctionDeclarationStatement s)
+    {
+        base.Visit(s);
+
+        if (s.ResultType != ValueType.Void)
+        {
+            if (!ContainsReturnStatement(s.Body))
+            {
+                throw new TypeMismatchException(
+                    $"Function '{s.Name}' is declared with return type {s.ResultType}, " +
+                    $"but does not contain a 'return' statement"
+                );
+            }
+        }
+    }
+
+    /// <summary>
+    /// Проверяет объявление параметра.
+    /// </summary>
+    public override void Visit(ParameterDeclaration d)
+    {
+        base.Visit(d);
     }
 
     /// <summary>
@@ -155,16 +270,9 @@ public sealed class ResolveTypesPass : AbstractPass
         {
             if (arg.ResultType == ValueType.Void)
             {
-                throw new TypeMismatchException("В выводе не может быть пустой тип");
+                throw new TypeMismatchException("Output cannot contain void type");
             }
         }
-    }
-
-    public override void Visit(VariableExpression e)
-    {
-        base.Visit(e);
-
-        e.ResultType = e.Variable.ResultType;
     }
 
     /// <summary>
@@ -253,7 +361,129 @@ public sealed class ResolveTypesPass : AbstractPass
                 return null;
 
             default:
-                throw new ArgumentException($"Неизвестная бинарная операция {operation}");
+                throw new ArgumentException($"Unknown binary operation {operation}");
         }
+    }
+
+    /// <summary>
+    /// Проверяет типы аргументов для встроенной функции, вызываемой как оператор.
+    /// </summary>
+    private void CheckBuiltInFunctionTypes(string name, IReadOnlyList<Expression> arguments)
+    {
+        BuiltInFunction? builtin = Builtins.Functions.FirstOrDefault(f => f.Name == name);
+        if (builtin == null)
+        {
+            throw new ArgumentException($"Unknown built-in function: {name}");
+        }
+
+        if (arguments.Count != builtin.Parameters.Count)
+        {
+            throw new InvalidFunctionCallException(
+                $"Function '{name}' expects {builtin.Parameters.Count} arguments, " +
+                $"but got {arguments.Count}"
+            );
+        }
+
+        switch (name)
+        {
+            case Builtins.Abs:
+            case Builtins.Round:
+                if (arguments[0].ResultType != ValueType.Float)
+                {
+                    throw new TypeMismatchException($"Function '{name}' expects a numeric argument");
+                }
+
+                break;
+            case Builtins.Min:
+            case Builtins.Max:
+                foreach (Expression arg in arguments)
+                {
+                    if (arg.ResultType != ValueType.Float)
+                    {
+                        throw new TypeMismatchException($"Function '{name}' expects numeric arguments");
+                    }
+                }
+
+                break;
+
+            case Builtins.TostringI:
+                if (arguments[0].ResultType != ValueType.Integer)
+                {
+                    throw new TypeMismatchException($"Function '{name}' expects an integer argument");
+                }
+
+                break;
+            case Builtins.TostringF:
+                if (arguments[0].ResultType != ValueType.Float)
+                {
+                    throw new TypeMismatchException($"Function '{name}' expects a float argument");
+                }
+
+                break;
+            case Builtins.Getsymbol:
+                if (arguments[0].ResultType != ValueType.String || arguments[1].ResultType != ValueType.Integer)
+                {
+                    throw new TypeMismatchException($"Function '{name}' expects a string and an integer argument");
+                }
+
+                break;
+            case Builtins.Len:
+                if (arguments[0].ResultType != ValueType.String)
+                {
+                    throw new TypeMismatchException($"Function '{name}' expects a string argument");
+                }
+
+                break;
+            default:
+                throw new ArgumentException($"Unknown built-in function: {name}");
+        }
+    }
+
+    /// <summary>
+    /// Проверяет, содержит ли блок хотя бы один ReturnStatement.
+    /// Рекурсивно проверяет вложенные блоки.
+    /// </summary>
+    private bool ContainsReturnStatement(BlockStatement block)
+    {
+        foreach (Statement statement in block.Statements)
+        {
+            if (statement is ReturnStatement)
+            {
+                return true;
+            }
+
+            if (statement is IfElseStatement ifElse)
+            {
+                if (ContainsReturnStatement(ifElse.ThenBranch) ||
+                    (ifElse.ElseBranch != null && ContainsReturnStatement(ifElse.ElseBranch)))
+                {
+                    return true;
+                }
+            }
+            else if (statement is BlockStatement nestedBlock)
+            {
+                if (ContainsReturnStatement(nestedBlock))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Проверяет, является ли функция встроенной.
+    /// </summary>
+    private bool IsBuiltInFunction(string name)
+    {
+        string[] builtInFunctions =
+        {
+            "abs_f", "min_f", "max_f", "round",
+            "len", "getsymbol", "tostring_i", "tostring_f",
+        };
+
+        return builtInFunctions.Any(f =>
+            string.Equals(f, name, StringComparison.OrdinalIgnoreCase));
     }
 }

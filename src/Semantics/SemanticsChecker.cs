@@ -1,4 +1,5 @@
-﻿using Ast.Statements;
+using Ast;
+using Ast.Statements;
 
 using Semantics.Passes;
 using Semantics.Symbols;
@@ -17,9 +18,20 @@ public class SemanticsChecker
 
     public SemanticsChecker()
     {
+        SymbolsTable globalSymbols = new(parent: null);
+
+        HashSet<string> addedFunctions = new();
+        foreach (BuiltInFunction function in Builtins.Functions)
+        {
+            if (addedFunctions.Add(function.Name))
+            {
+                globalSymbols.DefineSymbol(function.Name, function);
+            }
+        }
+
         _passes =
         [
-            new ResolveNamesPass(new SymbolsTable(null)),
+            new ResolveNamesPass(globalSymbols),
             new ResolveTypesPass(),
         ];
     }

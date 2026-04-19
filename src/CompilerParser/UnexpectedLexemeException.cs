@@ -1,4 +1,4 @@
-﻿using CompilerLexer;
+using CompilerLexer;
 
 namespace CompilerParser;
 
@@ -8,6 +8,12 @@ public class UnexpectedLexemeException : Exception
 {
     public UnexpectedLexemeException(TokenType expected, Token actual)
         : base($"Unexpected lexeme {actual.Type} where expected {expected}")
+    {
+        Actual = actual.Type;
+    }
+
+    public UnexpectedLexemeException(Token actual)
+        : base($"Unexpected lexeme {actual.Type}")
     {
         Actual = actual.Type;
     }

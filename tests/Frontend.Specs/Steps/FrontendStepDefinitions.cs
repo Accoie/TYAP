@@ -15,6 +15,8 @@ using TestLibrary;
 
 using Xunit;
 
+using InvalidExpressionException = Semantics.Exceptions.InvalidExpressionException;
+
 namespace Frontend.Specs.Steps;
 
 [Binding]
@@ -111,5 +113,11 @@ public class FrontendStepDefinitions
     public void ТогдаВозникнетОшибкаИзЗаНедопустимогоВыражения()
     {
         Assert.IsType<InvalidExpressionException>(_lastException);
+    }
+
+    [Then(@"возникнет ошибка из-за недопустимого вызова функции")]
+    public void ТогдаВозникнетОшибкаИзЗаНедопустимогоВызоваФункции()
+    {
+        Assert.IsType<InvalidFunctionCallException>(_lastException);
     }
 }

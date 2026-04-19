@@ -1,4 +1,4 @@
-﻿using ValueType = Runtime.ValueType;
+using ValueType = Runtime.ValueType;
 
 namespace MsilCodegen;
 

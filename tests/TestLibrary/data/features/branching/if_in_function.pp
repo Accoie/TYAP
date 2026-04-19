@@ -1,23 +1,22 @@
-function classifyNumber(n: integer) : string
 begin
-    if (n > 0) then
+    function classifyNumber(n: integer) : string
     begin
-        return "positive";
-    end
-    else
-    begin
-        if (n < 0) then
+        if (n > 0) then
         begin
-            return "negative";
+            return "positive";
         end
         else
         begin
-            return "zero";
+            if (n < 0) then
+            begin
+                return "negative";
+            end
+            else
+            begin
+                return "zero";
+            end
         end
     end
-end
-
-begin
     write("5 is ", classifyNumber(5));
     write("-3 is ", classifyNumber(-3));
     write("0 is ", classifyNumber(0));

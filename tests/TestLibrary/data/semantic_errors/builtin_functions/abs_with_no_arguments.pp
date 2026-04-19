@@ -1,3 +1,0 @@
-begin
-    write(abs());
-end

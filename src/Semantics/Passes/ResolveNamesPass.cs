@@ -34,7 +34,7 @@ public sealed class ResolveNamesPass : AbstractPass
         }
         catch (UnknownSymbolException)
         {
-            throw new UnknownSymbolException($"Unknown variable '{e.Name}'");
+            throw new UnknownSymbolException(e.Name);
         }
     }
 
@@ -50,22 +50,23 @@ public sealed class ResolveNamesPass : AbstractPass
 
         if (!IsBuiltInFunction(e.Name))
         {
-            try
-            {
-                DeclarationStatement symbol = _symbols.GetSymbol(e.Name);
+            DeclarationStatement symbol = _symbols.GetSymbol(e.Name);
 
-                if (symbol is FunctionDeclarationStatement function)
-                {
-                    e.Function = function;
-                }
-                else
-                {
-                    throw new InvalidSymbolException(e.Name, "variable");
-                }
-            }
-            catch (UnknownSymbolException)
+            if (symbol is FunctionDeclarationStatement function)
             {
-                throw new UnknownSymbolException($"Unknown function '{e.Name}'");
+                if (e.Arguments.Count != function.Parameters.Count)
+                {
+                    throw new InvalidFunctionCallException(
+                        $"Function '{e.Name}' expects {function.Parameters.Count} arguments, " +
+                        $"but got {e.Arguments.Count}"
+                    );
+                }
+
+                e.Function = function;
+            }
+            else
+            {
+                throw new InvalidSymbolException(e.Name, "variable");
             }
         }
         else
@@ -96,10 +97,7 @@ public sealed class ResolveNamesPass : AbstractPass
             }
             else
             {
-                throw new InvalidSymbolException(
-                    $"Name '{s.Name}' does not refer to a function",
-                    s.Name
-                );
+                throw new InvalidSymbolException(s.Name, "function" );
             }
         }
     }
@@ -108,7 +106,7 @@ public sealed class ResolveNamesPass : AbstractPass
     {
         if (s.IsNewScope)
         {
-            _symbols = new SymbolsTable(_symbols );
+            _symbols = new SymbolsTable(_symbols);
         }
 
         try
@@ -139,9 +137,12 @@ public sealed class ResolveNamesPass : AbstractPass
 
     public override void Visit(FunctionDeclarationStatement d)
     {
-        _symbols = new SymbolsTable(_symbols);
+        SymbolsTable outerScope = _symbols;
+        _symbols = new SymbolsTable(null);
         try
         {
+            _symbols.DefineSymbol(d.Name, d);
+
             foreach (ParameterDeclaration parameter in d.Parameters)
             {
                 parameter.Accept(this);
@@ -153,7 +154,7 @@ public sealed class ResolveNamesPass : AbstractPass
         }
         finally
         {
-            _symbols = _symbols.Parent!;
+            _symbols = outerScope;
         }
     }
 
@@ -175,7 +176,7 @@ public sealed class ResolveNamesPass : AbstractPass
     {
         s.Condition.Accept(this);
 
-        _symbols = new SymbolsTable(_symbols );
+        _symbols = new SymbolsTable(_symbols);
         try
         {
             s.ThenBranch.Accept(this);
@@ -187,7 +188,7 @@ public sealed class ResolveNamesPass : AbstractPass
 
         if (s.ElseBranch != null)
         {
-            _symbols = new SymbolsTable(_symbols );
+            _symbols = new SymbolsTable(_symbols);
             try
             {
                 s.ElseBranch.Accept(this);
@@ -270,8 +271,7 @@ public sealed class ResolveNamesPass : AbstractPass
     {
         string[] builtInFunctions =
         {
-            "abs", "min", "max", "round",
-            "len", "getsymbol", "tostring",
+            "abs_f", "min_f", "max_f", "round", "len", "getsymbol", "tostring_i", "tostring_f",
         };
 
         foreach (string builtIn in builtInFunctions)

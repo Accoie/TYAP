@@ -1,4 +1,4 @@
-﻿begin
+begin
     var w : float;
     var h : float;
 
@@ -8,8 +8,8 @@
     read(h);
 
     var area : float = w * h;
-    var per : float = 2 * (w + h);
-    string info = "Площадь: " + tostring(area) + "\nПериметр: " + tostring(per);
+    var per : float = 2.0 * (w + h);
+    var info : string = "Площадь: " + tostring_f(area) + "\nПериметр: " + tostring_f(per);
 
     write(info);
 end

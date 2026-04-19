@@ -1,8 +1,8 @@
-function greet()
 begin
-    write("Hello!");
-end
+    function greet()
+    begin
+        write("Hello!");
+    end
 
-begin
     greet();
 end

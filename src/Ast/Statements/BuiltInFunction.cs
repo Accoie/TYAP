@@ -1,4 +1,4 @@
-﻿using Runtime;
+using Runtime;
 
 namespace Ast.Statements;
 
@@ -7,23 +7,14 @@ namespace Ast.Statements;
 /// </summary>
 public sealed class BuiltInFunction : AbstractFunctionDeclaration
 {
-    private readonly Func<IReadOnlyList<Value>, Value> _implementation;
-
     public BuiltInFunction(
         string name,
         IReadOnlyList<BuiltInFunctionParameter> parameters,
-        Runtime.ValueType resultType,
-        Func<IReadOnlyList<Value>, Value> implementation
+        Runtime.ValueType resultType
     )
         : base(name, parameters)
     {
         ResultType = resultType;
-        _implementation = implementation;
-    }
-
-    public Value Invoke(IReadOnlyList<Value> arguments)
-    {
-        return _implementation(arguments);
     }
 
     public override void Accept(IAstVisitor visitor)

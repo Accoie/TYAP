@@ -1,4 +1,5 @@
-﻿using Ast.Statements;
+using Ast;
+using Ast.Statements;
 
 using Semantics.Passes;
 using Semantics.Symbols;
@@ -15,13 +16,17 @@ public class SemanticsChecker
 {
     private readonly AbstractPass[] _passes;
 
-    // TODO: убрать из конструктора builtinFunctions, сделать статическими
-    public SemanticsChecker(IReadOnlyDictionary<string, BuiltInFunction> builtinFunctions)
+    public SemanticsChecker()
     {
         SymbolsTable globalSymbols = new(parent: null);
-        foreach ((string name, BuiltInFunction function) in builtinFunctions)
+
+        HashSet<string> addedFunctions = new();
+        foreach (BuiltInFunction function in Builtins.Functions)
         {
-            globalSymbols.DefineSymbol(name, function);
+            if (addedFunctions.Add(function.Name))
+            {
+                globalSymbols.DefineSymbol(function.Name, function);
+            }
         }
 
         _passes =

@@ -1,10 +1,10 @@
 ﻿begin
+   var greeting : string = "Hello, World!";
+   
    function printHello()
    begin
-        write(greeting)
+        write(greeting);
    end
-   
-   var greeting : string = "Hello, World!";
    
    printHello();
 end

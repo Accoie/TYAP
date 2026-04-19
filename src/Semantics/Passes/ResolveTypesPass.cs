@@ -1,3 +1,4 @@
+using Ast;
 using Ast.Expressions;
 using Ast.Statements;
 
@@ -192,6 +193,21 @@ public sealed class ResolveTypesPass : AbstractPass
     }
 
     /// <summary>
+    /// Проверяет оператор ветвления.
+    /// </summary>
+    public override void Visit(IfElseStatement s)
+    {
+        base.Visit(s);
+
+        if (s.Condition.ResultType != ValueType.Integer)
+        {
+            throw new TypeMismatchException(
+                $"If condition must be of type Integer, but got {s.Condition.ResultType}"
+            );
+        }
+    }
+
+    /// <summary>
     /// Проверяет оператор return.
     /// </summary>
     public override void Visit(ReturnStatement s)
@@ -354,21 +370,35 @@ public sealed class ResolveTypesPass : AbstractPass
     /// </summary>
     private void CheckBuiltInFunctionTypes(string name, IReadOnlyList<Expression> arguments)
     {
+        BuiltInFunction? builtin = Builtins.Functions.FirstOrDefault(f => f.Name == name);
+        if (builtin == null)
+        {
+            throw new ArgumentException($"Unknown built-in function: {name}");
+        }
+
+        if (arguments.Count != builtin.Parameters.Count)
+        {
+            throw new InvalidFunctionCallException(
+                $"Function '{name}' expects {builtin.Parameters.Count} arguments, " +
+                $"but got {arguments.Count}"
+            );
+        }
+
         switch (name)
         {
-            case "abs":
-            case "round":
-                if (arguments[0].ResultType != ValueType.Float && arguments[0].ResultType != ValueType.Integer)
+            case Builtins.Abs:
+            case Builtins.Round:
+                if (arguments[0].ResultType != ValueType.Float)
                 {
                     throw new TypeMismatchException($"Function '{name}' expects a numeric argument");
                 }
 
                 break;
-            case "min":
-            case "max":
+            case Builtins.Min:
+            case Builtins.Max:
                 foreach (Expression arg in arguments)
                 {
-                    if (arg.ResultType != ValueType.Float && arg.ResultType != ValueType.Integer)
+                    if (arg.ResultType != ValueType.Float)
                     {
                         throw new TypeMismatchException($"Function '{name}' expects numeric arguments");
                     }
@@ -376,14 +406,34 @@ public sealed class ResolveTypesPass : AbstractPass
 
                 break;
 
-            case "tostring":
-                if (arguments[0].ResultType != ValueType.Float && arguments[0].ResultType != ValueType.Integer)
+            case Builtins.TostringI:
+                if (arguments[0].ResultType != ValueType.Integer)
                 {
-                    throw new TypeMismatchException($"Function '{name}' expects a numeric argument");
+                    throw new TypeMismatchException($"Function '{name}' expects an integer argument");
                 }
 
                 break;
+            case Builtins.TostringF:
+                if (arguments[0].ResultType != ValueType.Float)
+                {
+                    throw new TypeMismatchException($"Function '{name}' expects a float argument");
+                }
 
+                break;
+            case Builtins.Getsymbol:
+                if (arguments[0].ResultType != ValueType.String || arguments[1].ResultType != ValueType.Integer)
+                {
+                    throw new TypeMismatchException($"Function '{name}' expects a string and an integer argument");
+                }
+
+                break;
+            case Builtins.Len:
+                if (arguments[0].ResultType != ValueType.String)
+                {
+                    throw new TypeMismatchException($"Function '{name}' expects a string argument");
+                }
+
+                break;
             default:
                 throw new ArgumentException($"Unknown built-in function: {name}");
         }
@@ -429,8 +479,8 @@ public sealed class ResolveTypesPass : AbstractPass
     {
         string[] builtInFunctions =
         {
-            "abs", "min", "max", "round",
-            "len", "getsymbol", "tostring",
+            "abs_f", "min_f", "max_f", "round",
+            "len", "getsymbol", "tostring_i", "tostring_f",
         };
 
         return builtInFunctions.Any(f =>

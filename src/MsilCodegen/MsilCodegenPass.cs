@@ -6,7 +6,7 @@ using Ast;
 using Ast.Expressions;
 using Ast.Statements;
 
-using RusMatushkaParser;
+using Runtime;
 
 using ValueType = Runtime.ValueType;
 
@@ -139,19 +139,33 @@ public class MsilCodegenPass : IAstVisitor
     {
         s.Value.Accept(this);
 
-        if (!CurrentScope.TryGetValue(s.Name, out LocalBuilder? local))
+        foreach (Dictionary<string, LocalBuilder> scope in _scopesStack)
         {
-            throw new InvalidOperationException(
-                $"Переменная '{s.Name}' не найдена в текущей области видимости"
-            );
+            if (scope.TryGetValue(s.Name, out LocalBuilder? local))
+            {
+                _il.Emit(OpCodes.Stloc, local);
+                return;
+            }
         }
 
-        _il.Emit(OpCodes.Stloc, local);
+        throw new InvalidOperationException(
+            $"Переменная '{s.Name}' не найдена в текущей области видимости"
+        );
     }
 
     public void Visit(InputStatement s)
     {
-        if (!CurrentScope.TryGetValue(s.VariableName, out LocalBuilder? local))
+        LocalBuilder? local = null;
+        foreach (Dictionary<string, LocalBuilder> scope in _scopesStack)
+        {
+            if (scope.TryGetValue(s.VariableName, out LocalBuilder? foundLocal))
+            {
+                local = foundLocal;
+                break;
+            }
+        }
+
+        if (local == null)
         {
             throw new InvalidOperationException(
                 $"Переменная '{s.VariableName}' не найдена в текущей области видимости"
@@ -214,9 +228,27 @@ public class MsilCodegenPass : IAstVisitor
 
     public void Visit(BlockStatement s)
     {
-        foreach (Statement statement in s.Statements)
+        if (s.IsNewScope)
         {
-            statement.Accept(this);
+            BeginScope();
+            try
+            {
+                foreach (Statement statement in s.Statements)
+                {
+                    statement.Accept(this);
+                }
+            }
+            finally
+            {
+                EndScope();
+            }
+        }
+        else
+        {
+            foreach (Statement statement in s.Statements)
+            {
+                statement.Accept(this);
+            }
         }
     }
 
@@ -243,14 +275,18 @@ public class MsilCodegenPass : IAstVisitor
 
     public void Visit(VariableExpression e)
     {
-        if (!CurrentScope.TryGetValue(e.Name, out LocalBuilder? local))
+        foreach (Dictionary<string, LocalBuilder> scope in _scopesStack)
         {
-            throw new InvalidOperationException(
-                $"Variable '{e.Name}' not found in the current scope"
-            );
+            if (scope.TryGetValue(e.Name, out LocalBuilder? local))
+            {
+                _il.Emit(OpCodes.Ldloc, local);
+                return;
+            }
         }
 
-        _il.Emit(OpCodes.Ldloc, local);
+        throw new InvalidOperationException(
+            $"Variable '{e.Name}' not found in the current scope"
+        );
     }
 
     public void Visit(FunctionCallExpression s)
@@ -272,6 +308,38 @@ public class MsilCodegenPass : IAstVisitor
             }
 
             _il.Emit(OpCodes.Call, method);
+        }
+    }
+
+    /// <summary>
+    /// Генерирует код возведения в степень.
+    /// </summary>
+    private void EmitPowerOperation(BinaryOperationExpression e)
+    {
+        MethodInfo mathPow = typeof(Math).GetMethod(
+            "Pow",
+            [typeof(double), typeof(double)]
+        )!;
+
+        e.Left.Accept(this);
+
+        if (e.Left.ResultType == ValueType.Integer)
+        {
+            _il.Emit(OpCodes.Conv_R8);
+        }
+
+        e.Right.Accept(this);
+
+        if (e.Right.ResultType == ValueType.Integer)
+        {
+            _il.Emit(OpCodes.Conv_R8);
+        }
+
+        _il.Emit(OpCodes.Call, mathPow);
+
+        if (e.ResultType == ValueType.Integer)
+        {
+            _il.Emit(OpCodes.Conv_I4);
         }
     }
 
@@ -367,6 +435,9 @@ public class MsilCodegenPass : IAstVisitor
     {
         switch (e.Operation)
         {
+            case BinaryOperation.Exponentiate:
+                EmitPowerOperation(e);
+                break;
             case BinaryOperation.And:
                 EmitLogicalAnd(e);
                 break;

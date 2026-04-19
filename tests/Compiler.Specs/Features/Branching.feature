@@ -30,7 +30,7 @@
 
         Тогда я увижу вывод:
         """
-        x > 20 @ x <= 20
+        x > 10 @ x <= 20
 
         """
 
@@ -61,7 +61,7 @@
         """
         
     Сценарий: отсутствие проблемы "висячего" else
-        Пусть я скомпилировал программу "features/branching/no_dangling_else_problem.tig"
+        Пусть я скомпилировал программу "features/branching/no_dangling_else_problem.pp"
 
         Когда я выполняю программу
 

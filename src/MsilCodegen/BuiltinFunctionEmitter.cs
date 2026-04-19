@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+using System.Globalization;
+using System.Reflection;
 using System.Reflection.Emit;
 
 namespace MsilCodegen;
@@ -11,42 +12,33 @@ public class BuiltinFunctionEmitter
     {
         _functionsMap = new Dictionary<string, Action<ILGenerator>>
         {
-            {
-                "abs", EmitABS
-            },
-            {
-                "min", EmitMin
-            },
-            {
-                "max", EmitMax
-            },
-            {
-                "len", EmitLength
-            },
-            {
-                "round", EmitRound
-            },
-            {
-                "getsymbol", EmitGetSymbol
-            },
-            {
-                "tostring", EmitToString
-            },
+            { "abs_f", EmitAbs },
+            { "min_f", EmitMin },
+            { "max_f", EmitMax },
+            { "round", EmitRound },
+            { "len", EmitLength },
+            { "getsymbol", EmitGetSymbol },
+            { "tostring_i", EmitToStringI },
+            { "tostring_f", EmitToStringF },
         };
     }
 
     public void EmitCallBuiltinFunction(string name, ILGenerator il)
     {
-        Action<ILGenerator> action = _functionsMap[name];
+        if (!_functionsMap.TryGetValue(name, out Action<ILGenerator>? action))
+        {
+            throw new InvalidOperationException($"Unknown builtin function: {name}");
+        }
+
         action(il);
     }
 
     /// <summary>
     /// Генерирует вызов встроенной функции abs.
     /// </summary>
-    private void EmitABS(ILGenerator il)
+    private void EmitAbs(ILGenerator il)
     {
-        MethodInfo method = GetMethod(typeof(Math), "Abs", [typeof(int)]);
+        MethodInfo method = GetMethod(typeof(Math), "Abs", [typeof(double)]);
         il.Emit(OpCodes.Call, method);
     }
 
@@ -55,8 +47,7 @@ public class BuiltinFunctionEmitter
     /// </summary>
     private void EmitMin(ILGenerator il)
     {
-        // Для двух аргументов: Math.Min(int, int) или перегрузка для double
-        MethodInfo method = GetMethod(typeof(Math), "Min", [typeof(int), typeof(int)]);
+        MethodInfo method = GetMethod(typeof(Math), "Min", [typeof(double), typeof(double)]);
         il.Emit(OpCodes.Call, method);
     }
 
@@ -65,7 +56,7 @@ public class BuiltinFunctionEmitter
     /// </summary>
     private void EmitMax(ILGenerator il)
     {
-        MethodInfo method = GetMethod(typeof(Math), "Max", [typeof(int), typeof(int)]);
+        MethodInfo method = GetMethod(typeof(Math), "Max", [typeof(double), typeof(double)]);
         il.Emit(OpCodes.Call, method);
     }
 
@@ -92,21 +83,43 @@ public class BuiltinFunctionEmitter
     /// </summary>
     private void EmitGetSymbol(ILGenerator il)
     {
+        LocalBuilder tempIndex = il.DeclareLocal(typeof(int));
+        il.Emit(OpCodes.Stloc, tempIndex);
+        il.Emit(OpCodes.Ldloc, tempIndex);
+        il.Emit(OpCodes.Ldc_I4_1);
         MethodInfo method = GetMethod(typeof(string), "Substring", [typeof(int), typeof(int)]);
         il.Emit(OpCodes.Callvirt, method);
     }
 
     /// <summary>
-    /// Генерирует вызов встроенной функции tostring.
+    /// Генерирует вызов встроенной функции tostring для int.
     /// </summary>
-    private void EmitToString(ILGenerator il)
+    private void EmitToStringI(ILGenerator il)
     {
-        MethodInfo method = typeof(object).GetMethod("ToString", Type.EmptyTypes)!;
-        il.Emit(OpCodes.Callvirt, method);
+        LocalBuilder tempInt = il.DeclareLocal(typeof(int));
+        il.Emit(OpCodes.Stloc, tempInt);
+        il.Emit(OpCodes.Ldloca, tempInt);
+        MethodInfo toStringMethod = typeof(int).GetMethod("ToString", Type.EmptyTypes)!;
+        il.Emit(OpCodes.Call, toStringMethod);
+    }
+
+    private void EmitToStringF(ILGenerator il)
+    {
+        LocalBuilder tempDouble = il.DeclareLocal(typeof(double));
+        il.Emit(OpCodes.Stloc, tempDouble);
+        il.Emit(OpCodes.Ldloca, tempDouble);
+        il.Emit(OpCodes.Ldstr, "G15");
+        MethodInfo invariantCultureGetter = typeof(CultureInfo)
+            .GetProperty("InvariantCulture")!.GetMethod!;
+        il.Emit(OpCodes.Call, invariantCultureGetter);
+        MethodInfo toStringMethod = typeof(double).GetMethod(
+            "ToString",
+            [typeof(string), typeof(IFormatProvider)])!;
+        il.Emit(OpCodes.Call, toStringMethod);
     }
 
     /// <summary>
-    /// Находит статический метод указанного типа стандартной библиотеки классов .NET.
+    /// Находит статический метод.
     /// </summary>
     private static MethodInfo GetMethod(Type type, string methodName, Type[] parameterTypes)
     {

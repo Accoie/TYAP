@@ -1,6 +1,4 @@
-﻿using System.Data;
-
-using Ast.Statements;
+﻿using Ast.Statements;
 
 using CompilerLexer;
 
@@ -14,8 +12,6 @@ using Semantics.Exceptions;
 using TestLibrary;
 
 using Xunit;
-
-using InvalidExpressionException = Semantics.Exceptions.InvalidExpressionException;
 
 namespace Frontend.Specs.Steps;
 
@@ -107,12 +103,6 @@ public class FrontendStepDefinitions
     public void ТогдаВозникнетОшибкаТипизации()
     {
         Assert.IsType<TypeMismatchException>(_lastException);
-    }
-
-    [Then(@"возникнет ошибка из-за недопустимого выражения")]
-    public void ТогдаВозникнетОшибкаИзЗаНедопустимогоВыражения()
-    {
-        Assert.IsType<InvalidExpressionException>(_lastException);
     }
 
     [Then(@"возникнет ошибка из-за недопустимого вызова функции")]

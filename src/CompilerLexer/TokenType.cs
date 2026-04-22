@@ -281,39 +281,4 @@ public enum TokenType
     /// Ключевое слово struct (объявление структуры)
     /// </summary>
     Structure,
-
-    /// <summary>
-    /// Ключевое слово abs (модуль числа)
-    /// </summary>
-    Abs,
-
-    /// <summary>
-    /// Ключевое слово min (наименьшее число)
-    /// </summary>
-    Min,
-
-    /// <summary>
-    /// Ключевое слово max (наибольшее число)
-    /// </summary>
-    Max,
-
-    /// <summary>
-    /// Ключевое слово round (округление до ближайшего целого)
-    /// </summary>
-    Round,
-
-    /// <summary>
-    /// Ключевое слово len (длина строки)
-    /// </summary>
-    Len,
-
-    /// <summary>
-    /// Ключевое слово getsymbol (возврат подстроки)
-    /// </summary>
-    GetSymbol,
-
-    /// <summary>
-    /// Ключевое слово tostring (преобразование числа в строку)
-    /// </summary>
-    ToString,
 }

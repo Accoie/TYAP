@@ -311,38 +311,6 @@ public class MsilCodegenPass : IAstVisitor
         }
     }
 
-    /// <summary>
-    /// Генерирует код возведения в степень.
-    /// </summary>
-    private void EmitPowerOperation(BinaryOperationExpression e)
-    {
-        MethodInfo mathPow = typeof(Math).GetMethod(
-            "Pow",
-            [typeof(double), typeof(double)]
-        )!;
-
-        e.Left.Accept(this);
-
-        if (e.Left.ResultType == ValueType.Integer)
-        {
-            _il.Emit(OpCodes.Conv_R8);
-        }
-
-        e.Right.Accept(this);
-
-        if (e.Right.ResultType == ValueType.Integer)
-        {
-            _il.Emit(OpCodes.Conv_R8);
-        }
-
-        _il.Emit(OpCodes.Call, mathPow);
-
-        if (e.ResultType == ValueType.Integer)
-        {
-            _il.Emit(OpCodes.Conv_I4);
-        }
-    }
-
     public void Visit(IfElseStatement s)
     {
         Label endLabel = _il.DefineLabel();
@@ -426,6 +394,38 @@ public class MsilCodegenPass : IAstVisitor
 
     public void Visit(ParameterDeclaration parameterDeclarationStatement)
     {
+    }
+
+    /// <summary>
+    /// Генерирует код возведения в степень.
+    /// </summary>
+    private void EmitPowerOperation(BinaryOperationExpression e)
+    {
+        MethodInfo mathPow = typeof(Math).GetMethod(
+            "Pow",
+            [typeof(double), typeof(double)]
+        )!;
+
+        e.Left.Accept(this);
+
+        if (e.Left.ResultType == ValueType.Integer)
+        {
+            _il.Emit(OpCodes.Conv_R8);
+        }
+
+        e.Right.Accept(this);
+
+        if (e.Right.ResultType == ValueType.Integer)
+        {
+            _il.Emit(OpCodes.Conv_R8);
+        }
+
+        _il.Emit(OpCodes.Call, mathPow);
+
+        if (e.ResultType == ValueType.Integer)
+        {
+            _il.Emit(OpCodes.Conv_I4);
+        }
     }
 
     /// <summary>

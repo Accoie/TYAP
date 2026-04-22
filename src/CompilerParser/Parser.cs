@@ -104,7 +104,7 @@ public class Parser
     }
 
     /// <summary>
-    /// Разбирает оператор присваивания.
+    /// Разбирает оператор объявления переменной.
     /// Правило: variable_declaration = "var", identifier, ":", type, [ "=", expression ], ";" ;
     /// </summary>
     private VariableDeclarationStatement ParseVariableDeclaration()
@@ -356,7 +356,7 @@ public class Parser
     }
 
     /// <summary>
-    /// Разбирает логическое ИЛИ выражение.
+    /// Разбирает выражение логического ИЛИ.
     /// Правило: logical_or_expression = logical_and_expression, { logical_or_operator, logical_and_expression }.
     /// </summary>
     private Expression ParseLogicalOrExpression()
@@ -374,7 +374,7 @@ public class Parser
     }
 
     /// <summary>
-    /// Разбирает логическое И выражение.
+    /// Разбирает выражение логического И.
     /// Правило: logical_and_expression = comparison_expression, { logical_and_operator, comparison_expression }.
     /// </summary>
     private Expression ParseLogicalAndExpression()

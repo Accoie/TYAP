@@ -48,6 +48,19 @@ public abstract class AbstractPass : IAstVisitor
         s.ElseBranch?.Accept(this);
     }
 
+    public virtual void Visit(ForLoopStatement s)
+    {
+        s.Iterator.Accept(this);
+        s.EndValue.Accept(this);
+        s.Body.Accept(this);
+    }
+
+    public virtual void Visit(WhileLoopStatement s)
+    {
+        s.Condition.Accept(this);
+        s.Body.Accept(this);
+    }
+
     public virtual void Visit(InputStatement s)
     {
     }
@@ -98,5 +111,18 @@ public abstract class AbstractPass : IAstVisitor
 
     public virtual void Visit(ParameterDeclaration d)
     {
+    }
+
+    public virtual void Visit(BreakStatement s)
+    {
+    }
+
+    public virtual void Visit(ContinueStatement s)
+    {
+    }
+
+    public virtual void Visit(IteratorDeclaration iteratorDeclaration)
+    {
+        iteratorDeclaration.StartValue.Accept(this);
     }
 }

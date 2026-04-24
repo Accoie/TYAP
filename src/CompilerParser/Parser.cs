@@ -56,8 +56,12 @@ public class Parser
     ///                     | assignment_statement
     ///                     | input_statement
     ///                     | output_statement
-    ///                     | return_statement
     ///                     | if_statement
+    ///                     | for_statement
+    ///                     | while_statement
+    ///                     | break_statement
+    ///                     | continue_statement
+    ///                     | return_statement
     ///                     | expression_statement.
     /// </summary>
     private Statement ParseStatement()
@@ -74,6 +78,10 @@ public class Parser
             TokenType.Function => ParseFunctionDeclaration(),
             TokenType.If => ParseIfStatement(),
             TokenType.Return => ParseReturnStatement(),
+            TokenType.While => ParseWhileLoopStatement(),
+            TokenType.For => ParseForLoopStatement(),
+            TokenType.Break => ParseBreakStatement(),
+            TokenType.Continue => ParseContinueStatement(),
 
             _ => throw new UnexpectedLexemeException(_tokens.Peek()),
         };
@@ -329,6 +337,46 @@ public class Parser
     }
 
     /// <summary>
+    /// Разбирает цикл for.
+    /// Правило: for_statement = "for", identifier, "from", expression, "to", expression, "do", block ;
+    /// </summary>
+    private ForLoopStatement ParseForLoopStatement()
+    {
+        Match(TokenType.For);
+
+        string iteratorName = Match(TokenType.Identifier).Value!.ToString();
+
+        Match(TokenType.From);
+        Expression startExpression = ParseExpression();
+
+        Match(TokenType.To);
+        Expression endExpression = ParseExpression();
+
+        Match(TokenType.Do);
+
+        BlockStatement body = ParseBlock(false);
+
+        return new ForLoopStatement(new IteratorDeclaration(iteratorName, startExpression), endExpression, body);
+    }
+
+    /// <summary>
+    /// Разбирает цикл while.
+    /// Правило: while_statement = "while", "(", expression, ")", "do", block;
+    /// </summary>
+    private WhileLoopStatement ParseWhileLoopStatement()
+    {
+        Match(TokenType.While);
+        Match(TokenType.LParen);
+        Expression condition = ParseExpression();
+        Match(TokenType.RParen);
+        Match(TokenType.Do);
+
+        BlockStatement body = ParseBlock(false);
+
+        return new WhileLoopStatement(condition, body);
+    }
+
+    /// <summary>
     /// Разбирает тип данных.
     /// Правило: type = "integer" | "float" | "string".
     /// </summary>
@@ -344,6 +392,30 @@ public class Parser
 
         _tokens.Advance();
         return type;
+    }
+
+    /// <summary>
+    /// Разбирает оператор break.
+    /// Правило: break_statement = "break", ";".
+    /// </summary>
+    private BreakStatement ParseBreakStatement()
+    {
+        Match(TokenType.Break);
+        Match(TokenType.Semicolon);
+
+        return new BreakStatement();
+    }
+
+    /// <summary>
+    /// Разбирает оператор continue.
+    /// Правило: continue_statement = "continue", ";".
+    /// </summary>
+    private ContinueStatement ParseContinueStatement()
+    {
+        Match(TokenType.Continue);
+        Match(TokenType.Semicolon);
+
+        return new ContinueStatement();
     }
 
     /// <summary>

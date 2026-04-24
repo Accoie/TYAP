@@ -172,6 +172,39 @@ public sealed class ResolveNamesPass : AbstractPass
         }
     }
 
+    public override void Visit(ForLoopStatement s)
+    {
+        _symbols = new SymbolsTable(_symbols);
+        try
+        {
+            base.Visit(s);
+        }
+        finally
+        {
+            _symbols = _symbols.Parent!;
+        }
+    }
+
+    public override void Visit(IteratorDeclaration e)
+    {
+        base.Visit(e);
+
+        _symbols.DefineSymbol(e.Name, e);
+    }
+
+    public override void Visit(WhileLoopStatement s)
+    {
+        _symbols = new SymbolsTable(_symbols );
+        try
+        {
+            base.Visit(s);
+        }
+        finally
+        {
+            _symbols = _symbols.Parent!;
+        }
+    }
+
     public override void Visit(IfElseStatement s)
     {
         s.Condition.Accept(this);

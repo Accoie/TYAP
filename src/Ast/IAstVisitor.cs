@@ -17,6 +17,8 @@ public interface IAstVisitor
 
     void Visit(IfElseStatement s);
 
+    void Visit(ForLoopStatement s);
+
     void Visit(InputStatement s);
 
     void Visit(OutputStatement s);
@@ -29,9 +31,17 @@ public interface IAstVisitor
 
     void Visit(FunctionDeclarationStatement s);
 
+    void Visit(WhileLoopStatement s);
+
+    void Visit(BreakStatement s);
+
+    void Visit(ContinueStatement s);
+
     void Visit(FunctionCallStatement s);
 
     void Visit(ParameterDeclaration parameterDeclarationStatement);
 
     void Visit(VariableExpression variableExpression);
+
+    void Visit(IteratorDeclaration iteratorDeclaration);
 }

@@ -208,6 +208,55 @@ public sealed class ResolveTypesPass : AbstractPass
     }
 
     /// <summary>
+    /// Проверяет типы в цикле while.
+    /// </summary>
+    public override void Visit(WhileLoopStatement s)
+    {
+        base.Visit(s);
+
+        if (s.Condition.ResultType != ValueType.Integer)
+        {
+            throw new TypeMismatchException(
+                $"Условие цикла должно иметь логический тип, получен {s.Condition.ResultType}"
+            );
+        }
+    }
+
+    /// <summary>
+    /// Проверяет типы в цикле for.
+    /// </summary>
+    public override void Visit(ForLoopStatement s)
+    {
+        base.Visit(s);
+
+        if (s.Iterator.StartValue.ResultType != ValueType.Float && s.Iterator.StartValue.ResultType != ValueType.Integer)
+        {
+            throw new TypeMismatchException(
+                $"Начальное значение цикла должно быть числом, получен {s.Iterator.StartValue.ResultType}"
+            );
+        }
+
+        if (s.EndValue.ResultType != ValueType.Float && s.EndValue.ResultType != ValueType.Integer)
+        {
+            throw new TypeMismatchException(
+                $"Конечное значение цикла должно быть числом, получен {s.EndValue.ResultType}"
+            );
+        }
+    }
+
+    public override void Visit(IteratorDeclaration iteratorDeclaration)
+    {
+        base.Visit(iteratorDeclaration);
+        if (iteratorDeclaration.StartValue.ResultType != ValueType.Integer)
+        {
+            throw new TypeMismatchException(
+                $"Значение итератора должно быть типа integer");
+        }
+
+        iteratorDeclaration.ResultType = ValueType.Integer;
+    }
+
+    /// <summary>
     /// Проверяет оператор return.
     /// </summary>
     public override void Visit(ReturnStatement s)
@@ -273,6 +322,22 @@ public sealed class ResolveTypesPass : AbstractPass
                 throw new TypeMismatchException("Output cannot contain void type");
             }
         }
+    }
+
+    /// <summary>
+    /// Проверяет оператор break.
+    /// </summary>
+    public override void Visit(BreakStatement s)
+    {
+        base.Visit(s);
+    }
+
+    /// <summary>
+    /// Проверяет оператор continue.
+    /// </summary>
+    public override void Visit(ContinueStatement s)
+    {
+        base.Visit(s);
     }
 
     /// <summary>

@@ -34,6 +34,16 @@ public class MsilCodegenPass : IAstVisitor
     private readonly Stack<Dictionary<string, LocalBuilder>> _scopesStack;
 
     /// <summary>
+    /// Стек меток конца цикла для прерывания цикла (break).
+    /// </summary>
+    private readonly Stack<Label> _loopBreaksStack;
+
+    /// <summary>
+    /// Стек меток цикла для продолжения цикла (continue).
+    /// </summary>
+    private readonly Stack<Label> _loopContinuesStack;
+
+    /// <summary>
     /// Словарь методов, соответствующих пользовательским функциям исходной программы.
     /// </summary>
     private readonly Dictionary<string, MethodBuilder> _userFunctionMethodsMap;
@@ -44,6 +54,8 @@ public class MsilCodegenPass : IAstVisitor
         _typeMapper = new TypeMapper();
         _builtinFunctionEmitter = new BuiltinFunctionEmitter();
         _scopesStack = new Stack<Dictionary<string, LocalBuilder>>();
+        _loopBreaksStack = new Stack<Label>();
+        _loopContinuesStack = new Stack<Label>();
         _userFunctionMethodsMap = new Dictionary<string, MethodBuilder>();
     }
 
@@ -336,11 +348,104 @@ public class MsilCodegenPass : IAstVisitor
         _il.MarkLabel(endLabel);
     }
 
+    public void Visit(WhileLoopStatement e)
+    {
+        Label loopStart = _il.DefineLabel();
+        Label loopEnd = _il.DefineLabel();
+
+        _loopBreaksStack.Push(loopEnd);
+        _loopContinuesStack.Push(loopStart);
+
+        _il.MarkLabel(loopStart);
+        e.Condition.Accept(this);
+        _il.Emit(OpCodes.Brfalse, loopEnd);
+
+        e.Body.Accept(this);
+        _il.Emit(OpCodes.Br, loopStart);
+
+        _il.MarkLabel(loopEnd);
+
+        _loopBreaksStack.Pop();
+        _loopContinuesStack.Pop();
+    }
+
+    public void Visit(ForLoopStatement e)
+    {
+        Label loopStart = _il.DefineLabel();
+        Label loopEnd = _il.DefineLabel();
+        Label loopIncrement = _il.DefineLabel();
+
+        _loopBreaksStack.Push(loopEnd);
+        _loopContinuesStack.Push(loopIncrement);
+
+        BeginScope();
+
+        ValueType iteratorType = e.Iterator.StartValue.ResultType;
+        Type ilIteratorType = _typeMapper.MapType(iteratorType);
+        LocalBuilder iterator = _il.DeclareLocal(ilIteratorType);
+        CurrentScope[e.Iterator.Name] = iterator;
+
+        e.Iterator.StartValue.Accept(this);
+        _il.Emit(OpCodes.Stloc, iterator);
+
+        _il.MarkLabel(loopStart);
+        _il.Emit(OpCodes.Ldloc, iterator);
+        e.EndValue.Accept(this);
+        EmitConvertToCommonType(iteratorType, e.EndValue.ResultType);
+        _il.Emit(OpCodes.Cgt);
+        _il.Emit(OpCodes.Brtrue, loopEnd);
+
+        e.Body.Accept(this);
+
+        _il.MarkLabel(loopIncrement);
+        _il.Emit(OpCodes.Ldloc, iterator);
+        if (iteratorType == ValueType.Float)
+        {
+            _il.Emit(OpCodes.Ldc_R8, 1.0);
+        }
+        else
+        {
+            _il.Emit(OpCodes.Ldc_I4_1);
+        }
+
+        _il.Emit(OpCodes.Add);
+        _il.Emit(OpCodes.Stloc, iterator);
+
+        _il.Emit(OpCodes.Br, loopStart);
+
+        _il.MarkLabel(loopEnd);
+
+        _loopBreaksStack.Pop();
+        _loopContinuesStack.Pop();
+        EndScope();
+    }
+
+    public void Visit(IteratorDeclaration d)
+    {
+    }
+
     public void Visit(ReturnStatement s)
     {
         s.Value?.Accept(this);
 
         _il.Emit(OpCodes.Ret);
+    }
+
+    public void Visit(BreakStatement e)
+    {
+        Label loopEnd = _loopBreaksStack.Peek();
+        _il.Emit(OpCodes.Br, loopEnd);
+    }
+
+    public void Visit(ContinueStatement e)
+    {
+        if (_loopContinuesStack.Count == 0)
+        {
+            throw new InvalidOperationException("continue can only be used inside a loop");
+        }
+
+        Label continueLabel = _loopContinuesStack.Peek();
+        _il.Emit(OpCodes.Br, continueLabel);
     }
 
     public void Visit(FunctionDeclarationStatement s)
@@ -635,14 +740,12 @@ public class MsilCodegenPass : IAstVisitor
     {
         LocalBuilder tempDouble = _il.DeclareLocal(typeof(double));
 
-        // Берем значение double из стека и объявляем переменную.
         _il.Emit(OpCodes.Stloc, tempDouble);
 
         _il.Emit(OpCodes.Ldloca, tempDouble);
 
         _il.Emit(OpCodes.Ldstr, "G15");
 
-        // Получаем culture info и загружаем в стек для форматирования
         MethodInfo invariantCultureGetter = typeof(CultureInfo)
             .GetProperty("InvariantCulture")!.GetMethod!;
 
@@ -696,15 +799,31 @@ public class MsilCodegenPass : IAstVisitor
     /// </summary>
     private void EmitDefineParameter(string name, ValueType type, int argumentNo)
     {
-        // Создаём локальную переменную для параметра функции.
         LocalBuilder local = _il.DeclareLocal(_typeMapper.MapType(type));
 
-        // Загружаем значение новой переменной из i-го аргумента (нумерация начинается с нуля).
         _il.Emit(OpCodes.Ldarg, argumentNo);
         _il.Emit(OpCodes.Stloc, local);
 
-        // Добавляем в текущую область видимости.
         CurrentScope.Add(name, local);
+    }
+
+    /// <summary>
+    /// Приводит два значения на стеке к общему типу перед сравнением.
+    /// </summary>
+    private void EmitConvertToCommonType(ValueType leftType, ValueType rightType)
+    {
+        if (leftType == ValueType.Float || rightType == ValueType.Float)
+        {
+            if (leftType == ValueType.Integer)
+            {
+                _il.Emit(OpCodes.Conv_R8);
+            }
+
+            if (rightType == ValueType.Integer)
+            {
+                _il.Emit(OpCodes.Conv_R8);
+            }
+        }
     }
 
     /// <summary>

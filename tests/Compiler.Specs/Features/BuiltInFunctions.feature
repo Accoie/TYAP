@@ -108,3 +108,78 @@
         tostring_f(-2.5) = -2.5
 
         """
+
+    Сценарий: функция len c кириллическими символами
+        Пусть я скомпилировал программу "features/unicode_characters/len_cyrillic_unicode.pp"
+
+        Когда я выполняю программу
+
+        Тогда я увижу вывод:
+        """
+        len("Мяу") = 3
+        len("Это Pascal++") = 12
+
+        """
+
+    Сценарий: функция getsymbol с кириллическими символами
+        Пусть я скомпилировал программу "features/unicode_characters/getsymbol_cyrillic_unicode.pp"
+
+        Когда я выполняю программу
+
+        Тогда я увижу вывод:
+        """
+        getsymbol("Мяу", 0) = М
+        getsymbol("Мяу", 2) = у
+        getsymbol("Привет", 1) = р
+
+        """
+
+    Сценарий: функция len с китайскими иероглифами
+        Пусть я скомпилировал программу "features/unicode_characters/len_unicode_hieroglyphs.pp"
+
+        Когда я выполняю программу
+
+        Тогда я увижу вывод:
+        """
+        len("喵") = 1
+        len("这是Pascal++") = 10
+
+        """
+
+    Сценарий: функция getsymbol с китайскими иероглифами
+        Пусть я скомпилировал программу "features/unicode_characters/getsymbol_unicode_hieroglyphs.pp"
+
+        Когда я выполняю программу
+
+        Тогда я увижу вывод:
+        """
+        getsymbol("喵", 0) = 喵
+        getsymbol("喵喵喵", 2) = 喵
+        getsymbol("这是Pascal++", 1) = 是
+
+        """
+
+    Сценарий: функция len с эмодзи
+        Пусть я скомпилировал программу "features/unicode_characters/len_unicode_emoji.pp"
+
+        Когда я выполняю программу
+
+        Тогда я увижу вывод:
+        """
+        len("🐈🐈🐈") = 3
+        len("💻Pascal++") = 9
+
+        """
+        
+    Сценарий: функция getsymbol с эмодзи
+        Пусть я скомпилировал программу "features/unicode_characters/getsymbol_unicode_emoji.pp"
+
+        Когда я выполняю программу
+
+        Тогда я увижу вывод:
+        """
+        getsymbol("🐈🐈🐈", 0) = 🐈
+        getsymbol("🐈🐈🐈", 2) = 🐈
+        getsymbol("🖖Hello🖖", 0) = 🖖
+
+        """

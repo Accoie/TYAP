@@ -1,4 +1,4 @@
-﻿using Compiler;
+using Compiler;
 
 return CompilerApplication.Run(
     args: args,

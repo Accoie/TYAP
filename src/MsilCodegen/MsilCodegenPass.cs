@@ -1,12 +1,11 @@
 using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text;
 
 using Ast;
 using Ast.Expressions;
 using Ast.Statements;
-
-using Runtime;
 
 using ValueType = Runtime.ValueType;
 
@@ -52,9 +51,6 @@ public class MsilCodegenPass : IAstVisitor
     /// </summary>
     private Dictionary<string, LocalBuilder> CurrentScope => _scopesStack.Peek();
 
-    /// <summary>
-    /// Создаёт класс Program и метод Main(), возвращает MethodBuilder для метода Main().
-    /// </summary>
     public MethodBuilder GenerateProgramCode(BlockStatement program)
     {
         _programTypeBuilder = _moduleBuilder.DefineType(
@@ -64,6 +60,12 @@ public class MsilCodegenPass : IAstVisitor
 
         MethodBuilder mainMethod = DefineProgramClassMethod("Main", typeof(void), Type.EmptyTypes);
         _il = mainMethod.GetILGenerator();
+
+        // Устанавливаем кодировку UTF-8 для консоли
+        MethodInfo utf8Encoding = typeof(Encoding).GetProperty("UTF8")!.GetMethod!;
+        MethodInfo outputEncodingSetter = typeof(Console).GetProperty("OutputEncoding")!.SetMethod!;
+        _il.Emit(OpCodes.Call, utf8Encoding);
+        _il.Emit(OpCodes.Call, outputEncodingSetter);
 
         BeginScope();
 

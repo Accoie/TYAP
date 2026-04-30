@@ -107,10 +107,6 @@ public sealed class ConsoleSubprocessRunner
         }
     }
 
-    /// <summary>
-    /// Создаёт параметры запуска консольной программы с перенаправлением stdout/stderr
-    ///  (которые будут прочитаны этим же классом).
-    /// </summary>
     private static ProcessStartInfo CreateStartInfo(List<string> command, string workingDirectory, bool redirectStdin)
     {
         ProcessStartInfo startInfo = new()
@@ -124,6 +120,9 @@ public sealed class ConsoleSubprocessRunner
             WindowStyle = ProcessWindowStyle.Hidden,
             ErrorDialog = false,
             WorkingDirectory = workingDirectory,
+
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
         };
 
         foreach (string argument in command.Skip(1))

@@ -65,8 +65,24 @@ public class BuiltinFunctionEmitter
     /// </summary>
     private void EmitLength(ILGenerator il)
     {
-        MethodInfo getter = GetPropertyGetterMethod(typeof(string), "Length");
-        il.Emit(OpCodes.Callvirt, getter);
+        // Stack on entry: [string]
+
+        // Сохраняем строку в локальную переменную
+        LocalBuilder strLocal = il.DeclareLocal(typeof(string));
+        il.Emit(OpCodes.Stloc, strLocal);  // Stack: []
+
+        // Создаём StringInfo: new StringInfo(str)
+        LocalBuilder stringInfoLocal = il.DeclareLocal(typeof(StringInfo));
+        ConstructorInfo ctor = typeof(StringInfo).GetConstructor([typeof(string)])!;
+        il.Emit(OpCodes.Ldloc, strLocal);           // Stack: [str]
+        il.Emit(OpCodes.Newobj, ctor);              // Stack: [stringInfo]
+        il.Emit(OpCodes.Stloc, stringInfoLocal);    // Stack: []
+
+        // Возвращаем LengthInTextElements
+        il.Emit(OpCodes.Ldloc, stringInfoLocal);    // Stack: [stringInfo]
+        PropertyInfo prop = typeof(StringInfo).GetProperty("LengthInTextElements")!;
+        MethodInfo getter = prop.GetGetMethod()!;
+        il.Emit(OpCodes.Callvirt, getter);          // Stack: [int]
     }
 
     /// <summary>
@@ -83,12 +99,28 @@ public class BuiltinFunctionEmitter
     /// </summary>
     private void EmitGetSymbol(ILGenerator il)
     {
-        LocalBuilder tempIndex = il.DeclareLocal(typeof(int));
-        il.Emit(OpCodes.Stloc, tempIndex);
-        il.Emit(OpCodes.Ldloc, tempIndex);
-        il.Emit(OpCodes.Ldc_I4_1);
-        MethodInfo method = GetMethod(typeof(string), "Substring", [typeof(int), typeof(int)]);
-        il.Emit(OpCodes.Callvirt, method);
+        // Stack on entry: [string, index]
+
+        // Сохраняем индекс в локальную переменную
+        LocalBuilder indexLocal = il.DeclareLocal(typeof(int));
+        il.Emit(OpCodes.Stloc, indexLocal);  // Stack: [string]
+
+        // Сохраняем строку в локальную переменную
+        LocalBuilder strLocal = il.DeclareLocal(typeof(string));
+        il.Emit(OpCodes.Stloc, strLocal);    // Stack: []
+
+        // Создаём StringInfo: new StringInfo(str)
+        LocalBuilder stringInfoLocal = il.DeclareLocal(typeof(StringInfo));
+        ConstructorInfo ctor = typeof(StringInfo).GetConstructor([typeof(string)])!;
+        il.Emit(OpCodes.Ldloc, strLocal);           // Stack: [str]
+        il.Emit(OpCodes.Newobj, ctor);              // Stack: [stringInfo]
+        il.Emit(OpCodes.Stloc, stringInfoLocal);    // Stack: []
+
+        // Вызываем SubstringByTextElements(index)
+        il.Emit(OpCodes.Ldloc, stringInfoLocal);    // Stack: [stringInfo]
+        il.Emit(OpCodes.Ldloc, indexLocal);         // Stack: [stringInfo, index]
+        MethodInfo method = typeof(StringInfo).GetMethod("SubstringByTextElements", [typeof(int)])!;
+        il.Emit(OpCodes.Callvirt, method);          // Stack: [string]
     }
 
     /// <summary>

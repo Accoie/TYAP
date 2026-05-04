@@ -34,7 +34,7 @@ public class Lexer
 
     public Lexer(IScanner scanner)
     {
-        this._scanner = scanner;
+        _scanner = scanner;
     }
 
     public Token ParseToken()
@@ -318,7 +318,6 @@ public class Lexer
             'n' => '\n',
             't' => '\t',
             'r' => '\r',
-            '\'' => '\'',
             '\"' => '\"',
             _ => '\0',
         };

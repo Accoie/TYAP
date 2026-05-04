@@ -1,4 +1,5 @@
 using System.Reflection.Emit;
+using System.Text;
 
 using Ast;
 using Ast.Statements;
@@ -17,7 +18,7 @@ public class CompilerDriver
 {
     public void Compile(string inputPath, string outputPath)
     {
-        string code = File.ReadAllText(inputPath);
+        string code = File.ReadAllText(inputPath, Encoding.UTF8);
 
         // 1. Лексический анализ
         // 2. Синтаксический анализ

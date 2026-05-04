@@ -555,7 +555,7 @@ public class Parser
     }
 
     /// <summary>
-    /// Разбирает унарные операции и факторные выражения.
+    /// Разбирает унарные операции.
     /// Правило: factor_expression = [ unary_operator ], exponentiation_expression.
     /// </summary>
     private Expression ParseFactorExpression()

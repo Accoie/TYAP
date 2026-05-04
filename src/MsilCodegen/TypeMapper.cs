@@ -42,6 +42,6 @@ public class TypeMapper
             return typeof(string);
         }
 
-        throw new NotSupportedException($"Tiger type {type} cannot be converted into .NET type");
+        throw new NotSupportedException($"Тип Pascal++ - {type} - не может быть конвертирован в тип .NET");
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace TestLibrary;
 
@@ -13,7 +14,7 @@ public static class Samples
             DataDirectory,
             filename.Replace('/', Path.DirectorySeparatorChar)
         );
-        return File.ReadAllText(filepath);
+        return File.ReadAllText(filepath, Encoding.UTF8);
     }
 
     public static string GetSampleProgramPath(string filename)

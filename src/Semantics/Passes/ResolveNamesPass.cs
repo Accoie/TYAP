@@ -127,7 +127,7 @@ public sealed class ResolveNamesPass : AbstractPass
     {
         base.Visit(d);
 
-        if (IsBuiltInFunction(d.Name))
+        if (IsBuiltInFunction(d.Name) || IsBuiltInType(d.Name))
         {
             throw DuplicateSymbolException.DuplicateVariableOrFunction(d.Name);
         }
@@ -137,6 +137,11 @@ public sealed class ResolveNamesPass : AbstractPass
 
     public override void Visit(FunctionDeclarationStatement d)
     {
+        if (IsBuiltInFunction(d.Name) || IsBuiltInType(d.Name))
+        {
+            throw DuplicateSymbolException.DuplicateVariableOrFunction(d.Name);
+        }
+
         SymbolsTable outerScope = _symbols;
         _symbols = new SymbolsTable(null);
         try
@@ -161,6 +166,11 @@ public sealed class ResolveNamesPass : AbstractPass
     public override void Visit(ParameterDeclaration d)
     {
         base.Visit(d);
+
+        if (IsBuiltInFunction(d.Name) || IsBuiltInType(d.Name))
+        {
+            throw DuplicateSymbolException.DuplicateVariableOrFunction(d.Name);
+        }
 
         try
         {
@@ -310,6 +320,21 @@ public sealed class ResolveNamesPass : AbstractPass
         foreach (string builtIn in builtInFunctions)
         {
             if (string.Equals(builtIn, name))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsBuiltInType(string name)
+    {
+        string[] builtInTypes = { "integer", "float", "string" };
+
+        foreach (string type in builtInTypes)
+        {
+            if (string.Equals(type, name))
             {
                 return true;
             }

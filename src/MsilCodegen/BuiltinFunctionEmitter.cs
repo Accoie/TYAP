@@ -27,7 +27,7 @@ public class BuiltinFunctionEmitter
     {
         if (!_functionsMap.TryGetValue(name, out Action<ILGenerator>? action))
         {
-            throw new InvalidOperationException($"Unknown builtin function: {name}");
+            throw new InvalidOperationException($"Неизвестная встроенная функция: {name}");
         }
 
         action(il);
@@ -65,7 +65,18 @@ public class BuiltinFunctionEmitter
     /// </summary>
     private void EmitLength(ILGenerator il)
     {
-        MethodInfo getter = GetPropertyGetterMethod(typeof(string), "Length");
+        LocalBuilder strLocal = il.DeclareLocal(typeof(string));
+        il.Emit(OpCodes.Stloc, strLocal);
+
+        LocalBuilder stringInfoLocal = il.DeclareLocal(typeof(StringInfo));
+        ConstructorInfo ctor = typeof(StringInfo).GetConstructor([typeof(string)])!;
+        il.Emit(OpCodes.Ldloc, strLocal);
+        il.Emit(OpCodes.Newobj, ctor);
+        il.Emit(OpCodes.Stloc, stringInfoLocal);
+
+        il.Emit(OpCodes.Ldloc, stringInfoLocal);
+        PropertyInfo prop = typeof(StringInfo).GetProperty("LengthInTextElements")!;
+        MethodInfo getter = prop.GetGetMethod()!;
         il.Emit(OpCodes.Callvirt, getter);
     }
 
@@ -83,11 +94,22 @@ public class BuiltinFunctionEmitter
     /// </summary>
     private void EmitGetSymbol(ILGenerator il)
     {
-        LocalBuilder tempIndex = il.DeclareLocal(typeof(int));
-        il.Emit(OpCodes.Stloc, tempIndex);
-        il.Emit(OpCodes.Ldloc, tempIndex);
+        LocalBuilder indexLocal = il.DeclareLocal(typeof(int));
+        il.Emit(OpCodes.Stloc, indexLocal);
+
+        LocalBuilder strLocal = il.DeclareLocal(typeof(string));
+        il.Emit(OpCodes.Stloc, strLocal);
+
+        LocalBuilder stringInfoLocal = il.DeclareLocal(typeof(StringInfo));
+        ConstructorInfo ctor = typeof(StringInfo).GetConstructor([typeof(string)])!;
+        il.Emit(OpCodes.Ldloc, strLocal);
+        il.Emit(OpCodes.Newobj, ctor);
+        il.Emit(OpCodes.Stloc, stringInfoLocal);
+
+        il.Emit(OpCodes.Ldloc, stringInfoLocal);
+        il.Emit(OpCodes.Ldloc, indexLocal);
         il.Emit(OpCodes.Ldc_I4_1);
-        MethodInfo method = GetMethod(typeof(string), "Substring", [typeof(int), typeof(int)]);
+        MethodInfo method = typeof(StringInfo).GetMethod("SubstringByTextElements", [typeof(int), typeof(int)])!;
         il.Emit(OpCodes.Callvirt, method);
     }
 
@@ -127,26 +149,9 @@ public class BuiltinFunctionEmitter
         if (method == null)
         {
             string parameterTypeNames = string.Join(", ", parameterTypes.Select(t => t.Name));
-            throw new InvalidOperationException($"Cannot find method {type.Name}.{methodName}({parameterTypeNames}).");
+            throw new InvalidOperationException($"Не удалось найти метод {type.Name}.{methodName}({parameterTypeNames}).");
         }
 
         return method;
-    }
-
-    private static MethodInfo GetPropertyGetterMethod(Type type, string propertyName)
-    {
-        PropertyInfo? outProperty = type.GetProperty(propertyName);
-        if (outProperty == null)
-        {
-            throw new InvalidOperationException($"Cannot find property {type.Name}.{propertyName}.");
-        }
-
-        MethodInfo? getterMethod = outProperty.GetGetMethod();
-        if (getterMethod == null)
-        {
-            throw new InvalidOperationException($"Property {type.Name}.{propertyName} has no getter.");
-        }
-
-        return getterMethod;
     }
 }

@@ -1,12 +1,11 @@
 using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text;
 
 using Ast;
 using Ast.Expressions;
 using Ast.Statements;
-
-using Runtime;
 
 using ValueType = Runtime.ValueType;
 
@@ -64,9 +63,6 @@ public class MsilCodegenPass : IAstVisitor
     /// </summary>
     private Dictionary<string, LocalBuilder> CurrentScope => _scopesStack.Peek();
 
-    /// <summary>
-    /// Создаёт класс Program и метод Main(), возвращает MethodBuilder для метода Main().
-    /// </summary>
     public MethodBuilder GenerateProgramCode(BlockStatement program)
     {
         _programTypeBuilder = _moduleBuilder.DefineType(
@@ -76,6 +72,12 @@ public class MsilCodegenPass : IAstVisitor
 
         MethodBuilder mainMethod = DefineProgramClassMethod("Main", typeof(void), Type.EmptyTypes);
         _il = mainMethod.GetILGenerator();
+
+        // Устанавливаем кодировку UTF-8 для консоли
+        MethodInfo utf8Encoding = typeof(Encoding).GetProperty("UTF8")!.GetMethod!;
+        MethodInfo outputEncodingSetter = typeof(Console).GetProperty("OutputEncoding")!.SetMethod!;
+        _il.Emit(OpCodes.Call, utf8Encoding);
+        _il.Emit(OpCodes.Call, outputEncodingSetter);
 
         BeginScope();
 
@@ -112,7 +114,7 @@ public class MsilCodegenPass : IAstVisitor
                 if (e.ResultType != ValueType.Integer && e.ResultType != ValueType.Float)
                 {
                     throw new InvalidOperationException(
-                        $"Unary minus requires numeric type, got {e.ResultType}");
+                        $"Унарный минус ожидает число, получен {e.ResultType}");
                 }
 
                 _il.Emit(OpCodes.Neg);
@@ -143,7 +145,7 @@ public class MsilCodegenPass : IAstVisitor
         }
         else
         {
-            throw new NotImplementedException($"Literal of type {e.ResultType} are not supported yet.");
+            throw new NotImplementedException($"Литерал типа {e.ResultType} не поддерживается");
         }
     }
 
@@ -204,7 +206,7 @@ public class MsilCodegenPass : IAstVisitor
         }
         else
         {
-            throw new NotImplementedException($"Input for type {variableType} is not supported");
+            throw new NotImplementedException($"Ввод для типа {variableType} не поддерживается");
         }
 
         _il.Emit(OpCodes.Stloc, local);
@@ -226,7 +228,7 @@ public class MsilCodegenPass : IAstVisitor
                 {
                     ValueType.Integer => typeof(int),
                     ValueType.String => typeof(string),
-                    _ => throw new NotImplementedException($"Output of type {argument.ResultType}"),
+                    _ => throw new NotImplementedException($"Выводимый тип {argument.ResultType}"),
                 };
 
                 MethodInfo writeMethod = GetMethod(typeof(Console), "Write", [argType]);
@@ -271,7 +273,7 @@ public class MsilCodegenPass : IAstVisitor
             ValueType.Integer => typeof(int),
             ValueType.Float => typeof(double),
             ValueType.String => typeof(string),
-            _ => throw new NotImplementedException($"Type {s.DeclaredType} is not supported"),
+            _ => throw new NotImplementedException($"Тип {s.DeclaredType} не поддерживается"),
         };
 
         LocalBuilder local = _il.DeclareLocal(ilType);
@@ -297,7 +299,7 @@ public class MsilCodegenPass : IAstVisitor
         }
 
         throw new InvalidOperationException(
-            $"Variable '{e.Name}' not found in the current scope"
+            $"Переменная '{e.Name}' не найдена в текущей области видимости"
         );
     }
 
@@ -316,7 +318,7 @@ public class MsilCodegenPass : IAstVisitor
         {
             if (!_userFunctionMethodsMap.TryGetValue(s.Name, out MethodBuilder? method))
             {
-                throw new InvalidOperationException($"Cannot find .NET method for function with name {s.Name}");
+                throw new InvalidOperationException($"Не получилось найти метод .NET для функции с именем {s.Name}");
             }
 
             _il.Emit(OpCodes.Call, method);
@@ -592,7 +594,7 @@ public class MsilCodegenPass : IAstVisitor
                         EmitLogicalNot();
                         break;
                     default:
-                        throw new NotSupportedException($"Cannot generate MSIL for binary operation {e.Operation}.");
+                        throw new NotSupportedException($"Невозможно сгенерировать MSIL для бинарной операции {e.Operation}.");
                 }
 
                 break;
@@ -720,7 +722,7 @@ public class MsilCodegenPass : IAstVisitor
                 break;
 
             default:
-                throw new NotSupportedException($"Unexpected string binary operation {e.Operation}.");
+                throw new NotSupportedException($"Неизвестная бинарная операция для строки: {e.Operation}.");
         }
     }
 
@@ -770,7 +772,7 @@ public class MsilCodegenPass : IAstVisitor
         if (method == null)
         {
             string parameterTypeNames = string.Join(", ", parameterTypes.Select(t => t.Name));
-            throw new InvalidOperationException($"Cannot find method {type.Name}.{methodName}({parameterTypeNames}.");
+            throw new InvalidOperationException($"Не удалось найти метод {type.Name}.{methodName}({parameterTypeNames}.");
         }
 
         return method;

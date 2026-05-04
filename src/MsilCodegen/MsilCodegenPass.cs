@@ -489,7 +489,7 @@ public class MsilCodegenPass : IAstVisitor
                         EmitLogicalNot();
                         break;
                     default:
-                        throw new NotSupportedException($"Cannot generate MSIL for binary operation {e.Operation}.");
+                        throw new NotSupportedException($"Невозможно сгенерировать MSIL для бинарной операции {e.Operation}.");
                 }
 
                 break;
@@ -617,7 +617,7 @@ public class MsilCodegenPass : IAstVisitor
                 break;
 
             default:
-                throw new NotSupportedException($"Unexpected string binary operation {e.Operation}.");
+                throw new NotSupportedException($"Неизвестная бинарная операция для строки: {e.Operation}.");
         }
     }
 
@@ -669,7 +669,7 @@ public class MsilCodegenPass : IAstVisitor
         if (method == null)
         {
             string parameterTypeNames = string.Join(", ", parameterTypes.Select(t => t.Name));
-            throw new InvalidOperationException($"Cannot find method {type.Name}.{methodName}({parameterTypeNames}.");
+            throw new InvalidOperationException($"Не удалось найти метод {type.Name}.{methodName}({parameterTypeNames}.");
         }
 
         return method;

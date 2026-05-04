@@ -27,7 +27,7 @@ public class BuiltinFunctionEmitter
     {
         if (!_functionsMap.TryGetValue(name, out Action<ILGenerator>? action))
         {
-            throw new InvalidOperationException($"Unknown builtin function: {name}");
+            throw new InvalidOperationException($"Неизвестная встроенная функция: {name}");
         }
 
         action(il);
@@ -149,7 +149,7 @@ public class BuiltinFunctionEmitter
         if (method == null)
         {
             string parameterTypeNames = string.Join(", ", parameterTypes.Select(t => t.Name));
-            throw new InvalidOperationException($"Cannot find method {type.Name}.{methodName}({parameterTypeNames}).");
+            throw new InvalidOperationException($"Не удалось найти метод {type.Name}.{methodName}({parameterTypeNames}).");
         }
 
         return method;

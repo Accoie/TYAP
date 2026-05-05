@@ -1,4 +1,4 @@
-begin
+﻿begin
     var text : string;
     write("Введите строку: ");
     read(text);
@@ -10,17 +10,14 @@ begin
     begin
         var c : string = getsymbol(text, i);
         
-        var isVowel : integer = (c == "a") || 
-        (c == "e") || 
-        (c == "i") ||
-        (c == "o") ||
-        (c == "u") ||
-        (c == "A") ||
-        (c == "E") ||
-        (c == "I") ||
-        (c == "O") ||
-        (c == "U");
-        
+        var isVowel : integer = (c == "a") || (c == "e") || (c == "i") ||
+                                 (c == "o") ||
+                                 (c == "u") ||
+                                 (c == "A") ||
+                                 (c == "E") ||
+                                 (c == "I") ||
+                                 (c == "O") ||
+                                 (c == "U");
         if (isVowel) then
         begin
             vowels = vowels + 1;

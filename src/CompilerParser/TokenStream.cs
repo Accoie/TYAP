@@ -9,7 +9,7 @@ public class TokenStream
 
     public TokenStream(string text)
     {
-        TextScanner scanner = new TextScanner(text);
+        TextScanner scanner = new(text);
         _lexer = new Lexer(scanner);
         _nextToken = _lexer.ParseToken();
     }

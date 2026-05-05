@@ -16,6 +16,8 @@ namespace Semantics.Passes;
 /// <exception cref="TypeMismatchException">Бросается при несоответствии типов данных.</exception>
 public sealed class ResolveTypesPass : AbstractPass
 {
+    private int _loopNestingLevel = 0;
+
     /// <summary>
     /// Литерал всегда имеет определённый тип.
     /// </summary>
@@ -182,6 +184,11 @@ public sealed class ResolveTypesPass : AbstractPass
                 $"Type of variable being assigned does not match the declared type"
             );
         }
+
+        if (s.Variable is IteratorDeclaration)
+        {
+            throw new InvalidAssignmentException($"Cannot assign to for loop iterator '{s.Name}'");
+        }
     }
 
     /// <summary>
@@ -212,13 +219,21 @@ public sealed class ResolveTypesPass : AbstractPass
     /// </summary>
     public override void Visit(WhileLoopStatement s)
     {
-        base.Visit(s);
-
-        if (s.Condition.ResultType != ValueType.Integer)
+        _loopNestingLevel++;
+        try
         {
-            throw new TypeMismatchException(
-                $"Условие цикла должно иметь логический тип, получен {s.Condition.ResultType}"
-            );
+            base.Visit(s);
+
+            if (s.Condition.ResultType != ValueType.Integer)
+            {
+                throw new TypeMismatchException(
+                    $"Condition of while loop must be integer, but got {s.Condition.ResultType}"
+                );
+            }
+        }
+        finally
+        {
+            _loopNestingLevel--;
         }
     }
 
@@ -227,20 +242,28 @@ public sealed class ResolveTypesPass : AbstractPass
     /// </summary>
     public override void Visit(ForLoopStatement s)
     {
-        base.Visit(s);
-
-        if (s.Iterator.StartValue.ResultType != ValueType.Float && s.Iterator.StartValue.ResultType != ValueType.Integer)
+        _loopNestingLevel++;
+        try
         {
-            throw new TypeMismatchException(
-                $"Начальное значение цикла должно быть числом, получен {s.Iterator.StartValue.ResultType}"
-            );
+            base.Visit(s);
+
+            if (s.Iterator.StartValue.ResultType != ValueType.Integer)
+            {
+                throw new TypeMismatchException(
+                    $"Start value of for loop must be integer, but got {s.Iterator.StartValue.ResultType}"
+                );
+            }
+
+            if (s.EndValue.ResultType != ValueType.Integer)
+            {
+                throw new TypeMismatchException(
+                    $"End value of for loop must be integer, but got {s.EndValue.ResultType}"
+                );
+            }
         }
-
-        if (s.EndValue.ResultType != ValueType.Float && s.EndValue.ResultType != ValueType.Integer)
+        finally
         {
-            throw new TypeMismatchException(
-                $"Конечное значение цикла должно быть числом, получен {s.EndValue.ResultType}"
-            );
+            _loopNestingLevel--;
         }
     }
 
@@ -250,7 +273,7 @@ public sealed class ResolveTypesPass : AbstractPass
         if (iteratorDeclaration.StartValue.ResultType != ValueType.Integer)
         {
             throw new TypeMismatchException(
-                $"Значение итератора должно быть типа integer");
+                $"Iterator's value in for loop must be integer, but got {iteratorDeclaration.StartValue.ResultType}");
         }
 
         iteratorDeclaration.ResultType = ValueType.Integer;
@@ -330,6 +353,11 @@ public sealed class ResolveTypesPass : AbstractPass
     public override void Visit(BreakStatement s)
     {
         base.Visit(s);
+
+        if (_loopNestingLevel == 0)
+        {
+            throw new InvalidExpressionException("Break statement must be inside a loop");
+        }
     }
 
     /// <summary>
@@ -338,6 +366,11 @@ public sealed class ResolveTypesPass : AbstractPass
     public override void Visit(ContinueStatement s)
     {
         base.Visit(s);
+
+        if (_loopNestingLevel == 0)
+        {
+            throw new InvalidExpressionException("Continue statement must be inside a loop");
+        }
     }
 
     /// <summary>

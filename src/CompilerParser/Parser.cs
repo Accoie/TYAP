@@ -223,7 +223,7 @@ public class Parser
     {
         Match(TokenType.LParen);
 
-        List<Expression> arguments = new List<Expression>();
+        List<Expression> arguments = new();
         if (_tokens.Peek().Type != TokenType.RParen)
         {
             arguments.Add(ParseExpression());
@@ -247,7 +247,7 @@ public class Parser
     {
         Match(TokenType.LParen);
 
-        List<Expression> arguments = new List<Expression>();
+        List<Expression> arguments = new();
         if (_tokens.Peek().Type != TokenType.RParen)
         {
             arguments.Add(ParseExpression());
@@ -292,7 +292,7 @@ public class Parser
     /// </summary>
     private List<ParameterDeclaration> ParseParameterList()
     {
-        List<ParameterDeclaration> parameters = new List<ParameterDeclaration>();
+        List<ParameterDeclaration> parameters = new();
 
         if (_tokens.Peek().Type == TokenType.RParen)
         {

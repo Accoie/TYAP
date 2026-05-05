@@ -114,7 +114,7 @@ public class MsilCodegenPass : IAstVisitor
                 if (e.ResultType != ValueType.Integer && e.ResultType != ValueType.Float)
                 {
                     throw new InvalidOperationException(
-                        $"Унарный минус ожидает число, получен {e.ResultType}");
+                        $"Unary minus expect number, but got {e.ResultType}");
                 }
 
                 _il.Emit(OpCodes.Neg);
@@ -145,7 +145,7 @@ public class MsilCodegenPass : IAstVisitor
         }
         else
         {
-            throw new NotImplementedException($"Литерал типа {e.ResultType} не поддерживается");
+            throw new NotImplementedException($"Literal of type '{e.ResultType}' is not supported");
         }
     }
 
@@ -163,7 +163,7 @@ public class MsilCodegenPass : IAstVisitor
         }
 
         throw new InvalidOperationException(
-            $"Переменная '{s.Name}' не найдена в текущей области видимости"
+            $"Variable '{s.Name}' is not found in current scope"
         );
     }
 
@@ -182,7 +182,7 @@ public class MsilCodegenPass : IAstVisitor
         if (local == null)
         {
             throw new InvalidOperationException(
-                $"Переменная '{s.VariableName}' не найдена в текущей области видимости"
+                $"Variable '{s.VariableName}' is not found in current scope"
             );
         }
 
@@ -206,7 +206,7 @@ public class MsilCodegenPass : IAstVisitor
         }
         else
         {
-            throw new NotImplementedException($"Ввод для типа {variableType} не поддерживается");
+            throw new NotImplementedException($"Input for type '{variableType}' is not supported");
         }
 
         _il.Emit(OpCodes.Stloc, local);
@@ -228,7 +228,7 @@ public class MsilCodegenPass : IAstVisitor
                 {
                     ValueType.Integer => typeof(int),
                     ValueType.String => typeof(string),
-                    _ => throw new NotImplementedException($"Выводимый тип {argument.ResultType}"),
+                    _ => throw new InvalidOperationException($"Output type '{argument.ResultType}' is not supported"),
                 };
 
                 MethodInfo writeMethod = GetMethod(typeof(Console), "Write", [argType]);
@@ -273,7 +273,7 @@ public class MsilCodegenPass : IAstVisitor
             ValueType.Integer => typeof(int),
             ValueType.Float => typeof(double),
             ValueType.String => typeof(string),
-            _ => throw new NotImplementedException($"Тип {s.DeclaredType} не поддерживается"),
+            _ => throw new NotImplementedException($"Type {s.DeclaredType} is not supported"),
         };
 
         LocalBuilder local = _il.DeclareLocal(ilType);
@@ -299,7 +299,7 @@ public class MsilCodegenPass : IAstVisitor
         }
 
         throw new InvalidOperationException(
-            $"Переменная '{e.Name}' не найдена в текущей области видимости"
+            $"Variable '{e.Name}' is not found in current scope"
         );
     }
 
@@ -318,7 +318,7 @@ public class MsilCodegenPass : IAstVisitor
         {
             if (!_userFunctionMethodsMap.TryGetValue(s.Name, out MethodBuilder? method))
             {
-                throw new InvalidOperationException($"Не получилось найти метод .NET для функции с именем {s.Name}");
+                throw new InvalidOperationException($"Cannot find method of .NET for function with name {s.Name}");
             }
 
             _il.Emit(OpCodes.Call, method);
@@ -443,7 +443,7 @@ public class MsilCodegenPass : IAstVisitor
     {
         if (_loopContinuesStack.Count == 0)
         {
-            throw new InvalidOperationException("continue can only be used inside a loop");
+            throw new InvalidOperationException("Statement 'continue' can only be used inside a loop");
         }
 
         Label continueLabel = _loopContinuesStack.Peek();
@@ -485,7 +485,7 @@ public class MsilCodegenPass : IAstVisitor
 
     public void Visit(FunctionCallStatement s)
     {
-        FunctionCallExpression callExpr = new FunctionCallExpression(s.Name, s.Arguments.ToList())
+        FunctionCallExpression callExpr = new(s.Name, s.Arguments.ToList())
         {
             Function = s.Function,
             ResultType = s.Function.ResultType,
@@ -594,7 +594,7 @@ public class MsilCodegenPass : IAstVisitor
                         EmitLogicalNot();
                         break;
                     default:
-                        throw new NotSupportedException($"Невозможно сгенерировать MSIL для бинарной операции {e.Operation}.");
+                        throw new NotSupportedException($"Cannot generate MSIL for binary operation {e.Operation}.");
                 }
 
                 break;
@@ -722,7 +722,7 @@ public class MsilCodegenPass : IAstVisitor
                 break;
 
             default:
-                throw new NotSupportedException($"Неизвестная бинарная операция для строки: {e.Operation}.");
+                throw new NotSupportedException($"Unknown binary operation for string: {e.Operation}.");
         }
     }
 
@@ -772,7 +772,7 @@ public class MsilCodegenPass : IAstVisitor
         if (method == null)
         {
             string parameterTypeNames = string.Join(", ", parameterTypes.Select(t => t.Name));
-            throw new InvalidOperationException($"Не удалось найти метод {type.Name}.{methodName}({parameterTypeNames}.");
+            throw new InvalidOperationException($"Cannot find method {type.Name}.{methodName}({parameterTypeNames}.");
         }
 
         return method;

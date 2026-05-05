@@ -145,7 +145,7 @@ public class MsilCodegenPass : IAstVisitor
         }
         else
         {
-            throw new NotImplementedException($"Literal of type '{e.ResultType}' is not supported");
+            throw new InvalidOperationException($"Literal of type '{e.ResultType}' is not supported");
         }
     }
 
@@ -206,7 +206,7 @@ public class MsilCodegenPass : IAstVisitor
         }
         else
         {
-            throw new NotImplementedException($"Input for type '{variableType}' is not supported");
+            throw new InvalidOperationException($"Input for type '{variableType}' is not supported");
         }
 
         _il.Emit(OpCodes.Stloc, local);
@@ -273,7 +273,7 @@ public class MsilCodegenPass : IAstVisitor
             ValueType.Integer => typeof(int),
             ValueType.Float => typeof(double),
             ValueType.String => typeof(string),
-            _ => throw new NotImplementedException($"Type {s.DeclaredType} is not supported"),
+            _ => throw new InvalidOperationException($"Type {s.DeclaredType} is not supported"),
         };
 
         LocalBuilder local = _il.DeclareLocal(ilType);

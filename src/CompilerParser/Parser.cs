@@ -93,7 +93,7 @@ public class Parser
     /// </summary>
     private Statement ParseAssignmentOrFunctionCall()
     {
-        string name = Match(TokenType.Identifier).Value!.ToString();
+        string name = Match(TokenType.Identifier).Value.ToString();
         Statement result;
         if (_tokens.Peek().Type == TokenType.Assign)
         {
@@ -118,7 +118,7 @@ public class Parser
     private VariableDeclarationStatement ParseVariableDeclaration()
     {
         Match(TokenType.Var);
-        string name = Match(TokenType.Identifier).Value!.ToString();
+        string name = Match(TokenType.Identifier).Value.ToString();
         Match(TokenType.Colon);
 
         ValueType type = _tokens.Peek().Type switch
@@ -151,7 +151,7 @@ public class Parser
         Match(TokenType.Input);
         Match(TokenType.LParen);
 
-        string variableName = Match(TokenType.Identifier).Value!.ToString();
+        string variableName = Match(TokenType.Identifier).Value.ToString();
 
         Match(TokenType.RParen);
         Match(TokenType.Semicolon);
@@ -187,7 +187,7 @@ public class Parser
     private FunctionDeclarationStatement ParseFunctionDeclaration()
     {
         Match(TokenType.Function);
-        string name = Match(TokenType.Identifier).Value!.ToString();
+        string name = Match(TokenType.Identifier).Value.ToString();
 
         Match(TokenType.LParen);
         List<ParameterDeclaration> parameters = ParseParameterList();
@@ -299,14 +299,14 @@ public class Parser
             return parameters;
         }
 
-        string paramName = Match(TokenType.Identifier).Value!.ToString();
+        string paramName = Match(TokenType.Identifier).Value.ToString();
         Match(TokenType.Colon);
         parameters.Add(new ParameterDeclaration(paramName, ParseType()));
 
         while (_tokens.Peek().Type == TokenType.Comma)
         {
             _tokens.Advance();
-            paramName = Match(TokenType.Identifier).Value!.ToString();
+            paramName = Match(TokenType.Identifier).Value.ToString();
             Match(TokenType.Colon);
             parameters.Add(new ParameterDeclaration(paramName, ParseType()));
         }
@@ -327,9 +327,7 @@ public class Parser
             return new ReturnStatement(null, _returnTypes.Peek());
         }
 
-        Expression returnValue;
-
-        returnValue = ParseExpression();
+        Expression returnValue = ParseExpression();
 
         Match(TokenType.Semicolon);
 
@@ -344,7 +342,7 @@ public class Parser
     {
         Match(TokenType.For);
 
-        string iteratorName = Match(TokenType.Identifier).Value!.ToString();
+        string iteratorName = Match(TokenType.Identifier).Value.ToString();
 
         Match(TokenType.From);
         Expression startExpression = ParseExpression();
@@ -631,10 +629,8 @@ public class Parser
                 {
                     return ParseFunctionCall(name);
                 }
-                else
-                {
-                    return new VariableExpression(name);
-                }
+
+                return new VariableExpression(name);
 
             default:
                 throw new UnexpectedLexemeException(token);

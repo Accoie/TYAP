@@ -3,9 +3,9 @@
 /// <summary>
 /// Объявляет параметр встроенной функции.
 /// </summary>
-public class BuiltInFunctionParameter : AbstractParameterDeclaration
+public class BuiltInFunctionParameterStatement : AbstractParameterDeclaration
 {
-    public BuiltInFunctionParameter(string name, Runtime.ValueType type)
+    public BuiltInFunctionParameterStatement(string name, Runtime.ValueType type)
         : base(name)
     {
         ResultType = type;

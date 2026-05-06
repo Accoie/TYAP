@@ -2,9 +2,9 @@
 
 namespace Ast.Statements;
 
-public class IteratorDeclaration : AbstractVariableDeclaration
+public class IteratorDeclarationStatement : AbstractVariableDeclaration
 {
-    public IteratorDeclaration(string name, Expression startValue)
+    public IteratorDeclarationStatement(string name, Expression startValue)
         : base(name)
     {
         StartValue = startValue;

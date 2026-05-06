@@ -5,9 +5,9 @@ namespace Ast.Statements;
 /// <summary>
 /// Определение встроенной функции языка.
 /// </summary>
-public sealed class BuiltInFunction : AbstractFunctionDeclaration
+public sealed class BuiltInFunctionStatement : AbstractFunctionDeclaration
 {
-    public BuiltInFunction(
+    public BuiltInFunctionStatement(
         string name,
         IReadOnlyList<BuiltInFunctionParameter> parameters,
         Runtime.ValueType resultType

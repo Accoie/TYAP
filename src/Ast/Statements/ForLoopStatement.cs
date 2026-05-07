@@ -5,7 +5,7 @@ namespace Ast.Statements;
 public sealed class ForLoopStatement : Statement
 {
     public ForLoopStatement(
-        IteratorDeclaration iterator,
+        IteratorDeclarationStatement iterator,
         Expression endCondition,
         BlockStatement body
     )

@@ -39,9 +39,9 @@ public interface IAstVisitor
 
     void Visit(FunctionCallStatement s);
 
-    void Visit(ParameterDeclaration parameterDeclarationStatement);
+    void Visit(ParameterDeclarationStatement parameterDeclarationStatement);
 
     void Visit(VariableExpression variableExpression);
 
-    void Visit(IteratorDeclaration iteratorDeclaration);
+    void Visit(IteratorDeclarationStatement iteratorDeclaration);
 }

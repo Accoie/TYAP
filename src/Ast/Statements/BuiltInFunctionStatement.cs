@@ -9,7 +9,7 @@ public sealed class BuiltInFunctionStatement : AbstractFunctionDeclaration
 {
     public BuiltInFunctionStatement(
         string name,
-        IReadOnlyList<BuiltInFunctionParameter> parameters,
+        IReadOnlyList<BuiltInFunctionParameterStatement> parameters,
         Runtime.ValueType resultType
     )
         : base(name, parameters)

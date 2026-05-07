@@ -19,7 +19,7 @@ public sealed class ForLoopStatement : Statement
 
     public BlockStatement Body { get; }
 
-    public IteratorDeclaration Iterator { get; }
+    public IteratorDeclarationStatement Iterator { get; }
 
     public override void Accept(IAstVisitor visitor)
     {

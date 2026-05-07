@@ -190,7 +190,7 @@ public class Parser
         string name = Match(TokenType.Identifier).Value.ToString();
 
         Match(TokenType.LParen);
-        List<ParameterDeclaration> parameters = ParseParameterList();
+        List<ParameterDeclarationStatement> parameters = ParseParameterList();
 
         Match(TokenType.RParen);
 
@@ -290,9 +290,9 @@ public class Parser
     /// Разбирает список параметров функции.
     /// Правило: parameter_list = parameter, { ",", parameter }.
     /// </summary>
-    private List<ParameterDeclaration> ParseParameterList()
+    private List<ParameterDeclarationStatement> ParseParameterList()
     {
-        List<ParameterDeclaration> parameters = new();
+        List<ParameterDeclarationStatement> parameters = new();
 
         if (_tokens.Peek().Type == TokenType.RParen)
         {
@@ -301,14 +301,14 @@ public class Parser
 
         string paramName = Match(TokenType.Identifier).Value.ToString();
         Match(TokenType.Colon);
-        parameters.Add(new ParameterDeclaration(paramName, ParseType()));
+        parameters.Add(new ParameterDeclarationStatement(paramName, ParseType()));
 
         while (_tokens.Peek().Type == TokenType.Comma)
         {
             _tokens.Advance();
             paramName = Match(TokenType.Identifier).Value.ToString();
             Match(TokenType.Colon);
-            parameters.Add(new ParameterDeclaration(paramName, ParseType()));
+            parameters.Add(new ParameterDeclarationStatement(paramName, ParseType()));
         }
 
         return parameters;
@@ -354,7 +354,7 @@ public class Parser
 
         BlockStatement body = ParseBlock(false);
 
-        return new ForLoopStatement(new IteratorDeclaration(iteratorName, startExpression), endExpression, body);
+        return new ForLoopStatement(new IteratorDeclarationStatement(iteratorName, startExpression), endExpression, body);
     }
 
     /// <summary>

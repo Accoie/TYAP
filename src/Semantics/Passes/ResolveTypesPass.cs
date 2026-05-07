@@ -185,7 +185,7 @@ public sealed class ResolveTypesPass : AbstractPass
             );
         }
 
-        if (s.Variable is IteratorDeclaration)
+        if (s.Variable is IteratorDeclarationStatement)
         {
             throw new InvalidAssignmentException($"Cannot assign to for loop iterator '{s.Name}'");
         }
@@ -267,16 +267,16 @@ public sealed class ResolveTypesPass : AbstractPass
         }
     }
 
-    public override void Visit(IteratorDeclaration iteratorDeclaration)
+    public override void Visit(IteratorDeclarationStatement iteratorDeclarationStatement)
     {
-        base.Visit(iteratorDeclaration);
-        if (iteratorDeclaration.StartValue.ResultType != ValueType.Integer)
+        base.Visit(iteratorDeclarationStatement);
+        if (iteratorDeclarationStatement.StartValue.ResultType != ValueType.Integer)
         {
             throw new TypeMismatchException(
-                $"Iterator's value in for loop must be integer, but got {iteratorDeclaration.StartValue.ResultType}");
+                $"Iterator's value in for loop must be integer, but got {iteratorDeclarationStatement.StartValue.ResultType}");
         }
 
-        iteratorDeclaration.ResultType = ValueType.Integer;
+        iteratorDeclarationStatement.ResultType = ValueType.Integer;
     }
 
     /// <summary>
@@ -318,7 +318,7 @@ public sealed class ResolveTypesPass : AbstractPass
     /// <summary>
     /// Проверяет объявление параметра.
     /// </summary>
-    public override void Visit(ParameterDeclaration d)
+    public override void Visit(ParameterDeclarationStatement d)
     {
         base.Visit(d);
     }
@@ -468,7 +468,7 @@ public sealed class ResolveTypesPass : AbstractPass
     /// </summary>
     private void CheckBuiltInFunctionTypes(string name, IReadOnlyList<Expression> arguments)
     {
-        BuiltInFunction? builtin = Builtins.Functions.FirstOrDefault(f => f.Name == name);
+        BuiltInFunctionStatement? builtin = Builtins.Functions.FirstOrDefault(f => f.Name == name);
         if (builtin == null)
         {
             throw new ArgumentException($"Unknown built-in function: {name}");

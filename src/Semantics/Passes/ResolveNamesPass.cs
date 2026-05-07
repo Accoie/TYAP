@@ -71,7 +71,7 @@ public sealed class ResolveNamesPass : AbstractPass
         }
         else
         {
-            e.Function = (BuiltInFunction)_symbols.GetSymbol(e.Name);
+            e.Function = (BuiltInFunctionStatement)_symbols.GetSymbol(e.Name);
         }
     }
 
@@ -150,7 +150,7 @@ public sealed class ResolveNamesPass : AbstractPass
 
             foreach (AbstractParameterDeclaration abstractParameterDeclaration in d.Parameters)
             {
-                ParameterDeclaration parameter = (ParameterDeclaration)abstractParameterDeclaration;
+                ParameterDeclarationStatement parameter = (ParameterDeclarationStatement)abstractParameterDeclaration;
                 parameter.Accept(this);
             }
 
@@ -164,7 +164,7 @@ public sealed class ResolveNamesPass : AbstractPass
         }
     }
 
-    public override void Visit(ParameterDeclaration d)
+    public override void Visit(ParameterDeclarationStatement d)
     {
         base.Visit(d);
 
@@ -196,7 +196,7 @@ public sealed class ResolveNamesPass : AbstractPass
         }
     }
 
-    public override void Visit(IteratorDeclaration e)
+    public override void Visit(IteratorDeclarationStatement e)
     {
         base.Visit(e);
 
@@ -254,7 +254,7 @@ public sealed class ResolveNamesPass : AbstractPass
             throw new InvalidAssignmentException($"Invalid assignment to '{s.Name}'");
         }
 
-        if (symbol is IteratorDeclaration)
+        if (symbol is IteratorDeclarationStatement)
         {
             throw new InvalidAssignmentException($"Cannot assign to for loop iterator '{s.Name}'");
         }

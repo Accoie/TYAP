@@ -21,7 +21,7 @@ public class SemanticsChecker
         SymbolsTable globalSymbols = new(parent: null);
 
         HashSet<string> addedFunctions = new();
-        foreach (BuiltInFunction function in Builtins.Functions)
+        foreach (BuiltInFunctionStatement function in Builtins.Functions)
         {
             if (addedFunctions.Add(function.Name))
             {

@@ -93,7 +93,7 @@ public abstract class AbstractPass : IAstVisitor
 
     public virtual void Visit(FunctionDeclarationStatement s)
     {
-        foreach (ParameterDeclaration parameter in s.Parameters)
+        foreach (ParameterDeclarationStatement parameter in s.Parameters)
         {
             parameter.Accept(this);
         }
@@ -109,7 +109,7 @@ public abstract class AbstractPass : IAstVisitor
         }
     }
 
-    public virtual void Visit(ParameterDeclaration d)
+    public virtual void Visit(ParameterDeclarationStatement d)
     {
     }
 
@@ -121,8 +121,8 @@ public abstract class AbstractPass : IAstVisitor
     {
     }
 
-    public virtual void Visit(IteratorDeclaration iteratorDeclaration)
+    public virtual void Visit(IteratorDeclarationStatement iteratorDeclarationStatement)
     {
-        iteratorDeclaration.StartValue.Accept(this);
+        iteratorDeclarationStatement.StartValue.Accept(this);
     }
 }

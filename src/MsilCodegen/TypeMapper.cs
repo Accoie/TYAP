@@ -42,6 +42,6 @@ public class TypeMapper
             return typeof(string);
         }
 
-        throw new NotSupportedException($"Тип Pascal++ - {type} - не может быть конвертирован в тип .NET");
+        throw new NotSupportedException($"Type of Pascal++ - {type} - can't convert in .NET");
     }
 }

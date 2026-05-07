@@ -56,8 +56,12 @@ public class Parser
     ///                     | assignment_statement
     ///                     | input_statement
     ///                     | output_statement
-    ///                     | return_statement
     ///                     | if_statement
+    ///                     | for_statement
+    ///                     | while_statement
+    ///                     | break_statement
+    ///                     | continue_statement
+    ///                     | return_statement
     ///                     | expression_statement.
     /// </summary>
     private Statement ParseStatement()
@@ -74,6 +78,10 @@ public class Parser
             TokenType.Function => ParseFunctionDeclaration(),
             TokenType.If => ParseIfStatement(),
             TokenType.Return => ParseReturnStatement(),
+            TokenType.While => ParseWhileLoopStatement(),
+            TokenType.For => ParseForLoopStatement(),
+            TokenType.Break => ParseBreakStatement(),
+            TokenType.Continue => ParseContinueStatement(),
 
             _ => throw new UnexpectedLexemeException(_tokens.Peek()),
         };
@@ -85,7 +93,7 @@ public class Parser
     /// </summary>
     private Statement ParseAssignmentOrFunctionCall()
     {
-        string name = Match(TokenType.Identifier).Value!.ToString();
+        string name = Match(TokenType.Identifier).Value.ToString();
         Statement result;
         if (_tokens.Peek().Type == TokenType.Assign)
         {
@@ -110,7 +118,7 @@ public class Parser
     private VariableDeclarationStatement ParseVariableDeclaration()
     {
         Match(TokenType.Var);
-        string name = Match(TokenType.Identifier).Value!.ToString();
+        string name = Match(TokenType.Identifier).Value.ToString();
         Match(TokenType.Colon);
 
         ValueType type = _tokens.Peek().Type switch
@@ -143,7 +151,7 @@ public class Parser
         Match(TokenType.Input);
         Match(TokenType.LParen);
 
-        string variableName = Match(TokenType.Identifier).Value!.ToString();
+        string variableName = Match(TokenType.Identifier).Value.ToString();
 
         Match(TokenType.RParen);
         Match(TokenType.Semicolon);
@@ -179,7 +187,7 @@ public class Parser
     private FunctionDeclarationStatement ParseFunctionDeclaration()
     {
         Match(TokenType.Function);
-        string name = Match(TokenType.Identifier).Value!.ToString();
+        string name = Match(TokenType.Identifier).Value.ToString();
 
         Match(TokenType.LParen);
         List<ParameterDeclaration> parameters = ParseParameterList();
@@ -215,7 +223,7 @@ public class Parser
     {
         Match(TokenType.LParen);
 
-        List<Expression> arguments = new List<Expression>();
+        List<Expression> arguments = new();
         if (_tokens.Peek().Type != TokenType.RParen)
         {
             arguments.Add(ParseExpression());
@@ -239,7 +247,7 @@ public class Parser
     {
         Match(TokenType.LParen);
 
-        List<Expression> arguments = new List<Expression>();
+        List<Expression> arguments = new();
         if (_tokens.Peek().Type != TokenType.RParen)
         {
             arguments.Add(ParseExpression());
@@ -284,21 +292,21 @@ public class Parser
     /// </summary>
     private List<ParameterDeclaration> ParseParameterList()
     {
-        List<ParameterDeclaration> parameters = new List<ParameterDeclaration>();
+        List<ParameterDeclaration> parameters = new();
 
         if (_tokens.Peek().Type == TokenType.RParen)
         {
             return parameters;
         }
 
-        string paramName = Match(TokenType.Identifier).Value!.ToString();
+        string paramName = Match(TokenType.Identifier).Value.ToString();
         Match(TokenType.Colon);
         parameters.Add(new ParameterDeclaration(paramName, ParseType()));
 
         while (_tokens.Peek().Type == TokenType.Comma)
         {
             _tokens.Advance();
-            paramName = Match(TokenType.Identifier).Value!.ToString();
+            paramName = Match(TokenType.Identifier).Value.ToString();
             Match(TokenType.Colon);
             parameters.Add(new ParameterDeclaration(paramName, ParseType()));
         }
@@ -319,13 +327,51 @@ public class Parser
             return new ReturnStatement(null, _returnTypes.Peek());
         }
 
-        Expression returnValue;
-
-        returnValue = ParseExpression();
+        Expression returnValue = ParseExpression();
 
         Match(TokenType.Semicolon);
 
         return new ReturnStatement(returnValue, _returnTypes.Peek());
+    }
+
+    /// <summary>
+    /// Разбирает цикл for.
+    /// Правило: for_statement = "for", identifier, "from", expression, "to", expression, "do", block ;
+    /// </summary>
+    private ForLoopStatement ParseForLoopStatement()
+    {
+        Match(TokenType.For);
+
+        string iteratorName = Match(TokenType.Identifier).Value.ToString();
+
+        Match(TokenType.From);
+        Expression startExpression = ParseExpression();
+
+        Match(TokenType.To);
+        Expression endExpression = ParseExpression();
+
+        Match(TokenType.Do);
+
+        BlockStatement body = ParseBlock(false);
+
+        return new ForLoopStatement(new IteratorDeclaration(iteratorName, startExpression), endExpression, body);
+    }
+
+    /// <summary>
+    /// Разбирает цикл while.
+    /// Правило: while_statement = "while", "(", expression, ")", "do", block;
+    /// </summary>
+    private WhileLoopStatement ParseWhileLoopStatement()
+    {
+        Match(TokenType.While);
+        Match(TokenType.LParen);
+        Expression condition = ParseExpression();
+        Match(TokenType.RParen);
+        Match(TokenType.Do);
+
+        BlockStatement body = ParseBlock(false);
+
+        return new WhileLoopStatement(condition, body);
     }
 
     /// <summary>
@@ -344,6 +390,30 @@ public class Parser
 
         _tokens.Advance();
         return type;
+    }
+
+    /// <summary>
+    /// Разбирает оператор break.
+    /// Правило: break_statement = "break", ";".
+    /// </summary>
+    private BreakStatement ParseBreakStatement()
+    {
+        Match(TokenType.Break);
+        Match(TokenType.Semicolon);
+
+        return new BreakStatement();
+    }
+
+    /// <summary>
+    /// Разбирает оператор continue.
+    /// Правило: continue_statement = "continue", ";".
+    /// </summary>
+    private ContinueStatement ParseContinueStatement()
+    {
+        Match(TokenType.Continue);
+        Match(TokenType.Semicolon);
+
+        return new ContinueStatement();
     }
 
     /// <summary>
@@ -559,10 +629,8 @@ public class Parser
                 {
                     return ParseFunctionCall(name);
                 }
-                else
-                {
-                    return new VariableExpression(name);
-                }
+
+                return new VariableExpression(name);
 
             default:
                 throw new UnexpectedLexemeException(token);

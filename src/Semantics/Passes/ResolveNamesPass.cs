@@ -148,8 +148,9 @@ public sealed class ResolveNamesPass : AbstractPass
         {
             _symbols.DefineSymbol(d.Name, d);
 
-            foreach (ParameterDeclaration parameter in d.Parameters)
+            foreach (AbstractParameterDeclaration abstractParameterDeclaration in d.Parameters)
             {
+                ParameterDeclaration parameter = (ParameterDeclaration)abstractParameterDeclaration;
                 parameter.Accept(this);
             }
 
@@ -179,6 +180,39 @@ public sealed class ResolveNamesPass : AbstractPass
         catch (DuplicateSymbolException)
         {
             throw DuplicateSymbolException.DuplicateVariableOrFunction(d.Name);
+        }
+    }
+
+    public override void Visit(ForLoopStatement s)
+    {
+        _symbols = new SymbolsTable(_symbols);
+        try
+        {
+            base.Visit(s);
+        }
+        finally
+        {
+            _symbols = _symbols.Parent!;
+        }
+    }
+
+    public override void Visit(IteratorDeclaration e)
+    {
+        base.Visit(e);
+
+        _symbols.DefineSymbol(e.Name, e);
+    }
+
+    public override void Visit(WhileLoopStatement s)
+    {
+        _symbols = new SymbolsTable(_symbols );
+        try
+        {
+            base.Visit(s);
+        }
+        finally
+        {
+            _symbols = _symbols.Parent!;
         }
     }
 
@@ -220,6 +254,11 @@ public sealed class ResolveNamesPass : AbstractPass
             throw new InvalidAssignmentException($"Invalid assignment to '{s.Name}'");
         }
 
+        if (symbol is IteratorDeclaration)
+        {
+            throw new InvalidAssignmentException($"Cannot assign to for loop iterator '{s.Name}'");
+        }
+
         s.Variable = (AbstractVariableDeclaration)symbol;
     }
 
@@ -230,6 +269,26 @@ public sealed class ResolveNamesPass : AbstractPass
         if (_functionStack.Count == 0)
         {
             throw new InvalidOperationException("Return statement cannot be outside of function");
+        }
+    }
+
+    public override void Visit(BreakStatement s)
+    {
+        base.Visit(s);
+
+        if (_functionStack.Count > 0)
+        {
+            throw new InvalidExpressionException("Break statement cannot be used inside a function");
+        }
+    }
+
+    public override void Visit(ContinueStatement s)
+    {
+        base.Visit(s);
+
+        if (_functionStack.Count > 0)
+        {
+            throw new InvalidExpressionException("Continue statement cannot be used inside a function");
         }
     }
 

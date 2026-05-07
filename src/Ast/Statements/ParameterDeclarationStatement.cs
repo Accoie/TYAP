@@ -3,9 +3,9 @@
 /// <summary>
 /// Объявление параметра функции.
 /// </summary>
-public class ParameterDeclaration : AbstractParameterDeclaration
+public class ParameterDeclarationStatement : AbstractParameterDeclaration
 {
-    public ParameterDeclaration(string name, Runtime.ValueType type)
+    public ParameterDeclarationStatement(string name, Runtime.ValueType type)
         : base(name)
     {
         ResultType = type;

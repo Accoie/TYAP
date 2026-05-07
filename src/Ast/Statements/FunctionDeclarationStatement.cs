@@ -4,7 +4,7 @@ namespace Ast.Statements;
 
 public sealed class FunctionDeclarationStatement : AbstractFunctionDeclaration
 {
-    public FunctionDeclarationStatement(string name, List<ParameterDeclaration> parameters, BlockStatement body, ValueType type)
+    public FunctionDeclarationStatement(string name, List<ParameterDeclarationStatement> parameters, BlockStatement body, ValueType type)
         : base(name, parameters)
     {
         Body = body;

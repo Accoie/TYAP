@@ -16,6 +16,8 @@ namespace Semantics.Passes;
 /// <exception cref="TypeMismatchException">Бросается при несоответствии типов данных.</exception>
 public sealed class ResolveTypesPass : AbstractPass
 {
+    private int _loopNestingLevel = 0;
+
     /// <summary>
     /// Литерал всегда имеет определённый тип.
     /// </summary>
@@ -182,6 +184,11 @@ public sealed class ResolveTypesPass : AbstractPass
                 $"Type of variable being assigned does not match the declared type"
             );
         }
+
+        if (s.Variable is IteratorDeclaration)
+        {
+            throw new InvalidAssignmentException($"Cannot assign to for loop iterator '{s.Name}'");
+        }
     }
 
     /// <summary>
@@ -205,6 +212,71 @@ public sealed class ResolveTypesPass : AbstractPass
                 $"If condition must be of type Integer, but got {s.Condition.ResultType}"
             );
         }
+    }
+
+    /// <summary>
+    /// Проверяет типы в цикле while.
+    /// </summary>
+    public override void Visit(WhileLoopStatement s)
+    {
+        _loopNestingLevel++;
+        try
+        {
+            base.Visit(s);
+
+            if (s.Condition.ResultType != ValueType.Integer)
+            {
+                throw new TypeMismatchException(
+                    $"Condition of while loop must be integer, but got {s.Condition.ResultType}"
+                );
+            }
+        }
+        finally
+        {
+            _loopNestingLevel--;
+        }
+    }
+
+    /// <summary>
+    /// Проверяет типы в цикле for.
+    /// </summary>
+    public override void Visit(ForLoopStatement s)
+    {
+        _loopNestingLevel++;
+        try
+        {
+            base.Visit(s);
+
+            if (s.Iterator.StartValue.ResultType != ValueType.Integer)
+            {
+                throw new TypeMismatchException(
+                    $"Start value of for loop must be integer, but got {s.Iterator.StartValue.ResultType}"
+                );
+            }
+
+            if (s.EndValue.ResultType != ValueType.Integer)
+            {
+                throw new TypeMismatchException(
+                    $"End value of for loop must be integer, but got {s.EndValue.ResultType}"
+                );
+            }
+        }
+        finally
+        {
+            _loopNestingLevel--;
+        }
+    }
+
+    public override void Visit(IteratorDeclaration iteratorDeclaration)
+    {
+        base.Visit(iteratorDeclaration);
+        if (iteratorDeclaration.StartValue.ResultType != ValueType.Integer)
+        {
+            throw new TypeMismatchException(
+                $"Iterator's value in for loop must be integer, but got {iteratorDeclaration.StartValue.ResultType}");
+        }
+
+        iteratorDeclaration.ResultType = ValueType.Integer;
     }
 
     /// <summary>
@@ -272,6 +344,32 @@ public sealed class ResolveTypesPass : AbstractPass
             {
                 throw new TypeMismatchException("Output cannot contain void type");
             }
+        }
+    }
+
+    /// <summary>
+    /// Проверяет оператор break.
+    /// </summary>
+    public override void Visit(BreakStatement s)
+    {
+        base.Visit(s);
+
+        if (_loopNestingLevel == 0)
+        {
+            throw new InvalidExpressionException("Break statement must be inside a loop");
+        }
+    }
+
+    /// <summary>
+    /// Проверяет оператор continue.
+    /// </summary>
+    public override void Visit(ContinueStatement s)
+    {
+        base.Visit(s);
+
+        if (_loopNestingLevel == 0)
+        {
+            throw new InvalidExpressionException("Continue statement must be inside a loop");
         }
     }
 

@@ -485,15 +485,9 @@ public class MsilCodegenPass : IAstVisitor
 
     public void Visit(FunctionCallStatement s)
     {
-        FunctionCallExpression callExpr = new(s.Name, s.Arguments.ToList())
-        {
-            Function = s.Function,
-            ResultType = s.Function.ResultType,
-        };
+        s.Expression.Accept(this);
 
-        callExpr.Accept(this);
-
-        if (callExpr.ResultType != ValueType.Void)
+        if (s.Expression.ResultType != ValueType.Void)
         {
             _il.Emit(OpCodes.Pop);
         }

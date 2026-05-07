@@ -260,7 +260,7 @@ public class Parser
 
         Match(TokenType.RParen);
 
-        return new FunctionCallStatement(name, arguments);
+        return new FunctionCallStatement(new FunctionCallExpression(name, arguments));
     }
 
     /// <summary>

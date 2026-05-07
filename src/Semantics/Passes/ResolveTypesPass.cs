@@ -130,22 +130,7 @@ public sealed class ResolveTypesPass : AbstractPass
     /// </summary>
     public override void Visit(FunctionCallStatement s)
     {
-        base.Visit(s);
-
-        if (IsBuiltInFunction(s.Name))
-        {
-            CheckBuiltInFunctionTypes(s.Name, s.Arguments);
-        }
-        else
-        {
-            for (int i = 0; i < s.Arguments.Count; i++)
-            {
-                if (s.Function.Parameters[i].ResultType != s.Arguments[i].ResultType)
-                {
-                    throw new InvalidFunctionCallException($"Function '{s.Name}' expects argument '{s.Function.Parameters[i].Name}' with type '{s.Arguments[i].ResultType}'");
-                }
-            }
-        }
+        s.Expression.Accept(this);
     }
 
     /// <summary>

@@ -77,29 +77,7 @@ public sealed class ResolveNamesPass : AbstractPass
 
     public override void Visit(FunctionCallStatement s)
     {
-        base.Visit(s);
-
-        if (!IsBuiltInFunction(s.Name))
-        {
-            DeclarationStatement symbol = _symbols.GetSymbol(s.Name);
-
-            if (symbol is AbstractFunctionDeclaration function)
-            {
-                if (s.Arguments.Count != function.Parameters.Count)
-                {
-                    throw new InvalidFunctionCallException(
-                        $"Function '{s.Name}' expects {function.Parameters.Count} arguments, " +
-                        $"but got {s.Arguments.Count}"
-                    );
-                }
-
-                s.Function = function;
-            }
-            else
-            {
-                throw new InvalidSymbolException(s.Name, "function" );
-            }
-        }
+        s.Expression.Accept(this);
     }
 
     public override void Visit(BlockStatement s)

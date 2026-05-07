@@ -1,28 +1,26 @@
-﻿using Ast.Attributes;
-using Ast.Expressions;
+﻿using Ast.Expressions;
 
 namespace Ast.Statements;
 
 public class FunctionCallStatement : Statement
 {
-    private readonly List<Expression> arguments;
-    private AstAttribute<AbstractFunctionDeclaration> function;
-
-    public FunctionCallStatement(string name, List<Expression> arguments)
+    public FunctionCallStatement(FunctionCallExpression expression)
     {
-        Name = name;
-        this.arguments = arguments;
+        Expression = expression;
     }
 
-    public string Name { get; }
+    public FunctionCallExpression Expression { get; }
+
+    // Удобные прокси-свойства для обратной совместимости (опционально)
+    public string Name => Expression.Name;
+
+    public IReadOnlyList<Expression> Arguments => Expression.Arguments;
 
     public AbstractFunctionDeclaration Function
     {
-        get => function.Get();
-        set => function.Set(value);
+        get => Expression.Function;
+        set => Expression.Function = value;
     }
-
-    public IReadOnlyList<Expression> Arguments => arguments;
 
     public override void Accept(IAstVisitor visitor)
     {

@@ -1,4 +1,4 @@
-﻿using Ast.Declaration;
+using Ast.Declaration;
 using Ast.Expressions;
 using Ast.Statements;
 
@@ -6,14 +6,17 @@ using Semantics.Exceptions;
 
 namespace Semantics.Passes;
 
+/// <summary>
+/// Проверяет соблюдение контекстно-зависимых правил языка.
+/// </summary>
 public sealed class CheckContextSensitiveRulesPass : AbstractPass
 {
-    private readonly Stack<ExpressionContext> expressionContextStack;
+    private readonly Stack<ExpressionContext> _expressionContextStack;
 
     public CheckContextSensitiveRulesPass()
     {
-        expressionContextStack = [];
-        expressionContextStack.Push(ExpressionContext.Default);
+        _expressionContextStack = new Stack<ExpressionContext>();
+        _expressionContextStack.Push(ExpressionContext.Default);
     }
 
     private enum ExpressionContext
@@ -23,9 +26,30 @@ public sealed class CheckContextSensitiveRulesPass : AbstractPass
         InsideFunction,
     }
 
+    /// <summary>
+    /// Проверяет корректность программы с точки зрения использования функций.
+    /// </summary>
+    public override void Visit(FunctionCallExpression e)
+    {
+        base.Visit(e);
+
+        if (e.Arguments.Count != e.Function.Parameters.Count)
+        {
+            throw new InvalidFunctionCallException(
+                $"Function '{e.Name}' expects {e.Function.Parameters.Count} arguments, " +
+                $"but got {e.Arguments.Count}"
+            );
+        }
+    }
+
+    public override void Visit(FunctionCallStatement s)
+    {
+        s.Expression.Accept(this);
+    }
+
     public override void Visit(ReturnStatement s)
     {
-        if (!expressionContextStack.Contains(ExpressionContext.InsideFunction))
+        if (!_expressionContextStack.Contains(ExpressionContext.InsideFunction))
         {
             throw new InvalidExpressionException("'return' cannot be outside the function block.");
         }
@@ -35,41 +59,40 @@ public sealed class CheckContextSensitiveRulesPass : AbstractPass
 
     public override void Visit(FunctionDeclaration d)
     {
-        expressionContextStack.Push(ExpressionContext.InsideFunction);
+        _expressionContextStack.Push(ExpressionContext.InsideFunction);
         try
         {
             base.Visit(d);
-            BlockStatement body = d.Body;
         }
         finally
         {
-            expressionContextStack.Pop();
+            _expressionContextStack.Pop();
         }
     }
 
     public override void Visit(WhileLoopStatement e)
     {
-        expressionContextStack.Push(ExpressionContext.InsideLoop);
+        _expressionContextStack.Push(ExpressionContext.InsideLoop);
         try
         {
             base.Visit(e);
         }
         finally
         {
-            expressionContextStack.Pop();
+            _expressionContextStack.Pop();
         }
     }
 
     public override void Visit(ForLoopStatement e)
     {
-        expressionContextStack.Push(ExpressionContext.InsideLoop);
+        _expressionContextStack.Push(ExpressionContext.InsideLoop);
         try
         {
             base.Visit(e);
         }
         finally
         {
-            expressionContextStack.Pop();
+            _expressionContextStack.Pop();
         }
     }
 
@@ -77,9 +100,9 @@ public sealed class CheckContextSensitiveRulesPass : AbstractPass
     {
         base.Visit(e);
 
-        if (expressionContextStack.Peek() != ExpressionContext.InsideLoop)
+        if (_expressionContextStack.Peek() != ExpressionContext.InsideLoop)
         {
-            throw new InvalidExpressionException("The \"breakout\" expression is allowed only inside the loop");
+            throw new InvalidExpressionException("The \"break\" expression is allowed only inside the loop");
         }
     }
 
@@ -87,9 +110,9 @@ public sealed class CheckContextSensitiveRulesPass : AbstractPass
     {
         base.Visit(e);
 
-        if (expressionContextStack.Peek() != ExpressionContext.InsideLoop)
+        if (_expressionContextStack.Peek() != ExpressionContext.InsideLoop)
         {
-            throw new InvalidExpressionException("The \"contra\" expression is allowed only inside the loop");
+            throw new InvalidExpressionException("The \"continue\" expression is allowed only inside the loop");
         }
     }
 }

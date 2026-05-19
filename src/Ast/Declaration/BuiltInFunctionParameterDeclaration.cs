@@ -1,13 +1,13 @@
 ﻿using Ast.Statements;
 
-namespace Ast.BuiltIn;
+namespace Ast.Declaration;
 
 /// <summary>
 /// Объявляет параметр встроенной функции.
 /// </summary>
-public class BuiltInFunctionParameter : AbstractParameterDeclaration
+public class BuiltInFunctionParameterDeclaration : AbstractParameterDeclaration
 {
-    public BuiltInFunctionParameter(string name, Runtime.ValueType type)
+    public BuiltInFunctionParameterDeclaration(string name, Runtime.ValueType type)
         : base(name)
     {
         ResultType = type;

@@ -94,7 +94,7 @@ public abstract class AbstractPass : IAstVisitor
 
     public virtual void Visit(FunctionDeclaration s)
     {
-        foreach (ParameterDeclaration parameter in s.Parameters)
+        foreach (AbstractParameterDeclaration parameter in s.Parameters)
         {
             parameter.Accept(this);
         }

@@ -1,12 +1,13 @@
 ﻿using Ast.Expressions;
+using Ast.Statements;
 
 using ValueType = Runtime.ValueType;
 
-namespace Ast.Statements;
+namespace Ast.Declaration;
 
-public sealed class VariableDeclarationStatement : AbstractVariableDeclaration
+public sealed class VariableDeclaration : AbstractVariableDeclaration
 {
-    public VariableDeclarationStatement(string name, ValueType type, Expression? value)
+    public VariableDeclaration(string name, ValueType type, Expression? value)
         : base(name)
     {
         Value = value;

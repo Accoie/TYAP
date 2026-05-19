@@ -1,4 +1,4 @@
-using Ast.Statements;
+using Ast.BuiltIn;
 
 using ValueType = Runtime.ValueType;
 
@@ -23,12 +23,12 @@ public static class Builtins
     /// Все функции без суффиксов - одна версия для каждой.
     /// Для tostring используется float (double), int будет конвертироваться автоматически.
     /// </summary>
-    public static readonly IReadOnlyList<BuiltInFunctionStatement> Functions =
+    public static readonly IReadOnlyList<BuiltInFunction> Functions =
     [
         new(
             Abs, // `abs_f(number: float): float` — возвращает модуль числа
             [
-                new BuiltInFunctionParameterStatement("number", ValueType.Float),
+                new BuiltInFunctionParameter("number", ValueType.Float),
             ],
             ValueType.Float
         ),
@@ -36,8 +36,8 @@ public static class Builtins
         new(
             Min, // `min_f(a: float, b: float): float` — возвращает минимальное из чисел
             [
-                new BuiltInFunctionParameterStatement("a", ValueType.Float),
-                new BuiltInFunctionParameterStatement("b", ValueType.Float),
+                new BuiltInFunctionParameter("a", ValueType.Float),
+                new BuiltInFunctionParameter("b", ValueType.Float),
             ],
             ValueType.Float
         ),
@@ -45,8 +45,8 @@ public static class Builtins
         new(
             Max, // `max_f(a: float, b: float): float` — возвращает максимальное из чисел
             [
-                new BuiltInFunctionParameterStatement("a", ValueType.Float),
-                new BuiltInFunctionParameterStatement("b", ValueType.Float),
+                new BuiltInFunctionParameter("a", ValueType.Float),
+                new BuiltInFunctionParameter("b", ValueType.Float),
             ],
             ValueType.Float
         ),
@@ -54,7 +54,7 @@ public static class Builtins
         new(
             Round, // `round(number: float): float` — округляет число до ближайшего целого
             [
-                new BuiltInFunctionParameterStatement("number", ValueType.Float),
+                new BuiltInFunctionParameter("number", ValueType.Float),
             ],
             ValueType.Float
         ),
@@ -62,7 +62,7 @@ public static class Builtins
         new(
             Len, // `len(str: string): int` — возвращает длину строки
             [
-                new BuiltInFunctionParameterStatement("str", ValueType.String),
+                new BuiltInFunctionParameter("str", ValueType.String),
             ],
             ValueType.Integer
         ),
@@ -70,8 +70,8 @@ public static class Builtins
         new(
             Getsymbol, // `getsymbol(str: string, index: int): string` — возвращает символ строки по индексу (1-based)
             [
-                new BuiltInFunctionParameterStatement("str", ValueType.String),
-                new BuiltInFunctionParameterStatement("index", ValueType.Integer),
+                new BuiltInFunctionParameter("str", ValueType.String),
+                new BuiltInFunctionParameter("index", ValueType.Integer),
             ],
             ValueType.String
         ),
@@ -79,7 +79,7 @@ public static class Builtins
         new(
             TostringI, // `tostring_i(number: int): string` — преобразует целое число в строку
             [
-                new BuiltInFunctionParameterStatement("number", ValueType.Integer),
+                new BuiltInFunctionParameter("number", ValueType.Integer),
             ],
             ValueType.String
         ),
@@ -87,7 +87,7 @@ public static class Builtins
         new(
             TostringF, // `tostring_f(number: float): string` — преобразует вещественное число в строку
             [
-                new BuiltInFunctionParameterStatement("number", ValueType.Float),
+                new BuiltInFunctionParameter("number", ValueType.Float),
             ],
             ValueType.String
         ),

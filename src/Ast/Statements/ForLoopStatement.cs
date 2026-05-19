@@ -1,11 +1,12 @@
-﻿using Ast.Expressions;
+﻿using Ast.Declaration;
+using Ast.Expressions;
 
 namespace Ast.Statements;
 
 public sealed class ForLoopStatement : Statement
 {
     public ForLoopStatement(
-        IteratorDeclarationStatement iterator,
+        IteratorDeclaration iterator,
         Expression endCondition,
         BlockStatement body
     )
@@ -19,7 +20,7 @@ public sealed class ForLoopStatement : Statement
 
     public BlockStatement Body { get; }
 
-    public IteratorDeclarationStatement Iterator { get; }
+    public IteratorDeclaration Iterator { get; }
 
     public override void Accept(IAstVisitor visitor)
     {

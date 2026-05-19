@@ -1,3 +1,5 @@
+using Ast.BuiltIn;
+using Ast.Declaration;
 using Ast.Expressions;
 using Ast.Statements;
 
@@ -8,13 +10,13 @@ namespace Semantics.Passes;
 
 public sealed class ResolveNamesPass : AbstractPass
 {
-    private readonly Stack<FunctionDeclarationStatement> _functionStack;
+    private readonly Stack<FunctionDeclaration> _functionStack;
     private SymbolsTable _symbols;
 
     public ResolveNamesPass(SymbolsTable globalSymbols)
     {
         _symbols = globalSymbols;
-        _functionStack = new Stack<FunctionDeclarationStatement>();
+        _functionStack = new Stack<FunctionDeclaration>();
     }
 
     public override void Visit(VariableExpression e)
@@ -52,7 +54,7 @@ public sealed class ResolveNamesPass : AbstractPass
         {
             DeclarationStatement symbol = _symbols.GetSymbol(e.Name);
 
-            if (symbol is FunctionDeclarationStatement function)
+            if (symbol is FunctionDeclaration function)
             {
                 if (e.Arguments.Count != function.Parameters.Count)
                 {
@@ -71,7 +73,7 @@ public sealed class ResolveNamesPass : AbstractPass
         }
         else
         {
-            e.Function = (BuiltInFunctionStatement)_symbols.GetSymbol(e.Name);
+            e.Function = (BuiltInFunction)_symbols.GetSymbol(e.Name);
         }
     }
 
@@ -101,7 +103,7 @@ public sealed class ResolveNamesPass : AbstractPass
         }
     }
 
-    public override void Visit(VariableDeclarationStatement d)
+    public override void Visit(VariableDeclaration d)
     {
         base.Visit(d);
 
@@ -113,7 +115,7 @@ public sealed class ResolveNamesPass : AbstractPass
         _symbols.DefineSymbol(d.Name, d);
     }
 
-    public override void Visit(FunctionDeclarationStatement d)
+    public override void Visit(FunctionDeclaration d)
     {
         if (IsBuiltInFunction(d.Name) || IsBuiltInType(d.Name))
         {
@@ -128,7 +130,7 @@ public sealed class ResolveNamesPass : AbstractPass
 
             foreach (AbstractParameterDeclaration abstractParameterDeclaration in d.Parameters)
             {
-                ParameterDeclarationStatement parameter = (ParameterDeclarationStatement)abstractParameterDeclaration;
+                ParameterDeclaration parameter = (ParameterDeclaration)abstractParameterDeclaration;
                 parameter.Accept(this);
             }
 
@@ -142,7 +144,7 @@ public sealed class ResolveNamesPass : AbstractPass
         }
     }
 
-    public override void Visit(ParameterDeclarationStatement d)
+    public override void Visit(ParameterDeclaration d)
     {
         base.Visit(d);
 
@@ -174,7 +176,7 @@ public sealed class ResolveNamesPass : AbstractPass
         }
     }
 
-    public override void Visit(IteratorDeclarationStatement e)
+    public override void Visit(IteratorDeclaration e)
     {
         base.Visit(e);
 
@@ -232,7 +234,7 @@ public sealed class ResolveNamesPass : AbstractPass
             throw new InvalidAssignmentException($"Invalid assignment to '{s.Name}'");
         }
 
-        if (symbol is IteratorDeclarationStatement)
+        if (symbol is IteratorDeclaration)
         {
             throw new InvalidAssignmentException($"Cannot assign to for loop iterator '{s.Name}'");
         }
@@ -274,7 +276,7 @@ public sealed class ResolveNamesPass : AbstractPass
     {
         foreach (Statement statement in statements)
         {
-            if (statement is FunctionDeclarationStatement function)
+            if (statement is FunctionDeclaration function)
             {
                 try
                 {
@@ -292,7 +294,7 @@ public sealed class ResolveNamesPass : AbstractPass
     {
         foreach (Statement statement in statements)
         {
-            if (statement is VariableDeclarationStatement variable)
+            if (statement is VariableDeclaration variable)
             {
                 variable.Accept(this);
             }
@@ -300,10 +302,10 @@ public sealed class ResolveNamesPass : AbstractPass
 
         foreach (Statement statement in statements)
         {
-            if (statement is VariableDeclarationStatement variable)
+            if (statement is VariableDeclaration variable)
             {
             }
-            else if (statement is FunctionDeclarationStatement function)
+            else if (statement is FunctionDeclaration function)
             {
                 function.Accept(this);
             }

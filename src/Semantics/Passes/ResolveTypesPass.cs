@@ -1,4 +1,6 @@
 using Ast;
+using Ast.BuiltIn;
+using Ast.Declaration;
 using Ast.Expressions;
 using Ast.Statements;
 
@@ -136,7 +138,7 @@ public sealed class ResolveTypesPass : AbstractPass
     /// <summary>
     /// Проверяет тип переменной и тип выражения, которым она инициализируется.
     /// </summary>
-    public override void Visit(VariableDeclarationStatement d)
+    public override void Visit(VariableDeclaration d)
     {
         base.Visit(d);
         if (d.Value != null)
@@ -170,7 +172,7 @@ public sealed class ResolveTypesPass : AbstractPass
             );
         }
 
-        if (s.Variable is IteratorDeclarationStatement)
+        if (s.Variable is IteratorDeclaration)
         {
             throw new InvalidAssignmentException($"Cannot assign to for loop iterator '{s.Name}'");
         }
@@ -252,7 +254,7 @@ public sealed class ResolveTypesPass : AbstractPass
         }
     }
 
-    public override void Visit(IteratorDeclarationStatement iteratorDeclarationStatement)
+    public override void Visit(IteratorDeclaration iteratorDeclarationStatement)
     {
         base.Visit(iteratorDeclarationStatement);
         if (iteratorDeclarationStatement.StartValue.ResultType != ValueType.Integer)
@@ -284,7 +286,7 @@ public sealed class ResolveTypesPass : AbstractPass
     /// <summary>
     /// Проверяет объявление функции.
     /// </summary>
-    public override void Visit(FunctionDeclarationStatement s)
+    public override void Visit(FunctionDeclaration s)
     {
         base.Visit(s);
 
@@ -303,7 +305,7 @@ public sealed class ResolveTypesPass : AbstractPass
     /// <summary>
     /// Проверяет объявление параметра.
     /// </summary>
-    public override void Visit(ParameterDeclarationStatement d)
+    public override void Visit(ParameterDeclaration d)
     {
         base.Visit(d);
     }
@@ -453,7 +455,7 @@ public sealed class ResolveTypesPass : AbstractPass
     /// </summary>
     private void CheckBuiltInFunctionTypes(string name, IReadOnlyList<Expression> arguments)
     {
-        BuiltInFunctionStatement? builtin = Builtins.Functions.FirstOrDefault(f => f.Name == name);
+        BuiltInFunction? builtin = Builtins.Functions.FirstOrDefault(f => f.Name == name);
         if (builtin == null)
         {
             throw new ArgumentException($"Unknown built-in function: {name}");

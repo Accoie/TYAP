@@ -1,4 +1,5 @@
-﻿using Ast.Expressions;
+﻿using Ast.Declaration;
+using Ast.Expressions;
 using Ast.Statements;
 
 namespace Ast;
@@ -27,9 +28,9 @@ public interface IAstVisitor
 
     void Visit(ReturnStatement s);
 
-    void Visit(VariableDeclarationStatement s);
+    void Visit(VariableDeclaration s);
 
-    void Visit(FunctionDeclarationStatement s);
+    void Visit(FunctionDeclaration s);
 
     void Visit(WhileLoopStatement s);
 
@@ -39,9 +40,9 @@ public interface IAstVisitor
 
     void Visit(FunctionCallStatement s);
 
-    void Visit(ParameterDeclarationStatement parameterDeclarationStatement);
+    void Visit(ParameterDeclaration parameterDeclarationStatement);
 
     void Visit(VariableExpression variableExpression);
 
-    void Visit(IteratorDeclarationStatement iteratorDeclarationStatement);
+    void Visit(IteratorDeclaration iteratorDeclarationStatement);
 }

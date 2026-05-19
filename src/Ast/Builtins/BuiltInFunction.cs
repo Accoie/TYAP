@@ -1,15 +1,15 @@
-using Runtime;
+using Ast.Statements;
 
-namespace Ast.Statements;
+namespace Ast.BuiltIn;
 
 /// <summary>
 /// Определение встроенной функции языка.
 /// </summary>
-public sealed class BuiltInFunctionStatement : AbstractFunctionDeclaration
+public sealed class BuiltInFunction : AbstractFunctionDeclaration
 {
-    public BuiltInFunctionStatement(
+    public BuiltInFunction(
         string name,
-        IReadOnlyList<BuiltInFunctionParameterStatement> parameters,
+        IReadOnlyList<BuiltInFunctionParameter> parameters,
         Runtime.ValueType resultType
     )
         : base(name, parameters)

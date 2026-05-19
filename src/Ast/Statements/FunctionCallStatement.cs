@@ -11,9 +11,6 @@ public class FunctionCallStatement : Statement
 
     public FunctionCallExpression Expression { get; }
 
-    // Удобные прокси-свойства для обратной совместимости (опционально)
-    public string Name => Expression.Name;
-
     public IReadOnlyList<Expression> Arguments => Expression.Arguments;
 
     public AbstractFunctionDeclaration Function

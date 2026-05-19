@@ -1,4 +1,5 @@
 using Ast;
+using Ast.BuiltIn;
 using Ast.Statements;
 
 using Semantics.Passes;
@@ -21,7 +22,7 @@ public class SemanticsChecker
         SymbolsTable globalSymbols = new(parent: null);
 
         HashSet<string> addedFunctions = new();
-        foreach (BuiltInFunctionStatement function in Builtins.Functions)
+        foreach (BuiltInFunction function in Builtins.Functions)
         {
             if (addedFunctions.Add(function.Name))
             {

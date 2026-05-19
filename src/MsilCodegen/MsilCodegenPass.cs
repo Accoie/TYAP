@@ -4,6 +4,8 @@ using System.Reflection.Emit;
 using System.Text;
 
 using Ast;
+using Ast.BuiltIn;
+using Ast.Declaration;
 using Ast.Expressions;
 using Ast.Statements;
 
@@ -266,7 +268,7 @@ public class MsilCodegenPass : IAstVisitor
         }
     }
 
-    public void Visit(VariableDeclarationStatement s)
+    public void Visit(VariableDeclaration s)
     {
         Type ilType = s.DeclaredType switch
         {
@@ -310,7 +312,7 @@ public class MsilCodegenPass : IAstVisitor
             argument.Accept(this);
         }
 
-        if (s.Function is BuiltInFunctionStatement)
+        if (s.Function is BuiltInFunction)
         {
             _builtinFunctionEmitter.EmitCallBuiltinFunction(s.Name, _il);
         }
@@ -422,7 +424,7 @@ public class MsilCodegenPass : IAstVisitor
         EndScope();
     }
 
-    public void Visit(IteratorDeclarationStatement d)
+    public void Visit(IteratorDeclaration d)
     {
     }
 
@@ -441,16 +443,11 @@ public class MsilCodegenPass : IAstVisitor
 
     public void Visit(ContinueStatement e)
     {
-        if (_loopContinuesStack.Count == 0)
-        {
-            throw new InvalidOperationException("Statement 'continue' can only be used inside a loop");
-        }
-
         Label continueLabel = _loopContinuesStack.Peek();
         _il.Emit(OpCodes.Br, continueLabel);
     }
 
-    public void Visit(FunctionDeclarationStatement s)
+    public void Visit(FunctionDeclaration s)
     {
         MethodBuilder method = DefineProgramClassMethod(
             GetUserFunctionMethodName(s.Name),
@@ -493,7 +490,7 @@ public class MsilCodegenPass : IAstVisitor
         }
     }
 
-    public void Visit(ParameterDeclarationStatement parameterDeclarationStatementStatement)
+    public void Visit(ParameterDeclaration parameterDeclarationStatementStatement)
     {
     }
 

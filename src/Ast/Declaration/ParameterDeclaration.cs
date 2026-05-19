@@ -1,11 +1,13 @@
-﻿namespace Ast.Statements;
+﻿using Ast.Statements;
+
+namespace Ast.Declaration;
 
 /// <summary>
 /// Объявление параметра функции.
 /// </summary>
-public class ParameterDeclarationStatement : AbstractParameterDeclaration
+public class ParameterDeclaration : AbstractParameterDeclaration
 {
-    public ParameterDeclarationStatement(string name, Runtime.ValueType type)
+    public ParameterDeclaration(string name, Runtime.ValueType type)
         : base(name)
     {
         ResultType = type;

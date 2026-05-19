@@ -1,10 +1,11 @@
 ﻿using Ast.Expressions;
+using Ast.Statements;
 
-namespace Ast.Statements;
+namespace Ast.Declaration;
 
-public class IteratorDeclarationStatement : AbstractVariableDeclaration
+public class IteratorDeclaration : AbstractVariableDeclaration
 {
-    public IteratorDeclarationStatement(string name, Expression startValue)
+    public IteratorDeclaration(string name, Expression startValue)
         : base(name)
     {
         StartValue = startValue;

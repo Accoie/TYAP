@@ -1,4 +1,5 @@
-﻿using Ast.Expressions;
+﻿using Ast.Declaration;
+using Ast.Expressions;
 using Ast.Statements;
 
 using Semantics.Exceptions;
@@ -32,7 +33,7 @@ public sealed class CheckContextSensitiveRulesPass : AbstractPass
         base.Visit(s);
     }
 
-    public override void Visit(FunctionDeclarationStatement d)
+    public override void Visit(FunctionDeclaration d)
     {
         expressionContextStack.Push(ExpressionContext.InsideFunction);
         try

@@ -45,4 +45,8 @@ public interface IAstVisitor
     void Visit(VariableExpression variableExpression);
 
     void Visit(IteratorDeclaration iteratorDeclarationStatement);
+
+    void Visit(ArrayAccessExpression arrayAccessExpression);
+
+    void Visit(ArrayLiteralExpression arrayLiteralExpression);
 }

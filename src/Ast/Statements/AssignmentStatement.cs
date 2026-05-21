@@ -1,27 +1,21 @@
-﻿using Ast.Attributes;
-using Ast.Expressions;
+﻿using Ast.Expressions;
 
 namespace Ast.Statements;
 
 public class AssignmentStatement : Statement
 {
-    private AstAttribute<AbstractVariableDeclaration> _variable;
-
-    public AssignmentStatement(string variableName, Expression value)
+    public AssignmentStatement(Expression target, Expression value)
     {
-        Name = variableName;
+        Target = target;
         Value = value;
     }
 
-    public string Name { get; }
+    /// <summary>
+    /// Lvalue: переменная или доступ к элементу массива.
+    /// </summary>
+    public Expression Target { get; }
 
     public Expression Value { get; }
-
-    public AbstractVariableDeclaration Variable
-    {
-        get => _variable.Get();
-        set => _variable.Set(value);
-    }
 
     public override void Accept(IAstVisitor visitor)
     {

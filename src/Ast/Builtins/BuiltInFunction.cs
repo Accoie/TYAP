@@ -1,4 +1,5 @@
 using Ast.Statements;
+using Ast.Types;
 
 namespace Ast.BuiltIn;
 
@@ -14,8 +15,10 @@ public sealed class BuiltInFunction : AbstractFunctionDeclaration
     )
         : base(name, parameters)
     {
-        ResultType = resultType;
+        ResultType = new ScalarTypeNode(resultType);
     }
+
+    public Runtime.ValueType ReturnType => ((ScalarTypeNode)ResultType).Type;
 
     public override void Accept(IAstVisitor visitor)
     {

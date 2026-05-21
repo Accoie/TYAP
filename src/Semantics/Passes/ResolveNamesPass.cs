@@ -42,7 +42,6 @@ public sealed class ResolveNamesPass : AbstractPass
 
     public override void Visit(InputStatement s)
     {
-        DeclarationStatement symbol = _symbols.GetSymbol(s.VariableName);
         base.Visit(s);
     }
 
@@ -226,20 +225,39 @@ public sealed class ResolveNamesPass : AbstractPass
 
     public override void Visit(AssignmentStatement s)
     {
-        base.Visit(s);
-        DeclarationStatement symbol = _symbols.GetSymbol(s.Name);
-
-        if (symbol is not AbstractVariableDeclaration)
+        if (s.Target is VariableExpression variableTarget)
         {
-            throw new InvalidAssignmentException($"Invalid assignment to '{s.Name}'");
+            DeclarationStatement symbol = _symbols.GetSymbol(variableTarget.Name);
+
+            if (symbol is FunctionDeclaration)
+            {
+                throw new InvalidAssignmentException(
+                    $"Cannot assign to function '{variableTarget.Name}'"
+                );
+            }
+
+            if (symbol is not AbstractVariableDeclaration variable)
+            {
+                throw new InvalidAssignmentException(
+                    $"Invalid assignment to '{variableTarget.Name}'"
+                );
+            }
+
+            if (variable is IteratorDeclaration)
+            {
+                throw new InvalidAssignmentException(
+                    $"Cannot assign to for loop iterator '{variableTarget.Name}'"
+                );
+            }
+
+            variableTarget.Variable = variable;
+        }
+        else
+        {
+            s.Target.Accept(this);
         }
 
-        if (symbol is IteratorDeclaration)
-        {
-            throw new InvalidAssignmentException($"Cannot assign to for loop iterator '{s.Name}'");
-        }
-
-        s.Variable = (AbstractVariableDeclaration)symbol;
+        s.Value.Accept(this);
     }
 
     public override void Visit(ReturnStatement s)
@@ -336,7 +354,7 @@ public sealed class ResolveNamesPass : AbstractPass
 
     private bool IsBuiltInType(string name)
     {
-        string[] builtInTypes = { "integer", "float", "string" };
+        string[] builtInTypes = { "integer", "float", "string", "arr" };
 
         foreach (string type in builtInTypes)
         {

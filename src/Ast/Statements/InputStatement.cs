@@ -1,13 +1,18 @@
-﻿namespace Ast.Statements;
+﻿using Ast.Expressions;
+
+namespace Ast.Statements;
 
 public class InputStatement : Statement
 {
-    public InputStatement(string variableName)
+    public InputStatement(Expression target)
     {
-        VariableName = variableName;
+        Target = target;
     }
 
-    public string VariableName { get; }
+    /// <summary>
+    /// Lvalue: переменная или элемент массива.
+    /// </summary>
+    public Expression Target { get; }
 
     public override void Accept(IAstVisitor visitor)
     {

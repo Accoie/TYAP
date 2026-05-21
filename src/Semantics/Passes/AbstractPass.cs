@@ -2,6 +2,7 @@
 using Ast.Declaration;
 using Ast.Expressions;
 using Ast.Statements;
+using Ast.Types;
 
 namespace Semantics.Passes;
 
@@ -39,6 +40,7 @@ public abstract class AbstractPass : IAstVisitor
 
     public virtual void Visit(AssignmentStatement s)
     {
+        s.Target.Accept(this);
         s.Value.Accept(this);
     }
 
@@ -64,6 +66,7 @@ public abstract class AbstractPass : IAstVisitor
 
     public virtual void Visit(InputStatement s)
     {
+        s.Target.Accept(this);
     }
 
     public virtual void Visit(OutputStatement s)
@@ -89,6 +92,11 @@ public abstract class AbstractPass : IAstVisitor
 
     public virtual void Visit(VariableDeclaration s)
     {
+        if (s.DeclaredType is ArrayTypeNode arrayType)
+        {
+            arrayType.Size.Accept(this);
+        }
+
         s.Value?.Accept(this);
     }
 
@@ -122,5 +130,19 @@ public abstract class AbstractPass : IAstVisitor
     public virtual void Visit(IteratorDeclaration iteratorDeclarationStatement)
     {
         iteratorDeclarationStatement.StartValue.Accept(this);
+    }
+
+    public virtual void Visit(ArrayAccessExpression arrayAccessExpression)
+    {
+        arrayAccessExpression.Array.Accept(this);
+        arrayAccessExpression.Index.Accept(this);
+    }
+
+    public virtual void Visit(ArrayLiteralExpression arrayLiteralExpression)
+    {
+        foreach (Expression element in arrayLiteralExpression.Elements)
+        {
+            element.Accept(this);
+        }
     }
 }

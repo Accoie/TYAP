@@ -1,4 +1,5 @@
 using Ast;
+using Ast.BuiltIn;
 using Ast.Declaration;
 using Ast.Expressions;
 using Ast.Statements;
@@ -166,11 +167,11 @@ public sealed class ResolveTypesPass : AbstractPass
     {
         base.Visit(e);
 
-        if (e.Function is BuiltInFunctionDeclaration builtin)
+        if (IsBuiltInFunction(e.Name))
         {
-            CheckBuiltInFunctionTypes(builtin, e.Arguments);
+            CheckBuiltInFunctionTypes(e.Name, e.Arguments);
         }
-        else if (e.Function is FunctionDeclaration userFunction)
+        else
         {
             for (int i = 0; i < e.Arguments.Count; i++)
             {
@@ -653,20 +654,76 @@ public sealed class ResolveTypesPass : AbstractPass
     }
 
     /// <summary>
-    /// Проверяет типы аргументов для встроенной функции.
+    /// Проверяет типы аргументов для встроенной функции, вызываемой как оператор.
     /// </summary>
-    private void CheckBuiltInFunctionTypes(BuiltInFunctionDeclaration builtin, IReadOnlyList<Expression> arguments)
+    private void CheckBuiltInFunctionTypes(string name, IReadOnlyList<Expression> arguments)
     {
-        for (int i = 0; i < arguments.Count; i++)
+        BuiltInFunction? builtin = Builtins.Functions.FirstOrDefault(f => f.Name == name);
+        if (builtin == null)
         {
-            AbstractParameterDeclaration param = builtin.Parameters[i];
-            if (param.ResultType != arguments[i].ResultType)
-            {
-                throw new TypeMismatchException(
-                    $"Function '{builtin.Name}' expects argument '{param.Name}' with type '{param.ResultType}', " +
-                    $"but got '{arguments[i].ResultType}'"
-                );
-            }
+            throw new ArgumentException($"Unknown built-in function: {name}");
+        }
+
+        if (arguments.Count != builtin.Parameters.Count)
+        {
+            throw new InvalidFunctionCallException(
+                $"Function '{name}' expects {builtin.Parameters.Count} arguments, " +
+                $"but got {arguments.Count}"
+            );
+        }
+
+        switch (name)
+        {
+            case Builtins.Abs:
+            case Builtins.Round:
+                if (arguments[0].ResultType != ValueType.Float)
+                {
+                    throw new TypeMismatchException($"Function '{name}' expects a numeric argument");
+                }
+
+                break;
+            case Builtins.Min:
+            case Builtins.Max:
+                foreach (Expression arg in arguments)
+                {
+                    if (arg.ResultType != ValueType.Float)
+                    {
+                        throw new TypeMismatchException($"Function '{name}' expects numeric arguments");
+                    }
+                }
+
+                break;
+
+            case Builtins.TostringI:
+                if (arguments[0].ResultType != ValueType.Integer)
+                {
+                    throw new TypeMismatchException($"Function '{name}' expects an integer argument");
+                }
+
+                break;
+            case Builtins.TostringF:
+                if (arguments[0].ResultType != ValueType.Float)
+                {
+                    throw new TypeMismatchException($"Function '{name}' expects a float argument");
+                }
+
+                break;
+            case Builtins.Getsymbol:
+                if (arguments[0].ResultType != ValueType.String || arguments[1].ResultType != ValueType.Integer)
+                {
+                    throw new TypeMismatchException($"Function '{name}' expects a string and an integer argument");
+                }
+
+                break;
+            case Builtins.Len:
+                if (arguments[0].ResultType != ValueType.String)
+                {
+                    throw new TypeMismatchException($"Function '{name}' expects a string argument");
+                }
+
+                break;
+            default:
+                throw new ArgumentException($"Unknown built-in function: {name}");
         }
     }
 
@@ -701,5 +758,20 @@ public sealed class ResolveTypesPass : AbstractPass
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Проверяет, является ли функция встроенной.
+    /// </summary>
+    private bool IsBuiltInFunction(string name)
+    {
+        string[] builtInFunctions =
+        {
+            "abs_f", "min_f", "max_f", "round",
+            "len", "getsymbol", "tostring_i", "tostring_f",
+        };
+
+        return builtInFunctions.Any(f =>
+            string.Equals(f, name, StringComparison.OrdinalIgnoreCase));
     }
 }

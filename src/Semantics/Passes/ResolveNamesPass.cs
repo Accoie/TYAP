@@ -1,4 +1,4 @@
-using Ast;
+using Ast.BuiltIn;
 using Ast.Declaration;
 using Ast.Expressions;
 using Ast.Statements;
@@ -49,19 +49,30 @@ public sealed class ResolveNamesPass : AbstractPass
     {
         base.Visit(e);
 
-        DeclarationStatement symbol = _symbols.GetSymbol(e.Name);
+        if (!IsBuiltInFunction(e.Name))
+        {
+            DeclarationStatement symbol = _symbols.GetSymbol(e.Name);
 
-        if (symbol is FunctionDeclaration function)
-        {
-            e.Function = function;
-        }
-        else if (symbol is BuiltInFunctionDeclaration builtinFunction)
-        {
-            e.Function = builtinFunction;
+            if (symbol is FunctionDeclaration function)
+            {
+                if (e.Arguments.Count != function.Parameters.Count)
+                {
+                    throw new InvalidFunctionCallException(
+                        $"Function '{e.Name}' expects {function.Parameters.Count} arguments, " +
+                        $"but got {e.Arguments.Count}"
+                    );
+                }
+
+                e.Function = function;
+            }
+            else
+            {
+                throw new InvalidSymbolException(e.Name, "variable");
+            }
         }
         else
         {
-            throw new InvalidSymbolException(e.Name, "function");
+            e.Function = (BuiltInFunction)_symbols.GetSymbol(e.Name);
         }
     }
 
@@ -95,7 +106,7 @@ public sealed class ResolveNamesPass : AbstractPass
     {
         base.Visit(d);
 
-        if (IsReservedName(d.Name))
+        if (IsBuiltInFunction(d.Name) || IsBuiltInType(d.Name))
         {
             throw DuplicateSymbolException.DuplicateVariableOrFunction(d.Name);
         }
@@ -105,7 +116,7 @@ public sealed class ResolveNamesPass : AbstractPass
 
     public override void Visit(FunctionDeclaration d)
     {
-        if (IsReservedName(d.Name))
+        if (IsBuiltInFunction(d.Name) || IsBuiltInType(d.Name))
         {
             throw DuplicateSymbolException.DuplicateVariableOrFunction(d.Name);
         }
@@ -116,9 +127,10 @@ public sealed class ResolveNamesPass : AbstractPass
         {
             _symbols.DefineSymbol(d.Name, d);
 
-            foreach (AbstractParameterDeclaration parameterDeclaration in d.Parameters)
+            foreach (AbstractParameterDeclaration abstractParameterDeclaration in d.Parameters)
             {
-                parameterDeclaration.Accept(this);
+                ParameterDeclaration parameter = (ParameterDeclaration)abstractParameterDeclaration;
+                parameter.Accept(this);
             }
 
             _functionStack.Push(d);
@@ -135,7 +147,7 @@ public sealed class ResolveNamesPass : AbstractPass
     {
         base.Visit(d);
 
-        if (IsReservedName(d.Name))
+        if (IsBuiltInFunction(d.Name) || IsBuiltInType(d.Name))
         {
             throw DuplicateSymbolException.DuplicateVariableOrFunction(d.Name);
         }
@@ -322,8 +334,36 @@ public sealed class ResolveNamesPass : AbstractPass
         }
     }
 
-    private bool IsReservedName(string name)
+    private bool IsBuiltInFunction(string name)
     {
-        return Builtins.IsBuiltInFunction(name) || Builtins.IsBuiltInType(name);
+        string[] builtInFunctions =
+        {
+            "abs_f", "min_f", "max_f", "round", "len", "getsymbol", "tostring_i", "tostring_f",
+        };
+
+        foreach (string builtIn in builtInFunctions)
+        {
+            if (string.Equals(builtIn, name))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsBuiltInType(string name)
+    {
+        string[] builtInTypes = { "integer", "float", "string", "arr" };
+
+        foreach (string type in builtInTypes)
+        {
+            if (string.Equals(type, name))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

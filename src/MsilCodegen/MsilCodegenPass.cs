@@ -4,7 +4,6 @@ using System.Reflection.Emit;
 using System.Text;
 
 using Ast;
-using Ast.BuiltIn;
 using Ast.Declaration;
 using Ast.Expressions;
 using Ast.Statements;
@@ -304,7 +303,7 @@ public class MsilCodegenPass : IAstVisitor
             argument.Accept(this);
         }
 
-        if (s.Function is BuiltInFunction)
+        if (s.Function is BuiltInFunctionDeclaration)
         {
             _builtinFunctionEmitter.EmitCallBuiltinFunction(s.Name, _il);
         }

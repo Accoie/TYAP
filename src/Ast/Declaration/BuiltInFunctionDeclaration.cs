@@ -1,16 +1,16 @@
 using Ast.Statements;
 using Ast.Types;
 
-namespace Ast.BuiltIn;
+namespace Ast.Declaration;
 
 /// <summary>
 /// Определение встроенной функции языка.
 /// </summary>
-public sealed class BuiltInFunction : AbstractFunctionDeclaration
+public sealed class BuiltInFunctionDeclaration : AbstractFunctionDeclaration
 {
-    public BuiltInFunction(
+    public BuiltInFunctionDeclaration(
         string name,
-        IReadOnlyList<BuiltInFunctionParameter> parameters,
+        IReadOnlyList<BuiltInFunctionParameterDeclaration> parameters,
         Runtime.ValueType resultType
     )
         : base(name, parameters)

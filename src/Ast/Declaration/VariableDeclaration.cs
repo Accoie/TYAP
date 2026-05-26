@@ -1,20 +1,19 @@
 ﻿using Ast.Expressions;
 using Ast.Statements;
-
-using ValueType = Runtime.ValueType;
+using Ast.Types;
 
 namespace Ast.Declaration;
 
 public sealed class VariableDeclaration : AbstractVariableDeclaration
 {
-    public VariableDeclaration(string name, ValueType type, Expression? value)
+    public VariableDeclaration(string name, TypeNode type, Expression? value)
         : base(name)
     {
         Value = value;
         DeclaredType = type;
     }
 
-    public ValueType DeclaredType { get; }
+    public TypeNode DeclaredType { get; }
 
     public Expression? Value { get; }
 

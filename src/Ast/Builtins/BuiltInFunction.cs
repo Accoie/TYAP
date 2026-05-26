@@ -1,21 +1,24 @@
 using Ast.Statements;
+using Ast.Types;
 
-namespace Ast.Declaration;
+namespace Ast.BuiltIn;
 
 /// <summary>
 /// Определение встроенной функции языка.
 /// </summary>
-public sealed class BuiltInFunctionDeclaration : AbstractFunctionDeclaration
+public sealed class BuiltInFunction : AbstractFunctionDeclaration
 {
-    public BuiltInFunctionDeclaration(
+    public BuiltInFunction(
         string name,
-        IReadOnlyList<BuiltInFunctionParameterDeclaration> parameters,
+        IReadOnlyList<BuiltInFunctionParameter> parameters,
         Runtime.ValueType resultType
     )
         : base(name, parameters)
     {
-        ResultType = resultType;
+        ResultType = new ScalarTypeNode(resultType);
     }
+
+    public Runtime.ValueType ReturnType => ((ScalarTypeNode)ResultType).Type;
 
     public override void Accept(IAstVisitor visitor)
     {

@@ -1,15 +1,16 @@
 ﻿using Ast.Attributes;
+using Ast.Types;
 
 namespace Ast.Statements;
 
 public abstract class DeclarationStatement : Statement
 {
-    private AstAttribute<Runtime.ValueType> _resultType;
+    private AstAttribute<TypeNode> _resultType;
 
     /// <summary>
-    /// Тип результата объявления.
+    /// Тип объявления.
     /// </summary>
-    public Runtime.ValueType ResultType
+    public TypeNode ResultType
     {
         get => _resultType.Get();
 

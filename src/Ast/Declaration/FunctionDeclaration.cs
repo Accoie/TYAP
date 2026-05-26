@@ -1,4 +1,5 @@
 ﻿using Ast.Statements;
+using Ast.Types;
 
 using ValueType = Runtime.ValueType;
 
@@ -10,8 +11,10 @@ public sealed class FunctionDeclaration : AbstractFunctionDeclaration
         : base(name, parameters)
     {
         Body = body;
-        ResultType = type;
+        ResultType = new ScalarTypeNode(type);
     }
+
+    public ValueType ReturnType => ((ScalarTypeNode)ResultType).Type;
 
     public BlockStatement Body { get; }
 

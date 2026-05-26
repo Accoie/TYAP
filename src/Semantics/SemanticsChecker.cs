@@ -1,5 +1,5 @@
 using Ast;
-using Ast.Declaration;
+using Ast.BuiltIn;
 using Ast.Statements;
 
 using Semantics.Passes;
@@ -11,8 +11,7 @@ namespace Semantics;
 /// Фасад для проведения семантических проверок программы.
 /// Выполняет три прохода по AST:
 /// 1. ResolveNamesPass - разрешение имен и проверка областей видимости
-/// 2. CheckContextSensitiveRulesPass - проверка контекстно-зависимых правил (количество аргументов функций)
-/// 3. ResolveTypesPass - проверка типов данных
+/// 2. ResolveTypesPass - проверка типов данных
 /// </summary>
 public class SemanticsChecker
 {
@@ -23,7 +22,7 @@ public class SemanticsChecker
         SymbolsTable globalSymbols = new(parent: null);
 
         HashSet<string> addedFunctions = new();
-        foreach (BuiltInFunctionDeclaration function in Builtins.Functions)
+        foreach (BuiltInFunction function in Builtins.Functions)
         {
             if (addedFunctions.Add(function.Name))
             {
@@ -34,8 +33,7 @@ public class SemanticsChecker
         _passes =
         [
             new ResolveNamesPass(globalSymbols),
-            new CheckContextSensitiveRulesPass(),
-            new ResolveTypesPass()
+            new ResolveTypesPass(),
         ];
     }
 

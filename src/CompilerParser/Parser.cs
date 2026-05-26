@@ -1,6 +1,7 @@
 ﻿using Ast.Declaration;
 using Ast.Expressions;
 using Ast.Statements;
+using Ast.Types;
 
 using CompilerLexer;
 
@@ -52,18 +53,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает инструкции.
-    /// Правило: statement = variable_declaration
-    ///                     | function_declaration
-    ///                     | assignment_statement
-    ///                     | input_statement
-    ///                     | output_statement
-    ///                     | if_statement
-    ///                     | for_statement
-    ///                     | while_statement
-    ///                     | break_statement
-    ///                     | continue_statement
-    ///                     | return_statement
-    ///                     | expression_statement.
     /// </summary>
     private Statement ParseStatement()
     {
@@ -89,32 +78,51 @@ public class Parser
     }
 
     /// <summary>
-    /// Разбирает оператор присваивания.
-    /// Правило: assignment_statement = identifier, "=", expression, ";".
+    /// Разбирает оператор присваивания или вызов функции.
     /// </summary>
     private Statement ParseAssignmentOrFunctionCall()
     {
-        string name = Match(TokenType.Identifier).Value.ToString();
-        Statement result;
+        Expression target = ParseLeftHandSide();
+
         if (_tokens.Peek().Type == TokenType.Assign)
         {
-            Match(TokenType.Assign);
+            _tokens.Advance();
             Expression value = ParseExpression();
-            result = new AssignmentStatement(name, value);
+            Match(TokenType.Semicolon);
+            return new AssignmentStatement(target, value);
         }
-        else
+
+        if (target is not VariableExpression variableExpression)
         {
-            result = ParseFunctionCallStatement(name);
+            throw new UnexpectedLexemeException(_tokens.Peek());
         }
 
+        Statement result = ParseFunctionCallStatement(variableExpression.Name);
         Match(TokenType.Semicolon);
-
         return result;
     }
 
     /// <summary>
+    /// Разбирает lvalue: identifier, { index_access }.
+    /// </summary>
+    private Expression ParseLeftHandSide()
+    {
+        string name = Match(TokenType.Identifier).Value.ToString();
+        Expression target = new VariableExpression(name);
+
+        while (_tokens.Peek().Type == TokenType.LBracket)
+        {
+            _tokens.Advance();
+            Expression index = ParseExpression();
+            Match(TokenType.RBracket);
+            target = new ArrayAccessExpression(target, index);
+        }
+
+        return target;
+    }
+
+    /// <summary>
     /// Разбирает оператор объявления переменной.
-    /// Правило: variable_declaration = "var", identifier, ":", type, [ "=", expression ], ";" ;
     /// </summary>
     private VariableDeclaration ParseVariableDeclaration()
     {
@@ -122,14 +130,7 @@ public class Parser
         string name = Match(TokenType.Identifier).Value.ToString();
         Match(TokenType.Colon);
 
-        ValueType type = _tokens.Peek().Type switch
-        {
-            TokenType.IntegerType => ValueType.Integer,
-            TokenType.FloatType => ValueType.Float,
-            TokenType.StringType => ValueType.String,
-            _ => throw new UnexpectedLexemeException(_tokens.Peek()),
-        };
-        _tokens.Advance();
+        TypeNode type = ParseType();
 
         Expression? initialValue = null;
         if (_tokens.Peek().Type == TokenType.Assign)
@@ -145,23 +146,21 @@ public class Parser
 
     /// <summary>
     /// Разбирает оператор ввода.
-    /// Правило: input_statement = "read", "(", identifier, ")", ";".
     /// </summary>
     private InputStatement ParseInput()
     {
         Match(TokenType.Input);
         Match(TokenType.LParen);
 
-        string variableName = Match(TokenType.Identifier).Value.ToString();
+        Expression target = ParseLeftHandSide();
 
         Match(TokenType.RParen);
         Match(TokenType.Semicolon);
-        return new InputStatement(variableName);
+        return new InputStatement(target);
     }
 
     /// <summary>
     /// Разбирает оператор вывода.
-    /// Правило: output_statement = "write", "(", argument_list, ")", ";".
     /// </summary>
     private OutputStatement ParseOutput()
     {
@@ -183,7 +182,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает объявление функции.
-    /// Правило: function_declaration = "function", function_name, "(", [ parameter_list ], ")", [ ":", type ], block.
     /// </summary>
     private FunctionDeclaration ParseFunctionDeclaration()
     {
@@ -200,7 +198,7 @@ public class Parser
         if (returnTypetokens == TokenType.Colon)
         {
             Match(TokenType.Colon);
-            resultType = ParseType();
+            resultType = ParseScalarType();
         }
         else
         {
@@ -218,7 +216,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает вызов функции.
-    /// Правило: function_call = function_name, "(", [ argument_list ], ")".
     /// </summary>
     private Expression ParseFunctionCall(string name)
     {
@@ -241,8 +238,7 @@ public class Parser
     }
 
     /// <summary>
-    /// Разбирает вызов функции.
-    /// Правило: function_call = function_name, "(", [ argument_list ], ")".
+    /// Разбирает вызов функции как оператор.
     /// </summary>
     private Statement ParseFunctionCallStatement(string name)
     {
@@ -266,7 +262,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает условный оператор if.
-    /// Правило: if_statement = "if", "(", expression, ")", "then", statement, [ "else", statement ].
     /// </summary>
     private Statement ParseIfStatement()
     {
@@ -289,7 +284,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает список параметров функции.
-    /// Правило: parameter_list = parameter, { ",", parameter }.
     /// </summary>
     private List<ParameterDeclaration> ParseParameterList()
     {
@@ -317,7 +311,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает оператор возврата.
-    /// Правило: return_statement = "return", [ expression ], ";".
     /// </summary>
     private Statement ParseReturnStatement()
     {
@@ -337,7 +330,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает цикл for.
-    /// Правило: for_statement = "for", identifier, "from", expression, "to", expression, "do", block ;
     /// </summary>
     private ForLoopStatement ParseForLoopStatement()
     {
@@ -360,7 +352,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает цикл while.
-    /// Правило: while_statement = "while", "(", expression, ")", "do", block;
     /// </summary>
     private WhileLoopStatement ParseWhileLoopStatement()
     {
@@ -377,9 +368,22 @@ public class Parser
 
     /// <summary>
     /// Разбирает тип данных.
-    /// Правило: type = "integer" | "float" | "string".
+    /// Правило: type = base_type | array_type.
     /// </summary>
-    private ValueType ParseType()
+    private TypeNode ParseType()
+    {
+        if (_tokens.Peek().Type == TokenType.Array)
+        {
+            return ParseArrayType();
+        }
+
+        return new ScalarTypeNode(ParseScalarType());
+    }
+
+    /// <summary>
+    /// Разбирает скалярный тип для возвращаемого значения функции.
+    /// </summary>
+    private ValueType ParseScalarType()
     {
         ValueType type = _tokens.Peek().Type switch
         {
@@ -394,8 +398,21 @@ public class Parser
     }
 
     /// <summary>
+    /// Разбирает тип массива: arr "[", expression, "]", "of", base_type.
+    /// </summary>
+    private ArrayTypeNode ParseArrayType()
+    {
+        Match(TokenType.Array);
+        Match(TokenType.LBracket);
+        Expression size = ParseExpression();
+        Match(TokenType.RBracket);
+        Match(TokenType.Of);
+        ValueType elementType = ParseScalarType();
+        return new ArrayTypeNode(size, elementType);
+    }
+
+    /// <summary>
     /// Разбирает оператор break.
-    /// Правило: break_statement = "break", ";".
     /// </summary>
     private BreakStatement ParseBreakStatement()
     {
@@ -407,7 +424,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает оператор continue.
-    /// Правило: continue_statement = "continue", ";".
     /// </summary>
     private ContinueStatement ParseContinueStatement()
     {
@@ -419,7 +435,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает выражение.
-    /// Правило: expression = logical_or_expression.
     /// </summary>
     private Expression ParseExpression()
     {
@@ -428,7 +443,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает выражение логического ИЛИ.
-    /// Правило: logical_or_expression = logical_and_expression, { logical_or_operator, logical_and_expression }.
     /// </summary>
     private Expression ParseLogicalOrExpression()
     {
@@ -446,7 +460,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает выражение логического И.
-    /// Правило: logical_and_expression = comparison_expression, { logical_and_operator, comparison_expression }.
     /// </summary>
     private Expression ParseLogicalAndExpression()
     {
@@ -464,7 +477,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает выражение сравнения.
-    /// Правило: comparison_expression = additive_expression, [ comparison_operator, additive_expression ].
     /// </summary>
     private Expression ParseComparisonExpression()
     {
@@ -494,7 +506,6 @@ public class Parser
 
     /// <summary>
     /// Разбирает сложение/вычитание.
-    /// Правило: additive_expression = term_expression, { additive_operator, term_expression }.
     /// </summary>
     private Expression ParseAdditiveExpression()
     {
@@ -522,11 +533,10 @@ public class Parser
 
     /// <summary>
     /// Разбирает умножение/деление/остаток.
-    /// Правило: term_expression = factor_expression, { multiplicative_operator, factor_expression }.
     /// </summary>
     private Expression ParseTermExpression()
     {
-        Expression left = ParseFactorExpression();
+        Expression left = ParseExponentiationExpression();
 
         while (true)
         {
@@ -534,17 +544,17 @@ public class Parser
             {
                 case TokenType.MultiplySign:
                     _tokens.Advance();
-                    Expression multiplyRight = ParseFactorExpression();
+                    Expression multiplyRight = ParseExponentiationExpression();
                     left = new BinaryOperationExpression(left, BinaryOperation.Multiply, multiplyRight);
                     break;
                 case TokenType.DivideSign:
                     _tokens.Advance();
-                    Expression divideRight = ParseFactorExpression();
+                    Expression divideRight = ParseExponentiationExpression();
                     left = new BinaryOperationExpression(left, BinaryOperation.Divide, divideRight);
                     break;
                 case TokenType.ModuloSign:
                     _tokens.Advance();
-                    Expression moduloRight = ParseFactorExpression();
+                    Expression moduloRight = ParseExponentiationExpression();
                     left = new BinaryOperationExpression(left, BinaryOperation.Modulo, moduloRight);
                     break;
                 default:
@@ -555,9 +565,8 @@ public class Parser
 
     /// <summary>
     /// Разбирает унарные операции.
-    /// Правило: factor_expression = [ unary_operator ], exponentiation_expression.
     /// </summary>
-    private Expression ParseFactorExpression()
+    private Expression ParseUnaryExpression()
     {
         if (IsUnaryOperator(_tokens.Peek().Type))
         {
@@ -570,21 +579,20 @@ public class Parser
             };
 
             _tokens.Advance();
-            Expression operand = ParseExponentiationExpression();
+            Expression operand = ParsePostfixExpression();
 
             return new UnaryOperationExpression(operation, operand);
         }
 
-        return ParseExponentiationExpression();
+        return ParsePostfixExpression();
     }
 
     /// <summary>
     /// Разбирает выражение возведения в степень.
-    /// Правило: exponentiation_expression = primary_expression, [ "^", exponentiation_expression ].
     /// </summary>
     private Expression ParseExponentiationExpression()
     {
-        Expression left = ParsePrimaryExpression();
+        Expression left = ParseUnaryExpression();
 
         if (_tokens.Peek().Type == TokenType.ExponentiationSign)
         {
@@ -597,8 +605,25 @@ public class Parser
     }
 
     /// <summary>
-    /// Разбирает первичные выражения (литералы, идентификаторы, выражения в скобках).
-    /// Правило: primary_expression = literal | variable_access | "(", expression, ")".
+    /// Разбирает постфиксные операции (индексация массива).
+    /// </summary>
+    private Expression ParsePostfixExpression()
+    {
+        Expression expression = ParsePrimaryExpression();
+
+        while (_tokens.Peek().Type == TokenType.LBracket)
+        {
+            _tokens.Advance();
+            Expression index = ParseExpression();
+            Match(TokenType.RBracket);
+            expression = new ArrayAccessExpression(expression, index);
+        }
+
+        return expression;
+    }
+
+    /// <summary>
+    /// Разбирает первичные выражения.
     /// </summary>
     private Expression ParsePrimaryExpression()
     {
@@ -617,6 +642,9 @@ public class Parser
             case TokenType.StringLiteral:
                 _tokens.Advance();
                 return new LiteralExpression(new Value(token.Value.ToString()));
+
+            case TokenType.LBracket:
+                return ParseArrayLiteral();
 
             case TokenType.LParen:
                 _tokens.Advance();
@@ -639,8 +667,29 @@ public class Parser
     }
 
     /// <summary>
+    /// Разбирает литерал массива: "[", [ expression, { ",", expression } ], "]".
+    /// </summary>
+    private ArrayLiteralExpression ParseArrayLiteral()
+    {
+        Match(TokenType.LBracket);
+
+        List<Expression> elements = new();
+        if (_tokens.Peek().Type != TokenType.RBracket)
+        {
+            elements.Add(ParseExpression());
+            while (_tokens.Peek().Type == TokenType.Comma)
+            {
+                _tokens.Advance();
+                elements.Add(ParseExpression());
+            }
+        }
+
+        Match(TokenType.RBracket);
+        return new ArrayLiteralExpression(elements);
+    }
+
+    /// <summary>
     /// Проверяет, является ли токен оператором сравнения.
-    /// Правило: comparison_operator = "==" | "!=" | "<" | ">" | "<=" | ">=".
     /// </summary>
     private bool IsComparisonOperator(TokenType type)
     {
@@ -658,7 +707,6 @@ public class Parser
 
     /// <summary>
     /// Проверяет, является ли токен унарным оператором.
-    /// Правило: unary_operator = "+" | "-" | "!".
     /// </summary>
     private bool IsUnaryOperator(TokenType type)
     {

@@ -1,4 +1,5 @@
 ﻿using Ast.Statements;
+using Ast.Types;
 
 namespace Ast.Declaration;
 
@@ -7,7 +8,7 @@ namespace Ast.Declaration;
 /// </summary>
 public class ParameterDeclaration : AbstractParameterDeclaration
 {
-    public ParameterDeclaration(string name, Runtime.ValueType type)
+    public ParameterDeclaration(string name, TypeNode type)
         : base(name)
     {
         ResultType = type;

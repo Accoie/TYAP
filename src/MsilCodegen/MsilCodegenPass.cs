@@ -4,9 +4,11 @@ using System.Reflection.Emit;
 using System.Text;
 
 using Ast;
+using Ast.BuiltIn;
 using Ast.Declaration;
 using Ast.Expressions;
 using Ast.Statements;
+using Ast.Types;
 
 using ValueType = Runtime.ValueType;
 
@@ -152,65 +154,64 @@ public class MsilCodegenPass : IAstVisitor
 
     public void Visit(AssignmentStatement s)
     {
-        s.Value.Accept(this);
-
-        foreach (Dictionary<string, LocalBuilder> scope in _scopesStack)
+        switch (s.Target)
         {
-            if (scope.TryGetValue(s.Name, out LocalBuilder? local))
-            {
+            case VariableExpression variableTarget:
+                s.Value.Accept(this);
+                LocalBuilder local = FindVariable(variableTarget.Name);
                 _il.Emit(OpCodes.Stloc, local);
-                return;
-            }
-        }
+                break;
 
-        throw new InvalidOperationException(
-            $"Variable '{s.Name}' is not found in current scope"
-        );
+            case ArrayAccessExpression arrayAccess:
+                EmitArrayElementStore(arrayAccess, () => s.Value.Accept(this));
+                break;
+
+            default:
+                throw new InvalidOperationException(
+                    $"Assignment to {s.Target.GetType().Name} is not supported"
+                );
+        }
     }
 
     public void Visit(InputStatement s)
     {
-        LocalBuilder? local = null;
-        foreach (Dictionary<string, LocalBuilder> scope in _scopesStack)
+        switch (s.Target)
         {
-            if (scope.TryGetValue(s.VariableName, out LocalBuilder? foundLocal))
-            {
-                local = foundLocal;
+            case VariableExpression variableTarget:
+                EmitReadIntoLocal(FindVariable(variableTarget.Name));
                 break;
-            }
-        }
 
-        if (local == null)
-        {
-            throw new InvalidOperationException(
-                $"Variable '{s.VariableName}' is not found in current scope"
-            );
-        }
+            case ArrayAccessExpression arrayAccess:
+                EmitArrayElementStore(arrayAccess, () => EmitReadScalar(arrayAccess.ResultType));
+                break;
 
-        MethodInfo readLineMethod = GetMethod(typeof(Console), "ReadLine", Type.EmptyTypes);
-        _il.Emit(OpCodes.Call, readLineMethod);
+            default:
+                throw new InvalidOperationException(
+                    $"read() target {s.Target.GetType().Name} is not supported"
+                );
+        }
+    }
 
-        Type variableType = local.LocalType;
+    public void Visit(ArrayAccessExpression e)
+    {
+        EmitArrayElementLoad(e);
+    }
 
-        if (variableType == typeof(string))
-        {
-        }
-        else if (variableType == typeof(int))
-        {
-            MethodInfo parseIntMethod = GetMethod(typeof(int), "Parse", [typeof(string)]);
-            _il.Emit(OpCodes.Call, parseIntMethod);
-        }
-        else if (variableType == typeof(double))
-        {
-            MethodInfo parseDoubleMethod = GetMethod(typeof(double), "Parse", [typeof(string)]);
-            _il.Emit(OpCodes.Call, parseDoubleMethod);
-        }
-        else
-        {
-            throw new InvalidOperationException($"Input for type '{variableType}' is not supported");
-        }
+    public void Visit(ArrayLiteralExpression e)
+    {
+        ValueType elementType = e.InferredArrayType.ElementType;
+        Type ilElementType = _typeMapper.MapType(elementType);
 
-        _il.Emit(OpCodes.Stloc, local);
+        _il.Emit(OpCodes.Ldc_I4, e.Elements.Count);
+        _il.Emit(OpCodes.Newarr, ilElementType);
+
+        for (int i = 0; i < e.Elements.Count; i++)
+        {
+            _il.Emit(OpCodes.Dup);
+            _il.Emit(OpCodes.Ldc_I4, i);
+            e.Elements[i].Accept(this);
+            _il.Emit(OpCodes.Stelem, ilElementType);
+        }
     }
 
     public void Visit(OutputStatement s)
@@ -269,39 +270,31 @@ public class MsilCodegenPass : IAstVisitor
 
     public void Visit(VariableDeclaration s)
     {
-        Type ilType = s.DeclaredType switch
+        if (s.DeclaredType is ArrayTypeNode arrayType)
         {
-            ValueType.Integer => typeof(int),
-            ValueType.Float => typeof(double),
-            ValueType.String => typeof(string),
-            _ => throw new InvalidOperationException($"Type {s.DeclaredType} is not supported"),
-        };
+            EmitDeclareArrayVariable(s.Name, arrayType, s.Value);
+            return;
+        }
 
+        Type ilType = _typeMapper.MapTypeNode(s.DeclaredType);
         LocalBuilder local = _il.DeclareLocal(ilType);
-
         CurrentScope[s.Name] = local;
 
         if (s.Value != null)
         {
             s.Value.Accept(this);
             _il.Emit(OpCodes.Stloc, local);
+            return;
         }
+
+        EmitDefaultScalarValue(((ScalarTypeNode)s.DeclaredType).Type);
+        _il.Emit(OpCodes.Stloc, local);
     }
 
     public void Visit(VariableExpression e)
     {
-        foreach (Dictionary<string, LocalBuilder> scope in _scopesStack)
-        {
-            if (scope.TryGetValue(e.Name, out LocalBuilder? local))
-            {
-                _il.Emit(OpCodes.Ldloc, local);
-                return;
-            }
-        }
-
-        throw new InvalidOperationException(
-            $"Variable '{e.Name}' is not found in current scope"
-        );
+        LocalBuilder local = FindVariable(e.Name);
+        _il.Emit(OpCodes.Ldloc, local);
     }
 
     public void Visit(FunctionCallExpression s)
@@ -311,7 +304,7 @@ public class MsilCodegenPass : IAstVisitor
             argument.Accept(this);
         }
 
-        if (s.Function is BuiltInFunctionDeclaration)
+        if (s.Function is BuiltInFunction)
         {
             _builtinFunctionEmitter.EmitCallBuiltinFunction(s.Name, _il);
         }
@@ -450,8 +443,8 @@ public class MsilCodegenPass : IAstVisitor
     {
         MethodBuilder method = DefineProgramClassMethod(
             GetUserFunctionMethodName(s.Name),
-            _typeMapper.MapType(s.ResultType),
-            s.Parameters.Select(p => _typeMapper.MapType(p.ResultType)).ToArray()
+            _typeMapper.MapType(s.ReturnType),
+            s.Parameters.Select(p => _typeMapper.MapTypeNode(p.ResultType)).ToArray()
         );
         _userFunctionMethodsMap[s.Name] = method;
 
@@ -789,14 +782,233 @@ public class MsilCodegenPass : IAstVisitor
     /// <summary>
     /// Создает локальную переменную для i-го параметра функции (нумерация начинается с нуля).
     /// </summary>
-    private void EmitDefineParameter(string name, ValueType type, int argumentNo)
+    private void EmitDefineParameter(string name, TypeNode type, int argumentNo)
     {
-        LocalBuilder local = _il.DeclareLocal(_typeMapper.MapType(type));
+        LocalBuilder local = _il.DeclareLocal(_typeMapper.MapTypeNode(type));
 
         _il.Emit(OpCodes.Ldarg, argumentNo);
         _il.Emit(OpCodes.Stloc, local);
 
         CurrentScope.Add(name, local);
+    }
+
+    private LocalBuilder FindVariable(string name)
+    {
+        foreach (Dictionary<string, LocalBuilder> scope in _scopesStack)
+        {
+            if (scope.TryGetValue(name, out LocalBuilder? local))
+            {
+                return local;
+            }
+        }
+
+        throw new InvalidOperationException($"Variable '{name}' is not found in current scope");
+    }
+
+    private void EmitDeclareArrayVariable(string name, ArrayTypeNode arrayType, Expression? initialValue)
+    {
+        Type ilArrayType = _typeMapper.MapArrayType(arrayType.ElementType);
+        Type ilElementType = _typeMapper.MapType(arrayType.ElementType);
+
+        LocalBuilder arrayLocal = _il.DeclareLocal(ilArrayType);
+        CurrentScope[name] = arrayLocal;
+
+        if (initialValue is ArrayLiteralExpression literal)
+        {
+            literal.Accept(this);
+            _il.Emit(OpCodes.Stloc, arrayLocal);
+            return;
+        }
+
+        if (initialValue is VariableExpression sourceVariable)
+        {
+            sourceVariable.Accept(this);
+            _il.Emit(OpCodes.Stloc, arrayLocal);
+            return;
+        }
+
+        arrayType.Size.Accept(this);
+        _il.Emit(OpCodes.Newarr, ilElementType);
+        _il.Emit(OpCodes.Stloc, arrayLocal);
+
+        if (initialValue == null)
+        {
+            EmitFillArrayWithDefault(arrayLocal, arrayType.Size, arrayType.ElementType);
+        }
+        else
+        {
+            throw new InvalidOperationException("Unsupported array initializer expression");
+        }
+    }
+
+    private void EmitFillArrayWithDefault(LocalBuilder arrayLocal, Expression sizeExpression, ValueType elementType)
+    {
+        Type ilElementType = _typeMapper.MapType(elementType);
+        LocalBuilder sizeLocal = SaveExpressionToLocal(sizeExpression, typeof(int));
+
+        LocalBuilder indexLocal = _il.DeclareLocal(typeof(int));
+        _il.Emit(OpCodes.Ldc_I4_0);
+        _il.Emit(OpCodes.Stloc, indexLocal);
+
+        Label loopStart = _il.DefineLabel();
+        Label loopEnd = _il.DefineLabel();
+
+        _il.MarkLabel(loopStart);
+        _il.Emit(OpCodes.Ldloc, indexLocal);
+        _il.Emit(OpCodes.Ldloc, sizeLocal);
+        _il.Emit(OpCodes.Bge, loopEnd);
+
+        _il.Emit(OpCodes.Ldloc, arrayLocal);
+        _il.Emit(OpCodes.Ldloc, indexLocal);
+        EmitDefaultScalarValue(elementType);
+        _il.Emit(OpCodes.Stelem, ilElementType);
+
+        _il.Emit(OpCodes.Ldloc, indexLocal);
+        _il.Emit(OpCodes.Ldc_I4_1);
+        _il.Emit(OpCodes.Add);
+        _il.Emit(OpCodes.Stloc, indexLocal);
+        _il.Emit(OpCodes.Br, loopStart);
+
+        _il.MarkLabel(loopEnd);
+    }
+
+    private void EmitDefaultScalarValue(ValueType type)
+    {
+        switch (type)
+        {
+            case ValueType.Integer:
+                _il.Emit(OpCodes.Ldc_I4_0);
+                break;
+            case ValueType.Float:
+                _il.Emit(OpCodes.Ldc_R8, 0.0);
+                break;
+            case ValueType.String:
+                _il.Emit(OpCodes.Ldstr, string.Empty);
+                break;
+            default:
+                throw new NotSupportedException($"Default value for type {type} is not supported");
+        }
+    }
+
+    private void EmitArrayElementLoad(ArrayAccessExpression access)
+    {
+        Type elementType = _typeMapper.MapType(access.ResultType);
+        LocalBuilder arrayLocal = EmitArrayReferenceToLocal(access.Array);
+        LocalBuilder indexLocal = SaveExpressionToLocal(access.Index, typeof(int));
+        EmitArrayBoundsCheck(indexLocal, arrayLocal);
+        _il.Emit(OpCodes.Ldloc, arrayLocal);
+        _il.Emit(OpCodes.Ldloc, indexLocal);
+        _il.Emit(OpCodes.Ldelem, elementType);
+    }
+
+    private void EmitArrayElementStore(ArrayAccessExpression access, Action emitValue)
+    {
+        Type elementType = _typeMapper.MapType(access.ResultType);
+        LocalBuilder arrayLocal = EmitArrayReferenceToLocal(access.Array);
+        LocalBuilder indexLocal = SaveExpressionToLocal(access.Index, typeof(int));
+        EmitArrayBoundsCheck(indexLocal, arrayLocal);
+        _il.Emit(OpCodes.Ldloc, arrayLocal);
+        _il.Emit(OpCodes.Ldloc, indexLocal);
+        emitValue();
+        _il.Emit(OpCodes.Stelem, elementType);
+    }
+
+    private LocalBuilder EmitArrayReferenceToLocal(Expression arrayExpression)
+    {
+        if (arrayExpression is VariableExpression variable)
+        {
+            LocalBuilder existing = FindVariable(variable.Name);
+            LocalBuilder copy = _il.DeclareLocal(existing.LocalType);
+            _il.Emit(OpCodes.Ldloc, existing);
+            _il.Emit(OpCodes.Stloc, copy);
+            return copy;
+        }
+
+        throw new NotSupportedException(
+            $"Array expression {arrayExpression.GetType().Name} is not supported"
+        );
+    }
+
+    private void EmitArrayBoundsCheck(LocalBuilder indexLocal, LocalBuilder arrayLocal)
+    {
+        Label okLabel = _il.DefineLabel();
+        Label throwLabel = _il.DefineLabel();
+        ConstructorInfo exceptionConstructor = typeof(IndexOutOfRangeException).GetConstructor(Type.EmptyTypes)!;
+
+        _il.Emit(OpCodes.Ldloc, indexLocal);
+        _il.Emit(OpCodes.Ldc_I4_0);
+        _il.Emit(OpCodes.Blt, throwLabel);
+
+        _il.Emit(OpCodes.Ldloc, indexLocal);
+        _il.Emit(OpCodes.Ldloc, arrayLocal);
+        _il.Emit(OpCodes.Ldlen);
+        _il.Emit(OpCodes.Conv_I4);
+        _il.Emit(OpCodes.Bge, throwLabel);
+
+        _il.Emit(OpCodes.Br, okLabel);
+
+        _il.MarkLabel(throwLabel);
+        _il.Emit(OpCodes.Newobj, exceptionConstructor);
+        _il.Emit(OpCodes.Throw);
+
+        _il.MarkLabel(okLabel);
+    }
+
+    private void EmitReadIntoLocal(LocalBuilder local)
+    {
+        MethodInfo readLineMethod = GetMethod(typeof(Console), "ReadLine", Type.EmptyTypes);
+        _il.Emit(OpCodes.Call, readLineMethod);
+
+        Type variableType = local.LocalType;
+        if (variableType == typeof(string))
+        {
+        }
+        else if (variableType == typeof(int))
+        {
+            MethodInfo parseIntMethod = GetMethod(typeof(int), "Parse", [typeof(string)]);
+            _il.Emit(OpCodes.Call, parseIntMethod);
+        }
+        else if (variableType == typeof(double))
+        {
+            MethodInfo parseDoubleMethod = GetMethod(typeof(double), "Parse", [typeof(string)]);
+            _il.Emit(OpCodes.Call, parseDoubleMethod);
+        }
+        else
+        {
+            throw new InvalidOperationException($"Input for type '{variableType}' is not supported");
+        }
+
+        _il.Emit(OpCodes.Stloc, local);
+    }
+
+    private void EmitReadScalar(ValueType type)
+    {
+        MethodInfo readLineMethod = GetMethod(typeof(Console), "ReadLine", Type.EmptyTypes);
+        _il.Emit(OpCodes.Call, readLineMethod);
+
+        switch (type)
+        {
+            case ValueType.Integer:
+                MethodInfo parseIntMethod = GetMethod(typeof(int), "Parse", [typeof(string)]);
+                _il.Emit(OpCodes.Call, parseIntMethod);
+                break;
+            case ValueType.Float:
+                MethodInfo parseDoubleMethod = GetMethod(typeof(double), "Parse", [typeof(string)]);
+                _il.Emit(OpCodes.Call, parseDoubleMethod);
+                break;
+            case ValueType.String:
+                break;
+            default:
+                throw new InvalidOperationException($"Input for type '{type}' is not supported");
+        }
+    }
+
+    private LocalBuilder SaveExpressionToLocal(Expression expression, Type localType)
+    {
+        expression.Accept(this);
+        LocalBuilder local = _il.DeclareLocal(localType);
+        _il.Emit(OpCodes.Stloc, local);
+        return local;
     }
 
     /// <summary>

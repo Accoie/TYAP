@@ -1,6 +1,4 @@
-﻿namespace Runtime;
-
-public static class Numbers
+﻿public static class Numbers
 {
     public const double Tolerance = 0.001d;
 

@@ -1,16 +1,17 @@
 ﻿using Ast.Statements;
+using Ast.Types;
 
-namespace Ast.Declaration;
+namespace Ast.BuiltIn;
 
 /// <summary>
 /// Объявляет параметр встроенной функции.
 /// </summary>
-public class BuiltInFunctionParameterDeclaration : AbstractParameterDeclaration
+public class BuiltInFunctionParameter : AbstractParameterDeclaration
 {
-    public BuiltInFunctionParameterDeclaration(string name, Runtime.ValueType type)
+    public BuiltInFunctionParameter(string name, Runtime.ValueType type)
         : base(name)
     {
-        ResultType = type;
+        ResultType = new ScalarTypeNode(type);
     }
 
     public override void Accept(IAstVisitor visitor)

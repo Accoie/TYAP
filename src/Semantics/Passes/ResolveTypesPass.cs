@@ -1,5 +1,4 @@
 using Ast;
-using Ast.BuiltIn;
 using Ast.Declaration;
 using Ast.Expressions;
 using Ast.Statements;
@@ -167,7 +166,7 @@ public sealed class ResolveTypesPass : AbstractPass
     {
         base.Visit(e);
 
-        if (IsBuiltInFunction(e.Name))
+        if (e.Function is BuiltInFunctionDeclaration builtin)
         {
             CheckBuiltInFunctionTypes(e.Name, e.Arguments);
         }
@@ -658,7 +657,7 @@ public sealed class ResolveTypesPass : AbstractPass
     /// </summary>
     private void CheckBuiltInFunctionTypes(string name, IReadOnlyList<Expression> arguments)
     {
-        BuiltInFunction? builtin = Builtins.Functions.FirstOrDefault(f => f.Name == name);
+        BuiltInFunctionDeclaration? builtin = Builtins.Functions.FirstOrDefault(f => f.Name == name);
         if (builtin == null)
         {
             throw new ArgumentException($"Unknown built-in function: {name}");

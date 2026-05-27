@@ -1,4 +1,6 @@
-﻿namespace Ast.Statements;
+﻿using Ast.Statements;
+
+namespace Ast.Declaration;
 
 /// <summary>
 /// Абстрактный класс с информацией о функции — как встроенной, так и пользовательской.

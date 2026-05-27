@@ -1,4 +1,4 @@
-﻿namespace Ast.Statements;
+﻿namespace Ast.Declaration;
 
 /// <summary>
 /// Абстрактный класс с информацией о формальном параметре функции — как встроенной, так и пользовательской.

@@ -1,5 +1,4 @@
-﻿using Ast.Statements;
-using Ast.Types;
+﻿using Ast.Types;
 
 namespace Ast.Declaration;
 
